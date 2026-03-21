@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Simulado 3 — Contabilidade Aplicada à Informática</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: system-ui, -apple-system, sans-serif; background: #f5f4f0; color: #1a1a18; padding: 2rem 1rem; }
+  .container { max-width: 800px; margin: 0 auto; }
+  .header { margin-bottom: 2rem; padding: 1.5rem; background: #fff; border: 0.5px solid rgba(0,0,0,0.15); border-radius: 12px; }
+  .header h1 { font-size: 20px; font-weight: 500; color: #1a1a18; margin-bottom: 4px; }
+  .header p { font-size: 13px; color: #5f5e5a; margin-top: 4px; }
+  .header .meta { display: flex; gap: 12px; margin-top: 12px; flex-wrap: wrap; }
+  .meta-item { font-size: 12px; background: #f1efe8; color: #5f5e5a; border-radius: 4px; padding: 4px 10px; }
+  .meta-item strong { color: #1a1a18; font-weight: 500; }
+  .section-label { font-size: 11px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; color: #888780; margin: 2rem 0 1rem; padding-bottom: 6px; border-bottom: 0.5px solid rgba(0,0,0,0.15); }
+  .question-card { background: #fff; border: 0.5px solid rgba(0,0,0,0.15); border-radius: 12px; padding: 1.25rem; margin-bottom: 1rem; }
+  .q-header { display: flex; gap: 10px; align-items: flex-start; margin-bottom: 1rem; flex-wrap: wrap; }
+  .q-number { font-size: 11px; font-weight: 500; background: #f1efe8; color: #5f5e5a; border-radius: 4px; padding: 3px 8px; white-space: nowrap; flex-shrink: 0; margin-top: 2px; }
+  .q-pts { font-size: 11px; background: #FAEEDA; color: #633806; border-radius: 4px; padding: 3px 8px; white-space: nowrap; flex-shrink: 0; margin-top: 2px; }
+  .q-tag { font-size: 11px; border-radius: 4px; padding: 3px 8px; white-space: nowrap; flex-shrink: 0; margin-top: 2px; }
+  .q-tag.basico { background: #E6F1FB; color: #0C447C; }
+  .q-tag.medio { background: #EAF3DE; color: #27500A; }
+  .q-text { font-size: 14px; color: #1a1a18; line-height: 1.6; flex: 1; min-width: 200px; }
+  .options { display: flex; flex-direction: column; gap: 6px; margin-top: 0.75rem; }
+  .option { display: flex; gap: 10px; align-items: flex-start; padding: 8px 12px; border-radius: 8px; border: 0.5px solid rgba(0,0,0,0.15); cursor: pointer; font-size: 13px; color: #1a1a18; line-height: 1.5; transition: background 0.15s; }
+  .option:hover { background: #f1efe8; }
+  .option.correct { background: #EAF3DE; border-color: #97C459; }
+  .option.wrong { background: #FCEBEB; border-color: #F09595; }
+  .option-letter { font-weight: 500; color: #888780; flex-shrink: 0; min-width: 16px; }
+  .feedback { font-size: 12px; margin-top: 8px; padding: 8px 12px; border-radius: 8px; display: none; line-height: 1.5; }
+  .feedback.show { display: block; }
+  .feedback.ok { background: #EAF3DE; color: #27500A; }
+  .feedback.err { background: #FCEBEB; color: #791F1F; }
+  .dissertativa { background: #fff; border: 0.5px solid rgba(0,0,0,0.15); border-radius: 12px; padding: 1.25rem; margin-bottom: 1rem; }
+  .dissertativa textarea { width: 100%; min-height: 110px; margin-top: 0.75rem; font-size: 13px; font-family: inherit; padding: 10px 12px; border-radius: 8px; border: 0.5px solid rgba(0,0,0,0.15); background: #f5f4f0; color: #1a1a18; resize: vertical; line-height: 1.6; }
+  .dissertativa textarea:focus { outline: none; border-color: rgba(0,0,0,0.35); }
+  .gabarito-btn { margin-top: 8px; background: transparent; border: 0.5px solid rgba(0,0,0,0.3); border-radius: 8px; padding: 6px 14px; font-size: 12px; color: #5f5e5a; cursor: pointer; font-family: inherit; }
+  .gabarito-btn:hover { background: #f1efe8; }
+  .gabarito-box { display: none; margin-top: 8px; padding: 10px 12px; background: #f5f4f0; border-radius: 8px; border-left: 3px solid #97C459; font-size: 13px; color: #1a1a18; line-height: 1.7; }
+  .gabarito-box.show { display: block; }
+  .score-bar { display: flex; align-items: center; gap: 16px; background: #fff; border: 0.5px solid rgba(0,0,0,0.15); border-radius: 12px; padding: 1rem 1.25rem; margin-top: 1.5rem; flex-wrap: wrap; }
+  .score-num { font-size: 28px; font-weight: 500; color: #1a1a18; }
+  .score-info { display: flex; flex-direction: column; gap: 2px; }
+  .score-label { font-size: 13px; color: #5f5e5a; }
+  .score-status { font-size: 12px; font-weight: 500; }
+  .status-ok { color: #27500A; }
+  .status-af { color: #633806; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="header">
+    <h1>Simulado 3 — Contabilidade Aplicada à Informática</h1>
+    <p>Aulas 1 a 4 · foco em aplicação prática e raciocínio contábil.</p>
+    <div class="meta">
+      <span class="meta-item"><strong>10</strong> múltipla escolha · 6 pts cada</span>
+      <span class="meta-item"><strong>2</strong> dissertativas · 20 pts cada</span>
+      <span class="meta-item"><strong>Total:</strong> 100 pts</span>
+      <span class="meta-item"><strong>Média:</strong> 7,0</span>
+    </div>
+  </div>
+
+  <div class="section-label">Múltipla escolha — 6 pontos cada</div>
+
+  <div class="question-card" id="q1">
+    <div class="q-header">
+      <span class="q-number">Q1</span><span class="q-pts">6 pts</span><span class="q-tag basico">básico</span>
+      <span class="q-text">Por que a tecnologia é considerada um suporte — e não um substituto — à responsabilidade profissional na Contabilidade?</span>
+    </div>
+    <div class="options">
+      <div class="option" onclick="r('q1','a','c')"><span class="option-letter">a)</span> Porque os sistemas contábeis ainda não conseguem processar grandes volumes de dados.</div>
+      <div class="option" onclick="r('q1','b','c')"><span class="option-letter">b)</span> Porque a contabilidade digital é proibida por lei em pequenas empresas.</div>
+      <div class="option" onclick="r('q1','c','c')"><span class="option-letter">c)</span> Porque a tecnologia reduz erros e agiliza o processamento, mas a responsabilidade técnica sobre a informação continua sendo humana e profissional.</div>
+      <div class="option" onclick="r('q1','d','c')"><span class="option-letter">d)</span> Porque sistemas automáticos não conseguem gerar relatórios gerenciais.</div>
+    </div>
+    <div class="feedback" id="fb-q1"></div>
+  </div>
+
+  <div class="question-card" id="q2">
+    <div class="q-header">
+      <span class="q-number">Q2</span><span class="q-pts">6 pts</span><span class="q-tag basico">básico</span>
+      <span class="q-text">Qual dos itens abaixo NÃO é um elemento do Ativo de uma empresa?</span>
+    </div>
+    <div class="options">
+      <div class="option" onclick="r('q2','a','d')"><span class="option-letter">a)</span> Veículos utilizados para entrega de produtos.</div>
+      <div class="option" onclick="r('q2','b','d')"><span class="option-letter">b)</span> Valores depositados em conta bancária.</div>
+      <div class="option" onclick="r('q2','c','d')"><span class="option-letter">c)</span> Marca registrada da empresa com valor econômico comprovado.</div>
+      <div class="option" onclick="r('q2','d','d')"><span class="option-letter">d)</span> Empréstimo bancário a ser pago em 24 parcelas.</div>
+    </div>
+    <div class="feedback" id="fb-q2"></div>
+  </div>
+
+  <div class="question-card" id="q3">
+    <div class="q-header">
+      <span class="q-number">Q3</span><span class="q-pts">6 pts</span><span class="q-tag medio">médio</span>
+      <span class="q-text">Uma empresa tem Ativo de R$ 40.000 e Passivo de R$ 40.000. Qual é o Patrimônio Líquido e o que isso representa para os sócios?</span>
+    </div>
+    <div class="options">
+      <div class="option" onclick="r('q3','a','b')"><span class="option-letter">a)</span> PL = R$ 80.000; a empresa dobrou seu patrimônio.</div>
+      <div class="option" onclick="r('q3','b','b')"><span class="option-letter">b)</span> PL = R$ 0; todos os bens e direitos estão comprometidos com dívidas de terceiros, sem riqueza líquida para os sócios.</div>
+      <div class="option" onclick="r('q3','c','b')"><span class="option-letter">c)</span> PL = R$ 40.000; o Ativo pertence inteiramente aos sócios.</div>
+      <div class="option" onclick="r('q3','d','b')"><span class="option-letter">d)</span> PL = R$ 40.000; o Passivo não afeta a riqueza dos sócios.</div>
+    </div>
+    <div class="feedback" id="fb-q3"></div>
+  </div>
+
+  <div class="question-card" id="q4">
+    <div class="q-header">
+      <span class="q-number">Q4</span><span class="q-pts">6 pts</span><span class="q-tag basico">básico</span>
+      <span class="q-text">Dois sócios abrem uma empresa de TI integralizando R$ 25.000 em dinheiro. Ainda não há dívidas. Como fica a Equação Patrimonial logo após a abertura?</span>
+    </div>
+    <div class="options">
+      <div class="option" onclick="r('q4','a','c')"><span class="option-letter">a)</span> Ativo R$ 0 = Passivo R$ 25.000 + PL R$ 0.</div>
+      <div class="option" onclick="r('q4','b','c')"><span class="option-letter">b)</span> Ativo R$ 25.000 = Passivo R$ 25.000 + PL R$ 0.</div>
+      <div class="option" onclick="r('q4','c','c')"><span class="option-letter">c)</span> Ativo R$ 25.000 = Passivo R$ 0 + PL R$ 25.000.</div>
+      <div class="option" onclick="r('q4','d','c')"><span class="option-letter">d)</span> Ativo R$ 50.000 = Passivo R$ 25.000 + PL R$ 25.000.</div>
+    </div>
+    <div class="feedback" id="fb-q4"></div>
+  </div>
+
+  <div class="question-card" id="q5">
+    <div class="q-header">
+      <span class="q-number">Q5</span><span class="q-pts">6 pts</span><span class="q-tag basico">básico</span>
+      <span class="q-text">Qual das alternativas descreve corretamente um fato <strong>permutativo</strong> no patrimônio?</span>
+    </div>
+    <div class="options">
+      <div class="option" onclick="r('q5','a','a')"><span class="option-letter">a)</span> Compra de equipamento à vista: o Caixa diminui e Equipamentos aumenta, sem alterar o PL.</div>
+      <div class="option" onclick="r('q5','b','a')"><span class="option-letter">b)</span> Pagamento de salários: o Caixa diminui e o PL também diminui.</div>
+      <div class="option" onclick="r('q5','c','a')"><span class="option-letter">c)</span> Integralização de capital: o Caixa aumenta e o PL também aumenta.</div>
+      <div class="option" onclick="r('q5','d','a')"><span class="option-letter">d)</span> Reconhecimento de receita: o Caixa aumenta e o PL também aumenta.</div>
+    </div>
+    <div class="feedback" id="fb-q5"></div>
+  </div>
+
+  <div class="question-card" id="q6">
+    <div class="q-header">
+      <span class="q-number">Q6</span><span class="q-pts">6 pts</span><span class="q-tag basico">básico</span>
+      <span class="q-text">Uma empresa paga o aluguel do escritório em dinheiro. Que tipo de fato contábil é esse e como afeta o patrimônio?</span>
+    </div>
+    <div class="options">
+      <div class="option" onclick="r('q6','a','b')"><span class="option-letter">a)</span> Permutativo: o Caixa diminui e Fornecedores também diminui, sem alterar o PL.</div>
+      <div class="option" onclick="r('q6','b','b')"><span class="option-letter">b)</span> Modificativo diminutivo: o Caixa diminui e o PL também diminui, pois é uma despesa que reduz a riqueza dos sócios.</div>
+      <div class="option" onclick="r('q6','c','b')"><span class="option-letter">c)</span> Modificativo aumentativo: o Caixa aumenta e o PL também aumenta.</div>
+      <div class="option" onclick="r('q6','d','b')"><span class="option-letter">d)</span> Permutativo: o Caixa diminui e Equipamentos aumenta.</div>
+    </div>
+    <div class="feedback" id="fb-q6"></div>
+  </div>
+
+  <div class="question-card" id="q7">
+    <div class="q-header">
+      <span class="q-number">Q7</span><span class="q-pts">6 pts</span><span class="q-tag basico">básico</span>
+      <span class="q-text">Qual dos itens abaixo faz parte do módulo de <strong>cadastro</strong> de um ERP?</span>
+    </div>
+    <div class="options">
+      <div class="option" onclick="r('q7','a','c')"><span class="option-letter">a)</span> Lançamentos de compras e vendas do dia a dia.</div>
+      <div class="option" onclick="r('q7','b','c')"><span class="option-letter">b)</span> Balanço patrimonial e demonstração de resultado.</div>
+      <div class="option" onclick="r('q7','c','c')"><span class="option-letter">c)</span> Cadastro de clientes, fornecedores, produtos e serviços.</div>
+      <div class="option" onclick="r('q7','d','c')"><span class="option-letter">d)</span> Rotinas de manutenção e consistência do sistema.</div>
+    </div>
+    <div class="feedback" id="fb-q7"></div>
+  </div>
+
+  <div class="question-card" id="q8">
+    <div class="q-header">
+      <span class="q-number">Q8</span><span class="q-pts">6 pts</span><span class="q-tag basico">básico</span>
+      <span class="q-text">O que significa dizer que a informação contábil precisa ser <strong>íntegra, acessível e confiável</strong>?</span>
+    </div>
+    <div class="options">
+      <div class="option" onclick="r('q8','a','d')"><span class="option-letter">a)</span> Que os dados devem ser gerados exclusivamente por contadores registrados no CRC.</div>
+      <div class="option" onclick="r('q8','b','d')"><span class="option-letter">b)</span> Que as informações devem ser sigilosas e nunca compartilhadas com gestores.</div>
+      <div class="option" onclick="r('q8','c','d')"><span class="option-letter">c)</span> Que os relatórios devem ser emitidos apenas ao final de cada exercício fiscal.</div>
+      <div class="option" onclick="r('q8','d','d')"><span class="option-letter">d)</span> Que os dados devem estar corretos (íntegros), disponíveis quando necessários (acessíveis) e livres de manipulações (confiáveis), garantindo decisões seguras.</div>
+    </div>
+    <div class="feedback" id="fb-q8"></div>
+  </div>
+
+  <div class="question-card" id="q9">
+    <div class="q-header">
+      <span class="q-number">Q9</span><span class="q-pts">6 pts</span><span class="q-tag basico">básico</span>
+      <span class="q-text">Uma empresa migra seus dados contábeis de um servidor local para a nuvem. Qual vantagem imediata essa mudança proporciona à equipe de contabilidade?</span>
+    </div>
+    <div class="options">
+      <div class="option" onclick="r('q9','a','b')"><span class="option-letter">a)</span> Eliminação completa da necessidade de contratos com fornecedores de TI.</div>
+      <div class="option" onclick="r('q9','b','b')"><span class="option-letter">b)</span> Maior mobilidade, permitindo acesso aos dados de qualquer lugar com internet, além de backups automáticos e redundância.</div>
+      <div class="option" onclick="r('q9','c','b')"><span class="option-letter">c)</span> Redução do volume de dados armazenados, pois a nuvem comprime automaticamente os registros.</div>
+      <div class="option" onclick="r('q9','d','b')"><span class="option-letter">d)</span> Dispensa de qualquer política de controle de acesso e senha.</div>
+    </div>
+    <div class="feedback" id="fb-q9"></div>
+  </div>
+
+  <div class="question-card" id="q10">
+    <div class="q-header">
+      <span class="q-number">Q10</span><span class="q-pts">6 pts</span><span class="q-tag medio">médio</span>
+      <span class="q-text">Um técnico em informática configura incorretamente as contas contábeis no ERP da empresa, associando receitas de serviços a uma conta de despesas. Qual é a consequência direta desse erro nos relatórios gerados?</span>
+    </div>
+    <div class="options">
+      <div class="option" onclick="r('q10','a','c')"><span class="option-letter">a)</span> Nenhuma, pois o ERP corrige automaticamente erros de parametrização.</div>
+      <div class="option" onclick="r('q10','b','c')"><span class="option-letter">b)</span> O sistema emite um alerta e bloqueia a emissão de relatórios até a correção.</div>
+      <div class="option" onclick="r('q10','c','c')"><span class="option-letter">c)</span> Os relatórios apresentarão informações incorretas — as receitas aparecerão como despesas, distorcendo o resultado e as decisões da empresa.</div>
+      <div class="option" onclick="r('q10','d','c')"><span class="option-letter">d)</span> Apenas o módulo fiscal é afetado; os demais relatórios permanecem corretos.</div>
+    </div>
+    <div class="feedback" id="fb-q10"></div>
+  </div>
+
+  <div class="score-bar" id="placar" style="display:none;">
+    <span class="score-num" id="score-num">0</span>
+    <div class="score-info">
+      <span class="score-label" id="score-label">pontos nas questões objetivas</span>
+      <span class="score-status" id="score-status"></span>
+    </div>
+  </div>
+
+  <div class="section-label" style="margin-top:2.5rem;">Questões dissertativas — 20 pontos cada</div>
+
+  <div class="dissertativa">
+    <div class="q-header">
+      <span class="q-number">D1</span><span class="q-pts">20 pts</span><span class="q-tag basico">básico</span>
+      <span class="q-text">Um colega afirma: <em>"Se o ERP lança tudo automaticamente, o contador não precisa mais entender de contabilidade."</em> Você concorda? Justifique sua resposta explicando o papel da parametrização no ERP e a importância do conhecimento contábil humano nesse processo.</span>
+    </div>
+    <textarea placeholder="Escreva sua resposta aqui..."></textarea>
+    <button class="gabarito-btn" onclick="tg(this)">Ver orientação de resposta</button>
+    <div class="gabarito-box">
+      <strong>Orientação:</strong> O aluno deve discordar da afirmação e argumentar que o ERP automatiza a execução dos lançamentos, mas não o julgamento contábil. Para funcionar corretamente, o sistema precisa ser parametrizado — ou seja, alguém precisa definir quais contas usar, como classificar cada operação, quais impostos aplicar, quais centros de custo existem. Essa parametrização exige conhecimento contábil aprofundado. Além disso, quando o sistema gera um erro (como o exemplo da Q10), apenas um profissional que entende de contabilidade consegue identificar, interpretar e corrigir o problema. Portanto, a tecnologia aumenta a eficiência, mas não substitui o raciocínio e a responsabilidade técnica humana.
+    </div>
+  </div>
+
+  <div class="dissertativa">
+    <div class="q-header">
+      <span class="q-number">D2</span><span class="q-pts">20 pts</span><span class="q-tag medio">médio</span>
+      <span class="q-text">Uma loja virtual de acessórios para games apresenta a seguinte situação ao final do mês: R$ 18.000 em estoque de produtos, R$ 7.000 em caixa, R$ 5.000 em valores a receber de clientes e R$ 1.500 em domínio e hospedagem do site (ativo intangível). Suas obrigações: R$ 8.000 com fornecedores de produtos e R$ 3.000 de impostos a recolher.<br><br>(a) Calcule o Ativo total, o Passivo total e o Patrimônio Líquido.<br>(b) Se a empresa contrair um novo empréstimo de R$ 5.000 para comprar mais estoque, como a Equação Patrimonial será afetada? Monte o novo quadro.<br>(c) O PL se altera nessa operação? Por quê?</span>
+    </div>
+    <textarea placeholder="Escreva sua resposta aqui..." style="min-height:130px;"></textarea>
+    <button class="gabarito-btn" onclick="tg(this)">Ver orientação de resposta</button>
+    <div class="gabarito-box">
+      <strong>Orientação — resolução esperada:</strong><br><br>
+      <strong>(a)</strong> Ativo = 18.000 + 7.000 + 5.000 + 1.500 = <strong>R$ 31.500</strong>. Passivo = 8.000 + 3.000 = <strong>R$ 11.000</strong>. PL = 31.500 − 11.000 = <strong>R$ 20.500</strong>. Equação: 31.500 = 11.000 + 20.500 ✓<br><br>
+      <strong>(b)</strong> O empréstimo de R$ 5.000 entra como Caixa ou Estoque (Ativo +5.000) e cria uma obrigação de dívida (Passivo +5.000). Novo quadro: Ativo = R$ 36.500 · Passivo = R$ 16.000 · PL = R$ 20.500. Equação: 36.500 = 16.000 + 20.500 ✓<br><br>
+      <strong>(c)</strong> O PL não se altera. Essa operação é um fato permutativo misto: o Ativo aumenta (entra recurso) e o Passivo também aumenta (entra dívida) pelos mesmos R$ 5.000. Como não há receita nem despesa, a riqueza líquida dos sócios permanece a mesma — R$ 20.500.
+    </div>
+  </div>
+
+</div>
+<script>
+const g = {
+  q1:{c:'c',j:'Correto! A tecnologia reduz erros manuais e agiliza o processamento, mas a responsabilidade técnica sobre a informação — verificar, interpretar, corrigir e responder pelos dados — continua sendo humana e profissional.'},
+  q2:{c:'d',j:'Correto! Empréstimo bancário é uma obrigação com terceiros, portanto integra o Passivo — não o Ativo. Veículos, depósitos bancários e marcas registradas com valor econômico são todos elementos do Ativo.'},
+  q3:{c:'b',j:'Correto! PL = Ativo − Passivo = 40.000 − 40.000 = R$ 0. Isso significa que todos os bens e direitos da empresa estão comprometidos com dívidas; não sobra nada para os sócios — situação delicada, mas ainda equilibrada.'},
+  q4:{c:'c',j:'Correto! Os sócios integralizaram R$ 25.000 em dinheiro (Ativo = 25.000). Não há dívidas (Passivo = 0). Logo, PL = R$ 25.000 — toda a riqueza pertence aos proprietários. Equação: 25.000 = 0 + 25.000 ✓'},
+  q5:{c:'a',j:'Correto! Um fato permutativo troca elementos dentro do patrimônio sem alterar o PL. Comprar equipamento à vista troca Caixa por Equipamentos — dois ativos se movem em direções opostas, e o total líquido não muda.'},
+  q6:{c:'b',j:'Correto! O pagamento de aluguel é uma despesa — reduz o Caixa (Ativo) e também reduz o PL, pois consome riqueza dos sócios sem gerar novo ativo em troca. É um fato modificativo diminutivo.'},
+  q7:{c:'c',j:'Correto! O módulo de cadastro de um ERP armazena dados mestres: clientes, fornecedores, produtos e serviços. Esses registros são a base para que o sistema processe corretamente as movimentações operacionais.'},
+  q8:{c:'d',j:'Correto! Integridade garante que os dados são exatos; acessibilidade garante que estão disponíveis quando necessários; confiabilidade garante que não foram manipulados. Sem essas três características, a informação não sustenta decisões seguras.'},
+  q9:{c:'b',j:'Correto! A principal vantagem imediata da nuvem é a mobilidade — acesso de qualquer lugar com internet — aliada a backups automáticos e redundância, que protegem contra perda de dados.'},
+  q10:{c:'c',j:'Correto! O ERP lança automaticamente conforme a parametrização. Se as contas estiverem erradas, os relatórios refletirão esse erro — receitas aparecerão como despesas, distorcendo o resultado e podendo levar a decisões equivocadas.'}
+};
+const resp={}, erros={};
+function r(qid,letra,correta){
+  if(resp[qid])return;
+  resp[qid]=letra;
+  const card=document.getElementById(qid);
+  const opts=card.querySelectorAll('.option');
+  const ls=['a','b','c','d'];
+  opts.forEach((o,i)=>{
+    if(ls[i]===letra) o.classList.add(letra===correta?'correct':'wrong');
+    if(letra!==correta&&ls[i]===correta) o.classList.add('correct');
+  });
+  const fb=document.getElementById('fb-'+qid);
+  if(letra===correta){fb.textContent='✓ '+g[qid].j;fb.className='feedback ok show';}
+  else{fb.textContent='✗ Resposta incorreta. '+g[qid].j;fb.className='feedback err show';erros[qid]=true;}
+  atualizar();
+}
+function atualizar(){
+  const total=Object.keys(resp).length;
+  if(!total)return;
+  const acertos=total-Object.keys(erros).length;
+  const pts=acertos*6;
+  document.getElementById('placar').style.display='flex';
+  document.getElementById('score-num').textContent=pts;
+  document.getElementById('score-label').textContent=`pontos nas objetivas · ${acertos} de ${total} corretas respondidas`;
+  const st=document.getElementById('score-status');
+  if(total===10){
+    const proj=pts+40;
+    if(proj>=70){st.textContent=`Projeção com dissertativas: ${proj} pts — caminho para aprovação ✓`;st.className='score-status status-ok';}
+    else{st.textContent=`Projeção com dissertativas: ${proj} pts — reforce os pontos errados`;st.className='score-status status-af';}
+  }
+}
+function tg(btn){
+  const box=btn.nextElementSibling;
+  const show=box.classList.contains('show');
+  box.classList.toggle('show');
+  btn.textContent=show?'Ver orientação de resposta':'Ocultar orientação';
+}
+</script>
+</body>
+</html>
