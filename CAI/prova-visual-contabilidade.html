@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prova — Guilda da Contabilidade</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --gold: #f0c040;
+  --gold-dark: #b8860b;
+  --ember: #e05a00;
+  --parchment: #f5e6c8;
+  --parchment-dark: #d4b896;
+  --bg: #0d0804;
+  --bg-mid: #1a0f07;
+  --frame-bg: rgba(15,9,3,0.95);
+  --text: #f0e6d3;
+  --green: #00cc66;
+  --red: #cc3333;
+  --blue: #4488ff;
+  --opt-bg: rgba(30,18,6,0.8);
+  --opt-border: rgba(184,134,11,0.35);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Nunito', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+canvas#bg { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
+
+/* ── SCREENS ── */
+.screen { display: none; min-height: 100vh; align-items: center; justify-content: center; padding: 24px 16px 100px; position: relative; z-index: 1; flex-direction: column; }
+.screen.on { display: flex; }
+
+/* ── FRAME ── */
+.box {
+  background: var(--frame-bg);
+  border: 2px solid var(--gold-dark);
+  border-radius: 12px;
+  padding: 36px 32px;
+  max-width: 700px;
+  width: 100%;
+  box-shadow: 0 0 60px rgba(0,0,0,.9), 0 0 0 1px rgba(240,192,64,.1);
+  position: relative;
+}
+.box::before { content:'⚜'; position:absolute; top:10px; left:14px; color:var(--gold-dark); font-size:18px; }
+.box::after  { content:'⚜'; position:absolute; bottom:10px; right:14px; color:var(--gold-dark); font-size:18px; transform:rotate(180deg); }
+
+/* ── TYPOGRAPHY ── */
+.ttl { font-family:'Cinzel',serif; font-size: clamp(1.8rem,5vw,3rem); font-weight:900; color:var(--gold); text-align:center; line-height:1.15; text-shadow: 0 0 18px rgba(240,192,64,.7); }
+.tag { font-family:'Cinzel',serif; font-size:.65rem; letter-spacing:3px; color:var(--ember); text-align:center; text-transform:uppercase; margin-bottom:6px; }
+.sep { display:flex; align-items:center; gap:10px; margin:18px 0; color:var(--gold-dark); }
+.sep::before,.sep::after { content:''; flex:1; height:1px; background:linear-gradient(90deg,transparent,var(--gold-dark),transparent); }
+
+/* ── LOGIN ── */
+.lbl { font-family:'Cinzel',serif; font-size:.7rem; letter-spacing:2px; color:var(--gold-dark); text-transform:uppercase; display:block; margin-bottom:5px; }
+.inp {
+  width:100%; background:rgba(0,0,0,.5); border:1px solid rgba(184,134,11,.4);
+  border-radius:8px; color:var(--parchment); font-family:'Nunito',sans-serif;
+  font-size:1.05rem; padding:12px 16px; outline:none; margin-bottom:14px;
+  transition:border-color .3s;
+}
+.inp:focus { border-color:var(--gold); box-shadow:0 0 12px rgba(240,192,64,.2); }
+.err { font-size:.85rem; color:#ff6666; text-align:center; padding:10px 14px; background:rgba(120,0,0,.3); border:1px solid rgba(200,0,0,.3); border-radius:8px; margin-top:8px; display:none; }
+
+/* ── BUTTON ── */
+.btn {
+  display:inline-block; font-family:'Cinzel',serif; font-weight:700;
+  font-size:.9rem; letter-spacing:2px; text-transform:uppercase;
+  border:none; padding:14px 36px; cursor:pointer; border-radius:8px;
+  transition:all .2s; margin:6px;
+}
+.btn-g { background:linear-gradient(135deg,#ffd700,#f0c040,#b8860b); color:#0d0804; box-shadow:0 4px 18px rgba(240,192,64,.3); }
+.btn-g:hover { transform:translateY(-2px); box-shadow:0 8px 28px rgba(240,192,64,.5); }
+.btn-g:disabled { opacity:.35; cursor:not-allowed; transform:none; }
+
+/* ── PROGRESS ── */
+.prog-wrap { margin-bottom:20px; }
+.prog-label { display:flex; justify-content:space-between; font-size:.8rem; font-weight:700; color:var(--gold-dark); margin-bottom:5px; }
+.prog-track { height:12px; background:rgba(0,0,0,.6); border-radius:6px; border:1px solid rgba(184,134,11,.25); overflow:hidden; }
+.prog-fill { height:100%; background:linear-gradient(90deg,var(--gold-dark),var(--gold)); border-radius:6px; transition:width .7s ease; }
+
+/* ── MODULE BADGE ── */
+.mod-badge {
+  display:inline-flex; align-items:center; gap:10px;
+  background:rgba(30,18,6,.9); border:1px solid var(--gold-dark);
+  border-radius:30px; padding:8px 20px; margin-bottom:18px;
+}
+.mod-badge .mi { font-size:1.4rem; }
+.mod-badge .ml { font-family:'Cinzel',serif; font-size:.78rem; color:var(--gold); letter-spacing:1px; }
+
+/* ── QUESTION ── */
+.q-wrap { animation: popUp .35s ease both; }
+@keyframes popUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+
+.q-num { font-size:.75rem; font-weight:800; color:var(--ember); letter-spacing:2px; text-transform:uppercase; margin-bottom:8px; }
+
+/* VISUAL BLOCK — the key feature */
+.q-visual {
+  background:rgba(20,12,4,.85);
+  border:1px solid rgba(184,134,11,.4);
+  border-radius:10px;
+  padding:16px;
+  margin-bottom:16px;
+  display:flex;
+  align-items:center;
+  gap:14px;
+  flex-wrap:wrap;
+}
+.q-visual .vis-icon { font-size:3rem; flex-shrink:0; }
+.q-visual .vis-body { flex:1; min-width:200px; }
+.q-visual .vis-title {
+  font-family:'Cinzel',serif;
+  font-size:.75rem;
+  color:var(--gold-dark);
+  letter-spacing:2px;
+  text-transform:uppercase;
+  margin-bottom:6px;
+}
+.vis-numbers {
+  display:flex; gap:10px; flex-wrap:wrap; margin-top:8px;
+}
+.vis-chip {
+  display:inline-flex; flex-direction:column; align-items:center;
+  background:rgba(0,0,0,.4); border:1px solid; border-radius:8px;
+  padding:8px 12px; min-width:80px; text-align:center;
+}
+.vis-chip .vc-icon { font-size:1.4rem; }
+.vis-chip .vc-val  { font-family:'Cinzel',serif; font-size:.95rem; font-weight:700; margin-top:3px; }
+.vis-chip .vc-lbl  { font-size:.68rem; color:var(--parchment-dark); margin-top:2px; letter-spacing:.5px; }
+.vis-chip.gold  { border-color:var(--gold);   }
+.vis-chip.red   { border-color:var(--red);    }
+.vis-chip.blue  { border-color:var(--blue);   }
+.vis-chip.green { border-color:var(--green);  }
+
+/* scale visual */
+.scale-wrap { display:flex; align-items:flex-end; justify-content:center; gap:4px; margin-top:10px; }
+.scale-bar { border-radius:4px 4px 0 0; transition:height .5s ease; }
+
+/* balance visual */
+.balance-viz { display:flex; align-items:center; justify-content:center; gap:18px; margin-top:8px; flex-wrap:wrap; }
+.balance-side { text-align:center; }
+.balance-plate { background:rgba(0,0,0,.4); border:2px solid; border-radius:8px; padding:10px 16px; font-family:'Cinzel',serif; font-size:1rem; font-weight:700; }
+
+.q-text {
+  font-size:1.05rem;
+  font-weight:600;
+  color:var(--parchment);
+  line-height:1.65;
+  margin-bottom:18px;
+}
+.q-text strong { color:var(--gold); }
+
+/* ── OPTIONS ── */
+.opts { display:flex; flex-direction:column; gap:10px; }
+.opt {
+  display:flex; align-items:flex-start; gap:12px;
+  background:var(--opt-bg); border:2px solid var(--opt-border);
+  border-radius:10px; padding:13px 16px; cursor:pointer;
+  font-family:'Nunito',sans-serif; font-size:.98rem; font-weight:600;
+  color:var(--parchment); text-align:left; transition:all .22s;
+  line-height:1.5;
+}
+.opt:hover:not(.locked) { border-color:var(--gold-dark); background:rgba(50,28,8,.9); transform:translateX(4px); }
+.opt .ol { font-family:'Cinzel',serif; font-size:.8rem; font-weight:700; color:var(--gold-dark); flex-shrink:0; margin-top:1px; min-width:20px; }
+.opt .oe { font-size:1.2rem; flex-shrink:0; }
+.opt.correct { border-color:var(--green)!important; background:rgba(0,60,30,.7)!important; color:#88ff99!important; }
+.opt.wrong   { border-color:var(--red)!important;   background:rgba(60,0,0,.7)!important;  color:#ff9999!important; }
+.opt.reveal  { border-color:var(--green)!important; background:rgba(0,40,20,.4)!important; }
+.opt.locked  { cursor:default; }
+
+/* ── FEEDBACK BOX ── */
+.fb {
+  display:none; padding:14px 16px; border-radius:10px;
+  font-size:.95rem; font-weight:600; margin-top:12px; line-height:1.65;
+  animation:popUp .3s ease;
+}
+.fb.ok  { background:rgba(0,60,30,.7); border:1px solid var(--green); color:#88ff99; }
+.fb.nok { background:rgba(60,0,0,.6);  border:1px solid var(--red);   color:#ff9999; }
+
+/* ── RESULT ── */
+.grade-ring {
+  width:130px; height:130px; border-radius:50%; margin:0 auto 20px;
+  background:radial-gradient(circle,rgba(60,36,0,.9),rgba(15,9,3,.95));
+  border:3px solid var(--gold); display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  box-shadow:0 0 30px rgba(240,192,64,.4);
+  animation:pulse 2.5s ease-in-out infinite;
+}
+@keyframes pulse { 0%,100%{box-shadow:0 0 18px rgba(240,192,64,.3)} 50%{box-shadow:0 0 38px rgba(240,192,64,.6)} }
+.grade-num { font-family:'Cinzel',serif; font-size:2.2rem; font-weight:900; line-height:1; }
+.grade-lbl { font-family:'Cinzel',serif; font-size:.65rem; letter-spacing:2px; color:var(--parchment-dark); margin-top:3px; }
+
+.mod-row {
+  display:flex; justify-content:space-between; align-items:center;
+  padding:13px 16px; background:rgba(20,12,4,.7);
+  border:1px solid rgba(184,134,11,.25); border-radius:8px; margin:7px 0;
+}
+.mr-left { display:flex; align-items:center; gap:10px; }
+.mr-icon { font-size:1.4rem; }
+.mr-name { font-size:.9rem; font-weight:700; color:var(--parchment-dark); }
+.mr-grade { font-family:'Cinzel',serif; font-size:1.1rem; font-weight:700; }
+.mr-grade.hi { color:var(--green); }
+.mr-grade.md { color:var(--gold); }
+.mr-grade.lo { color:var(--red); }
+
+/* hp bar */
+.hp-row { display:flex; justify-content:space-between; font-size:.78rem; font-weight:700; color:var(--gold); margin-bottom:4px; }
+.hp-track { height:20px; background:rgba(0,0,0,.7); border-radius:4px; border:1px solid rgba(255,100,100,.25); overflow:hidden; }
+.hp-fill { height:100%; border-radius:4px; transition:width 1.5s ease; }
+.hp-fill::after { content:''; display:block; height:40%; background:rgba(255,255,255,.1); border-radius:4px 4px 0 0; }
+.hp-a { background:linear-gradient(90deg,#006622,#00aa44,#00ff66); }
+.hp-b { background:linear-gradient(90deg,#886600,#ddaa00,#ffcc44); }
+.hp-c { background:linear-gradient(90deg,#880000,#cc2222,#ff4444); }
+
+/* ── BLOCKED ── */
+.skull { font-size:5rem; text-align:center; margin:16px 0; animation:fl 3s ease-in-out infinite; }
+@keyframes fl{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+
+/* ── NPC ── */
+.npc { display:flex; gap:12px; align-items:flex-start; background:rgba(44,26,14,.65); border:1px solid var(--gold-dark); border-radius:10px; padding:16px; margin:16px 0; }
+.npc-av { width:54px; height:54px; border-radius:50%; border:2px solid var(--gold); background:linear-gradient(135deg,#2c1a0e,#4a2c17); display:flex; align-items:center; justify-content:center; font-size:26px; flex-shrink:0; }
+.npc-txt { font-size:.95rem; color:var(--parchment); line-height:1.7; font-style:italic; }
+.npc-txt strong { color:var(--gold); font-style:normal; }
+
+/* ── BOTTOM NAV ── */
+.bnav {
+  position:fixed; bottom:0; left:0; right:0;
+  background:rgba(13,8,4,.97); border-top:1px solid rgba(184,134,11,.2);
+  display:none; align-items:center; justify-content:center;
+  gap:10px; padding:10px 16px; z-index:100; flex-wrap:wrap;
+}
+.bnav.on { display:flex; }
+.bnav-lbl { font-family:'Cinzel',serif; font-size:.6rem; color:rgba(240,192,64,.35); letter-spacing:2px; }
+.dot { width:32px; height:8px; border-radius:4px; background:rgba(184,134,11,.15); border:1px solid rgba(184,134,11,.25); transition:all .3s; cursor:default; }
+.dot.active { background:var(--gold); box-shadow:0 0 8px rgba(240,192,64,.5); }
+.dot.done   { background:rgba(240,192,64,.4); }
+
+/* ── TIMER ── */
+.timer { position:fixed; top:14px; right:14px; background:rgba(13,8,4,.92); border:1px solid var(--gold-dark); border-radius:8px; padding:8px 14px; font-family:'Cinzel',serif; font-size:.9rem; color:var(--gold); z-index:100; letter-spacing:1px; }
+.timer.warn { color:#ff8844; border-color:#ff6600; animation:blink .8s infinite; }
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.45}}
+
+/* ── OVERLAYS ── */
+.ov { position:fixed; inset:0; background:rgba(0,0,0,.88); z-index:200; display:none; align-items:center; justify-content:center; flex-direction:column; }
+.ov.on { display:flex; }
+.ov-t { font-family:'Cinzel',serif; font-size:clamp(2.5rem,7vw,5rem); font-weight:900; text-align:center; animation:popIn .45s ease; }
+@keyframes popIn{0%{transform:scale(.3);opacity:0}70%{transform:scale(1.1)}100%{transform:scale(1);opacity:1}}
+.ov-s { font-family:'Cinzel',serif; font-size:1.05rem; color:var(--parchment); text-align:center; margin-top:12px; max-width:400px; line-height:1.6; padding:0 16px; }
+.conf { position:fixed; inset:0; pointer-events:none; z-index:199; }
+
+@media(max-width:500px){
+  .box{padding:24px 14px;}
+  .q-visual{flex-direction:column;}
+  .timer{font-size:.75rem;padding:6px 10px;top:8px;right:8px;}
+}
+</style>
+</head>
+<body>
+<canvas id="bg"></canvas>
+
+<!-- ═══════════════════════════════════════════════ LOGIN -->
+<div class="screen on" id="s-login" style="background:radial-gradient(ellipse at 50% 0%,rgba(180,80,0,.28) 0%,transparent 60%),linear-gradient(180deg,#0d0804,#1a0f07 50%,#0d0804);">
+  <div class="box" style="max-width:460px;text-align:center;">
+    <div style="font-size:3.2rem;margin-bottom:6px;animation:fl 3s ease-in-out infinite;">🏛️</div>
+    <div class="tag">Sistema de Avaliação — Contabilidade</div>
+    <h1 class="ttl" style="font-size:clamp(1.5rem,4vw,2.4rem);margin-bottom:4px;">Prova da Guilda</h1>
+    <p style="font-family:'Cinzel',serif;font-size:.8rem;color:var(--parchment-dark);letter-spacing:1px;margin-bottom:16px;">MÓDULOS 1 a 4</p>
+
+    <div class="npc">
+      <div class="npc-av">🧙</div>
+      <p class="npc-txt">Saudações, Herói! Digite seu usuário e senha para começar. <strong>Cada conta funciona uma única vez.</strong></p>
+    </div>
+
+    <div style="text-align:left;">
+      <label class="lbl" for="iu">👤 Usuário</label>
+      <input class="inp" id="iu" type="text" placeholder="seu usuário" autocomplete="off" spellcheck="false">
+      <label class="lbl" for="ip">🔒 Senha</label>
+      <input class="inp" id="ip" type="password" placeholder="sua senha" autocomplete="off">
+    </div>
+    <div class="err" id="err"></div>
+    <div style="margin-top:16px;">
+      <button class="btn btn-g" onclick="doLogin()">▶ ENTRAR</button>
+    </div>
+    <p style="font-family:'Cinzel',serif;font-size:.6rem;color:rgba(240,192,64,.2);letter-spacing:3px;margin-top:20px;">ᚷᚢᛁᛚᛞ · ᛗᚨᛊᛏᛖᚱ · ᛊᛖᚱᚢᛖᚱ</p>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ EXAM -->
+<div class="screen" id="s-exam" style="background:radial-gradient(ellipse at 50% 20%,rgba(0,50,130,.2) 0%,transparent 65%),linear-gradient(160deg,#08080f,#0d0d1a);">
+  <div class="box" id="exam-box" style="max-width:700px;"></div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ RESULT -->
+<div class="screen" id="s-result" style="background:radial-gradient(ellipse at 50% 30%,rgba(240,192,64,.18) 0%,transparent 60%),linear-gradient(180deg,#120d04,#1e1508);">
+  <div class="box" style="max-width:660px;">
+    <div class="tag" id="r-tag">PROVA CONCLUÍDA</div>
+    <h2 class="ttl" style="font-size:clamp(1.4rem,3.5vw,2rem);margin-bottom:4px;" id="r-ttl">Relatório Final</h2>
+    <div class="npc">
+      <div class="npc-av">🧙</div>
+      <p class="npc-txt" id="r-npc"></p>
+    </div>
+    <div class="grade-ring" id="r-ring">
+      <span class="grade-num" id="r-num">0.0</span>
+      <span class="grade-lbl">MÉDIA</span>
+    </div>
+    <div class="sep"><span>🛡️</span></div>
+    <div style="margin-bottom:16px;">
+      <div class="hp-row"><span>HP FINANCEIRO</span><span id="r-hpval">0/10</span></div>
+      <div class="hp-track"><div class="hp-fill" id="r-hp" style="width:0%"></div></div>
+    </div>
+    <div id="r-mods"></div>
+    <div class="sep"><span>💾</span></div>
+    <div class="npc">
+      <div class="npc-av">📜</div>
+      <p class="npc-txt">Relatório gerado! Clique em <strong>Baixar CSV</strong> para salvar. <strong>Sua senha foi desativada</strong> — esta prova não pode ser refeita.</p>
+    </div>
+    <div style="text-align:center;margin-top:12px;">
+      <button class="btn btn-g" onclick="downloadCSV()">💾 BAIXAR RELATÓRIO (CSV)</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ BLOCKED -->
+<div class="screen" id="s-blocked" style="background:radial-gradient(ellipse at 50% 50%,rgba(120,0,0,.4) 0%,transparent 70%),linear-gradient(180deg,#0a0404,#120606);">
+  <div class="box" style="max-width:480px;text-align:center;">
+    <div class="skull">💀</div>
+    <div class="tag">ACESSO NEGADO</div>
+    <h2 class="ttl" style="color:#cc3333;font-size:1.8rem;">Conta Bloqueada</h2>
+    <div class="npc" style="text-align:left;margin-top:20px;">
+      <div class="npc-av">🧙</div>
+      <p class="npc-txt">"Esta conta já realizou a prova. <strong>Cada herói tem uma única tentativa.</strong> Fale com seu professor para redefinição."</p>
+    </div>
+    <p style="font-family:'Cinzel',serif;font-size:.65rem;color:rgba(240,192,64,.2);letter-spacing:2px;margin-top:20px;">PROFESSOR: window.RESET_USER('usuario') no console</p>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ BOTTOM NAV + TIMER -->
+<nav class="bnav" id="bnav">
+  <span class="bnav-lbl">MÓDULO</span>
+  <div class="dot" id="d0"></div><div class="dot" id="d1"></div>
+  <div class="dot" id="d2"></div><div class="dot" id="d3"></div>
+  <span class="bnav-lbl" id="bnav-q" style="color:rgba(240,192,64,.45);font-size:.65rem;letter-spacing:1px;"></span>
+</nav>
+<div class="timer" id="timer" style="display:none;">⏱ <span id="tclock">60:00</span></div>
+
+<!-- ═══════════════════════════════════════════════ OVERLAYS -->
+<div class="ov" id="ov-ok">
+  <div class="conf" id="conf"></div>
+  <div class="ov-t" style="color:var(--green);">✅ CORRETO!</div>
+  <div class="ov-s" id="ov-ok-msg"></div>
+</div>
+<div class="ov" id="ov-no">
+  <div class="ov-t" style="color:#cc3333;">❌ ERROU!</div>
+  <div class="ov-s" id="ov-no-msg"></div>
+</div>
+<div class="ov" id="ov-time">
+  <div class="ov-t" style="color:var(--ember);">⏰ TEMPO ESGOTADO!</div>
+  <div class="ov-s">A prova foi encerrada.</div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════
+// USERS (localStorage)
+// ═══════════════════════════════════════════════════════
+const UK = 'gcont_v2';
+function initUsers(){
+  if(!localStorage.getItem(UK)){
+    localStorage.setItem(UK, JSON.stringify([
+      {username:'igor', password:'igor17gamer', nome:'Igor', used:false}
+    ]));
+  }
+}
+function getUsers(){ return JSON.parse(localStorage.getItem(UK)||'[]'); }
+function saveUsers(u){ localStorage.setItem(UK, JSON.stringify(u)); }
+function burnPwd(uname){
+  const us = getUsers();
+  const i = us.findIndex(u=>u.username===uname);
+  if(i!==-1){ us[i].password='__USED__'; us[i].used=true; saveUsers(us); }
+}
+window.RESET_USER = function(uname){
+  const us=getUsers(), i=us.findIndex(u=>u.username===uname);
+  if(i!==-1){ us[i].used=false; us[i].password=prompt('Nova senha:'); saveUsers(us); console.log('✅ Redefinido.'); }
+  else console.log('❌ Não encontrado.');
+};
+window.LIST_USERS=function(){ console.table(getUsers().map(u=>({...u,password:u.used?'[USADO]':'***'}))); };
+
+// ═══════════════════════════════════════════════════════
+// QUESTÕES — 3 por módulo = 12 total
+// Cada questão tem: visual (icon + chips ou balance), texto curto, opções com emoji
+// ═══════════════════════════════════════════════════════
+const MODS = [
+ {
+  id:0, icon:'⚙️', title:'Sistemas e Informação', aula:'Aula 1',
+  qs:[
+   {
+    visual:{
+      icon:'🏢',
+      title:'Cenário: A Empresa Conectada',
+      chips:[
+        {icon:'📊', val:'Economia', lbl:'Influência', cls:'gold'},
+        {icon:'⚖️', val:'Leis', lbl:'Influência', cls:'gold'},
+        {icon:'🌍', val:'Mercado', lbl:'Influência', cls:'gold'},
+      ],
+      caption:'Esta empresa muda conforme o mundo muda.'
+    },
+    text:'Uma empresa sofre influência da economia, das leis e do mercado. Ela é um:',
+    opts:[
+      {e:'🔒', t:'Sistema Fechado — não recebe influências externas.'},
+      {e:'🌐', t:'Sistema Aberto — interage com o ambiente externo.'},
+      {e:'⚙️', t:'Sistema Mecânico — só usa máquinas.'},
+    ],
+    answer:1,
+    exp:'Empresas são Sistemas Abertos! Elas interagem com tudo ao redor: economia, clientes, leis.'
+   },
+   {
+    visual:{
+      icon:'🔥',
+      title:'A Forja da Informação',
+      chips:[
+        {icon:'💎', val:'DADO', lbl:'"R$ 500.000"', cls:'blue'},
+        {icon:'⚒️', val:'PROCESSO', lbl:'Contextualizar', cls:'gold'},
+        {icon:'✨', val:'INFO', lbl:'Decisão!', cls:'green'},
+      ],
+      caption:'Dado bruto → Processamento → Informação útil'
+    },
+    text:'O que transforma um simples número (dado) em algo útil para tomar decisões?',
+    opts:[
+      {e:'📁', t:'Guardar o número numa pasta.'},
+      {e:'🧠', t:'Processar e dar contexto ao número.'},
+      {e:'🖨️', t:'Imprimir o número em papel.'},
+    ],
+    answer:1,
+    exp:'Informação = dado com contexto! "R$ 500.000 faturados, mas a meta era R$ 600.000" permite agir.'
+   },
+   {
+    visual:{
+      icon:'⏰',
+      title:'Comparando Sistemas',
+      chips:[
+        {icon:'⏰', val:'Relógio', lbl:'Sistema Fechado', cls:'blue'},
+        {icon:'🏢', val:'Empresa', lbl:'Sistema Aberto', cls:'gold'},
+      ],
+      caption:'Um não muda. O outro precisa se adaptar.'
+    },
+    text:'Um relógio mecânico funciona do mesmo jeito, em qualquer situação. Qual tipo de sistema é ele?',
+    opts:[
+      {e:'🌐', t:'Sistema Aberto — depende do ambiente.'},
+      {e:'🔒', t:'Sistema Fechado — não sofre interferência externa.'},
+      {e:'💻', t:'Sistema Digital — usa tecnologia avançada.'},
+    ],
+    answer:1,
+    exp:'Sistema Fechado = não sofre influência de fora. O relógio toca igual, chovendo ou fazendo sol!'
+   }
+  ]
+ },
+ {
+  id:1, icon:'🎒', title:'Patrimônio Empresarial', aula:'Aula 2',
+  qs:[
+   {
+    visual:{
+      icon:'🏰',
+      title:'O Inventário da Guilda',
+      chips:[
+        {icon:'💰', val:'15.000 G', lbl:'Dinheiro (Ativo)', cls:'gold'},
+        {icon:'🖥️', val:'8.000 G', lbl:'Computador (Ativo)', cls:'gold'},
+        {icon:'📜', val:'5.000 G', lbl:'Dívida (Passivo)', cls:'red'},
+      ],
+      caption:''
+    },
+    text:'Dinheiro e computadores são bens que a empresa <strong>possui</strong>. A dívida com o banco é o que ela <strong>deve</strong>. Dinheiro e computador são:',
+    opts:[
+      {e:'💰', t:'ATIVO — bens e direitos que a empresa possui.'},
+      {e:'📜', t:'PASSIVO — dívidas e obrigações.'},
+      {e:'🛡️', t:'Patrimônio Líquido — sobra depois de pagar as dívidas.'},
+    ],
+    answer:0,
+    exp:'ATIVO = tudo que a empresa TEM (dinheiro, computadores, imóveis, direitos a receber).'
+   },
+   {
+    visual:{
+      icon:'🪄',
+      title:'Bens que Não Dá pra Tocar',
+      chips:[
+        {icon:'🛡️', val:'Marca', lbl:'Intangível', cls:'blue'},
+        {icon:'📖', val:'Software', lbl:'Intangível', cls:'blue'},
+        {icon:'✨', val:'Patente', lbl:'Intangível', cls:'blue'},
+      ],
+      caption:'Existem no Ativo, mas não têm corpo físico.'
+    },
+    text:'A marca registrada de uma empresa vale muito dinheiro, mas não dá para tocar. Ela é um:',
+    opts:[
+      {e:'🏗️', t:'Bem Tangível — pois pode ser vendida.'},
+      {e:'🪄', t:'Bem Intangível — não tem corpo físico, mas tem valor.'},
+      {e:'📜', t:'Passivo — gera obrigações para a empresa.'},
+    ],
+    answer:1,
+    exp:'Bem Intangível = tem valor econômico, mas não existe fisicamente. Marcas, softwares e patentes são exemplos.'
+   },
+   {
+    visual:{
+      icon:'👑',
+      title:'O Rei Ainda Não Pagou',
+      chips:[
+        {icon:'⚔️', val:'Serviço', lbl:'Realizado ✓', cls:'green'},
+        {icon:'💵', val:'8.000 G', lbl:'A receber', cls:'gold'},
+        {icon:'📋', val:'30 dias', lbl:'Prazo', cls:'blue'},
+      ],
+      caption:'A quest foi feita. O pagamento ainda vai chegar.'
+    },
+    text:'A guilda fez um serviço de R$ 8.000 e o cliente vai pagar em 30 dias. Esse valor é classificado como:',
+    opts:[
+      {e:'📜', t:'Passivo — pois a empresa ainda não recebeu.'},
+      {e:'💰', t:'Direito (Contas a Receber) — faz parte do Ativo.'},
+      {e:'💸', t:'Despesa — pois gerou um custo.'},
+    ],
+    answer:1,
+    exp:'Contas a Receber é um Direito — a empresa tem o direito de receber esse valor. Faz parte do ATIVO!'
+   }
+  ]
+ },
+ {
+  id:2, icon:'⚖️', title:'Equação Patrimonial', aula:'Aula 3',
+  qs:[
+   {
+    visual:{
+      type:'balance',
+      leftLabel:'ATIVO', leftVal:'15.000 G', leftCls:'gold',
+      rightLabel:'PASSIVO + PL', rightVal:'15.000 G', rightCls:'blue',
+      caption:'A balança da Contabilidade NUNCA pode desequilibrar.'
+    },
+    text:'A fórmula mágica da contabilidade é: <strong>ATIVO = PASSIVO + PL</strong>. Se o Ativo é R$ 15.000 e o Passivo é R$ 3.000, qual é o Patrimônio Líquido (PL)?',
+    opts:[
+      {e:'💀', t:'R$ 18.000'},
+      {e:'🛡️', t:'R$ 12.000'},
+      {e:'❓', t:'R$ 3.000'},
+    ],
+    answer:1,
+    exp:'PL = Ativo − Passivo → 15.000 − 3.000 = 12.000. É o verdadeiro "poder" da guilda!'
+   },
+   {
+    visual:{
+      icon:'💀',
+      title:'ALERTA: Passivo a Descoberto!',
+      chips:[
+        {icon:'💰', val:'5.000 G', lbl:'Ativo', cls:'gold'},
+        {icon:'📜', val:'8.000 G', lbl:'Passivo', cls:'red'},
+        {icon:'💀', val:'−3.000 G', lbl:'PL Negativo!', cls:'red'},
+      ],
+      caption:'Quando a dívida é maior que tudo que você tem... GAME OVER!'
+    },
+    text:'A guilda tem Ativo de R$ 5.000 e Passivo de R$ 8.000. O que acontece?',
+    opts:[
+      {e:'😊', t:'Está ótimo — o PL é R$ 13.000.'},
+      {e:'😐', t:'Está equilibrado — PL é zero.'},
+      {e:'💀', t:'Passivo a Descoberto — PL negativo (−3.000). Game Over!'},
+    ],
+    answer:2,
+    exp:'Quando Ativo < Passivo, o PL fica NEGATIVO = Passivo a Descoberto. As dívidas comeram tudo!'
+   },
+   {
+    visual:{
+      icon:'🏦',
+      title:'A Ilusão do Empréstimo',
+      chips:[
+        {icon:'💰', val:'+5.000 G', lbl:'Ativo sobe', cls:'gold'},
+        {icon:'📜', val:'+5.000 G', lbl:'Passivo sobe', cls:'red'},
+        {icon:'🛡️', val:'IGUAL', lbl:'PL não muda!', cls:'blue'},
+      ],
+      caption:'Parece que ficou mais rico... mas não ficou!'
+    },
+    text:'A guilda pega um empréstimo de R$ 5.000. O que acontece com o Patrimônio Líquido (PL)?',
+    opts:[
+      {e:'📈', t:'O PL sobe R$ 5.000 — ficou mais rico!'},
+      {e:'📊', t:'O PL não muda — Ativo e Passivo sobem juntos.'},
+      {e:'📉', t:'O PL cai R$ 5.000 — ficou mais pobre.'},
+    ],
+    answer:1,
+    exp:'Empréstimo é a Ilusão! Entrou dinheiro (↑ Ativo) MAS criou dívida igual (↑ Passivo). O PL não muda!'
+   }
+  ]
+ },
+ {
+  id:3, icon:'💻', title:'Transações Contábeis', aula:'Aula 4',
+  qs:[
+   {
+    visual:{
+      icon:'🖥️',
+      title:'Comprar um Computador',
+      chips:[
+        {icon:'📤', val:'CAIXA', lbl:'Saiu 5.000 G (Crédito)', cls:'red'},
+        {icon:'📥', val:'EQUIP.', lbl:'Entrou PC (Débito)', cls:'green'},
+      ],
+      caption:'Todo recurso tem uma ORIGEM e um DESTINO.'
+    },
+    text:'A guilda comprou um computador por R$ 5.000 à vista. O dinheiro SAIU do Caixa e o computador ENTROU. O computador é o:',
+    opts:[
+      {e:'📤', t:'Crédito — origem, de onde o recurso saiu.'},
+      {e:'📥', t:'Débito — destino, para onde o recurso foi.'},
+      {e:'📉', t:'Despesa — pois a empresa gastou dinheiro.'},
+    ],
+    answer:1,
+    exp:'DÉBITO = destino do recurso. O PC entrou na empresa → Débito em Equipamentos. O Caixa saiu → Crédito em Caixa.'
+   },
+   {
+    visual:{
+      type:'balance',
+      leftLabel:'DÉBITOS', leftVal:'= R$ X', leftCls:'green',
+      rightLabel:'CRÉDITOS', rightVal:'= R$ X', rightCls:'red',
+      caption:'A balança da transação: débitos SEMPRE igualam créditos!'
+    },
+    text:'Qual é a regra de ouro de toda transação contábil?',
+    opts:[
+      {e:'📈', t:'O Débito deve ser sempre maior que o Crédito.'},
+      {e:'⚖️', t:'O total dos Débitos deve ser igual ao total dos Créditos.'},
+      {e:'💰', t:'O Crédito representa sempre uma entrada de dinheiro.'},
+    ],
+    answer:1,
+    exp:'Partida dobrada: todo recurso tem ORIGEM (Crédito) e DESTINO (Débito) de valor igual. A balança nunca quebra!'
+   },
+   {
+    visual:{
+      icon:'🍺',
+      title:'Pagar a Taverna (Despesa)',
+      chips:[
+        {icon:'💰', val:'−2.000 G', lbl:'Caixa cai (Ativo ↓)', cls:'red'},
+        {icon:'📜', val:'IGUAL', lbl:'Passivo não muda', cls:'blue'},
+        {icon:'🛡️', val:'−2.000 G', lbl:'PL cai (Dano!)', cls:'red'},
+      ],
+      caption:'Despesa = dano direto no seu HP financeiro!'
+    },
+    text:'A guilda paga R$ 2.000 de aluguel (despesa) em dinheiro. O que acontece com o Patrimônio Líquido (PL)?',
+    opts:[
+      {e:'📈', t:'O PL sobe — a obrigação foi quitada!'},
+      {e:'📊', t:'O PL não muda — é só uma troca de Ativo.'},
+      {e:'📉', t:'O PL cai R$ 2.000 — despesas destroem o HP!'},
+    ],
+    answer:2,
+    exp:'Despesas reduzem o Caixa (↓ Ativo) sem reduzir o Passivo. O PL absorve o dano e diminui. Esse é o "dano real"!'
+   }
+  ]
+ }
+];
+
+// ═══════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════
+let S = {
+  user:null, mi:0, qi:0,
+  answers:[[],[],[],[]],
+  scores:[0,0,0,0],
+  answered:false,
+  timerID:null,
+  secs: 60*60,
+  done:false
+};
+
+// ═══════════════════════════════════════════════════════
+// LOGIN
+// ═══════════════════════════════════════════════════════
+function doLogin(){
+  initUsers();
+  const u=document.getElementById('iu').value.trim().toLowerCase();
+  const p=document.getElementById('ip').value;
+  const err=document.getElementById('err');
+  err.style.display='none';
+  if(!u||!p){showErr('Preencha usuário e senha!');return;}
+  const users=getUsers();
+  const obj=users.find(x=>x.username===u);
+  if(!obj){showErr('❌ Usuário não encontrado.');return;}
+  if(obj.used){go('s-blocked');return;}
+  if(obj.password!==p){showErr('❌ Senha incorreta.');return;}
+  S.user=obj;
+  startExam();
+}
+function showErr(m){const e=document.getElementById('err');e.textContent=m;e.style.display='block';}
+document.addEventListener('keydown',e=>{if(e.key==='Enter'&&document.getElementById('s-login').classList.contains('on'))doLogin();});
+
+// ═══════════════════════════════════════════════════════
+// EXAM
+// ═══════════════════════════════════════════════════════
+function startExam(){
+  S={...S,mi:0,qi:0,answers:[[],[],[],[]],scores:[0,0,0,0],answered:false,done:false,secs:60*60};
+  go('s-exam');
+  document.getElementById('bnav').classList.add('on');
+  document.getElementById('timer').style.display='block';
+  startTimer();
+  renderQ();
+}
+
+function startTimer(){
+  clearInterval(S.timerID);
+  S.timerID=setInterval(()=>{
+    S.secs--;
+    const m=Math.floor(S.secs/60), s=S.secs%60;
+    document.getElementById('tclock').textContent=`${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+    if(S.secs<=300)document.getElementById('timer').classList.add('warn');
+    if(S.secs<=0){
+      clearInterval(S.timerID);
+      showOv('ov-time');
+      setTimeout(()=>{hideOv('ov-time');finishExam();},3000);
+    }
+  },1000);
+}
+
+function buildVisual(vis){
+  if(!vis)return'';
+  if(vis.type==='balance'){
+    return`<div class="q-visual">
+      <div class="vis-icon">⚖️</div>
+      <div class="vis-body">
+        <div class="vis-title">Equilíbrio Patrimonial</div>
+        <div class="balance-viz">
+          <div class="balance-side">
+            <div class="balance-plate" style="border-color:${vis.leftCls==='gold'?'var(--gold)':'var(--blue)'}; color:${vis.leftCls==='gold'?'var(--gold)':'var(--blue-glow, #88bbff)'};">${vis.leftVal}</div>
+            <div style="font-size:.72rem;color:var(--parchment-dark);margin-top:5px;letter-spacing:1px;">${vis.leftLabel}</div>
+          </div>
+          <div style="font-family:'Cinzel',serif;font-size:2rem;color:var(--gold-dark);">⚖️</div>
+          <div class="balance-side">
+            <div class="balance-plate" style="border-color:${vis.rightCls==='blue'?'var(--blue)':'var(--red)'}; color:${vis.rightCls==='blue'?'#88bbff':'#ff9999'};">${vis.rightVal}</div>
+            <div style="font-size:.72rem;color:var(--parchment-dark);margin-top:5px;letter-spacing:1px;">${vis.rightLabel}</div>
+          </div>
+        </div>
+        ${vis.caption?`<p style="font-size:.8rem;color:var(--parchment-dark);margin-top:10px;font-style:italic;">${vis.caption}</p>`:''}
+      </div>
+    </div>`;
+  }
+  const chips=(vis.chips||[]).map(c=>`
+    <div class="vis-chip ${c.cls}">
+      <span class="vc-icon">${c.icon}</span>
+      <span class="vc-val" style="color:${c.cls==='gold'?'var(--gold)':c.cls==='red'?'#ff9999':c.cls==='green'?'var(--green)':'#88bbff'}">${c.val}</span>
+      <span class="vc-lbl">${c.lbl}</span>
+    </div>`).join('');
+  return`<div class="q-visual">
+    <div class="vis-icon">${vis.icon}</div>
+    <div class="vis-body">
+      <div class="vis-title">${vis.title}</div>
+      <div class="vis-numbers">${chips}</div>
+      ${vis.caption?`<p style="font-size:.8rem;color:var(--parchment-dark);margin-top:8px;font-style:italic;">${vis.caption}</p>`:''}
+    </div>
+  </div>`;
+}
+
+function renderQ(){
+  const mod=MODS[S.mi], q=mod.qs[S.qi];
+  const globalQ=S.mi*3+S.qi+1, total=12;
+  const pct=Math.round((globalQ-1)/total*100);
+  S.answered=false;
+
+  // nav dots
+  for(let i=0;i<4;i++){
+    const d=document.getElementById('d'+i);
+    d.className='dot'+(i<S.mi?' done':i===S.mi?' active':'');
+  }
+  document.getElementById('bnav-q').textContent=`Q ${globalQ}/${total}`;
+
+  const letters=['A','B','C'];
+  const optsHtml=q.opts.map((o,i)=>`
+    <button class="opt" id="o${i}" onclick="pick(${i})">
+      <span class="oe">${o.e}</span>
+      <span class="ol">${letters[i]}</span>
+      <span>${o.t}</span>
+    </button>`).join('');
+
+  const isLast=S.mi===3&&S.qi===2;
+
+  document.getElementById('exam-box').innerHTML=`
+    <div class="tag">${mod.aula} · ${mod.title}</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:16px;">
+      <div class="mod-badge"><span class="mi">${mod.icon}</span><span class="ml">Módulo ${mod.id+1}</span></div>
+      <span style="font-family:'Cinzel',serif;font-size:.72rem;color:var(--parchment-dark);">Questão ${S.qi+1} de ${mod.qs.length}</span>
+    </div>
+    <div class="prog-wrap">
+      <div class="prog-label"><span>Progresso geral</span><span>${globalQ-1}/${total}</span></div>
+      <div class="prog-track"><div class="prog-fill" style="width:${pct}%"></div></div>
+    </div>
+    <div class="q-wrap">
+      ${buildVisual(q.visual)}
+      <p class="q-num">QUESTÃO ${globalQ}</p>
+      <p class="q-text">${q.text}</p>
+      <div class="opts" id="opts">${optsHtml}</div>
+      <div class="fb" id="fb"></div>
+    </div>
+    <div style="display:flex;justify-content:flex-end;margin-top:18px;">
+      <button class="btn btn-g" id="btn-next" onclick="nextStep()" disabled>
+        ${isLast?'🏁 FINALIZAR':'PRÓXIMA ▶'}
+      </button>
+    </div>`;
+}
+
+function pick(idx){
+  if(S.answered)return;
+  S.answered=true;
+  const mod=MODS[S.mi], q=mod.qs[S.qi];
+  const correct=idx===q.answer;
+  S.answers[S.mi].push({qi:S.qi,chosen:idx,correct});
+  if(correct)S.scores[S.mi]++;
+
+  for(let i=0;i<3;i++){
+    const b=document.getElementById('o'+i);
+    if(!b)continue;
+    b.classList.add('locked');
+    if(i===q.answer)b.classList.add('correct');
+    else if(i===idx&&!correct)b.classList.add('wrong');
+  }
+  const fb=document.getElementById('fb');
+  fb.style.display='block';
+  fb.className='fb '+(correct?'ok':'nok');
+  fb.innerHTML=(correct?'✅ Correto! ':'❌ Incorreto! ')+q.exp;
+  document.getElementById('btn-next').disabled=false;
+
+  if(correct){
+    document.getElementById('ov-ok-msg').textContent=q.exp.substring(0,70)+'...';
+    showOv('ov-ok'); spawnConf();
+    setTimeout(()=>hideOv('ov-ok'),1400);
+  } else {
+    document.getElementById('ov-no-msg').textContent='Certa: opção '+['A','B','C'][q.answer]+'. '+q.exp.substring(0,60);
+    showOv('ov-no');
+    setTimeout(()=>hideOv('ov-no'),1600);
+  }
+}
+
+function nextStep(){
+  S.qi++;
+  if(S.qi>=MODS[S.mi].qs.length){ S.mi++; S.qi=0; }
+  if(S.mi>=MODS.length){ finishExam(); return; }
+  renderQ();
+}
+
+// ═══════════════════════════════════════════════════════
+// FINISH
+// ═══════════════════════════════════════════════════════
+function finishExam(){
+  if(S.done)return; S.done=true;
+  clearInterval(S.timerID);
+  burnPwd(S.user.username);
+  const mg=S.scores.map(s=>(s/3)*10);
+  const avg=mg.reduce((a,b)=>a+b,0)/4;
+  buildResult(mg,avg);
+  document.getElementById('bnav').classList.remove('on');
+  document.getElementById('timer').style.display='none';
+  go('s-result');
+  if(avg>=7){spawnConf();setTimeout(clearConf,5000);}
+}
+
+function buildResult(mg,avg){
+  const n=avg.toFixed(1);
+  const pct=Math.round(avg*10);
+  const el=document.getElementById('r-num');
+  el.textContent=n;
+  el.style.color=avg>=7?'var(--green)':avg>=5?'var(--gold)':'#cc3333';
+
+  let npcMsg;
+  if(avg>=9)npcMsg=`Lendário, <strong>${S.user.nome}</strong>! Você dominou a Contabilidade. A Guilda está em mãos seguras!`;
+  else if(avg>=7)npcMsg=`Parabéns, <strong>${S.user.nome}</strong>! Aprovado! O PL da Guilda está positivo e saudável.`;
+  else if(avg>=5)npcMsg=`Desempenho mediano, <strong>${S.user.nome}</strong>. A Guilda sobreviveu, mas precisa reforçar o inventário!`;
+  else npcMsg=`<strong>${S.user.nome}</strong>, cuidado — HP crítico! Revise os módulos para evitar o Game Over financeiro.`;
+  document.getElementById('r-npc').innerHTML=npcMsg;
+
+  const hp=document.getElementById('r-hp');
+  hp.style.width=pct+'%';
+  hp.className='hp-fill '+(avg>=7?'hp-a':avg>=5?'hp-b':'hp-c');
+  document.getElementById('r-hpval').textContent=n+'/10.0';
+
+  const tag=avg>=7?'✅ APROVADO — QUEST COMPLETE!':avg>=5?'⚠️ RECUPERAÇÃO — HP BAIXO':'💀 REPROVADO — GAME OVER';
+  document.getElementById('r-tag').textContent=tag;
+  document.getElementById('r-ttl').style.color=avg>=7?'var(--green)':avg>=5?'var(--gold)':'#cc3333';
+
+  const icons=['⚙️','🎒','⚖️','💻'];
+  const names=['Sistemas e Informação','Patrimônio Empresarial','Equação Patrimonial','Transações Contábeis'];
+  let html='';
+  mg.forEach((g,i)=>{
+    const cls=g>=7?'hi':g>=5?'md':'lo';
+    const stars='⭐'.repeat(Math.round(g/2))+'☆'.repeat(5-Math.round(g/2));
+    html+=`<div class="mod-row">
+      <div class="mr-left"><span class="mr-icon">${icons[i]}</span><span class="mr-name">Módulo ${i+1}: ${names[i]}</span></div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span style="font-size:.85rem;">${stars}</span>
+        <span class="mr-grade ${cls}">${g.toFixed(1)}</span>
+      </div>
+    </div>`;
+  });
+  document.getElementById('r-mods').innerHTML=html;
+}
+
+// ═══════════════════════════════════════════════════════
+// CSV
+// ═══════════════════════════════════════════════════════
+function downloadCSV(){
+  const mg=S.scores.map(s=>(s/3)*10);
+  const avg=mg.reduce((a,b)=>a+b,0)/4;
+  const now=new Date();
+  const ds=now.toLocaleDateString('pt-BR'), ts=now.toLocaleTimeString('pt-BR');
+  const elapsed=60*60-S.secs, em=Math.floor(elapsed/60), es=elapsed%60;
+  const names=['Sistemas e Informação','Patrimônio Empresarial','Equação Patrimonial','Transações Contábeis'];
+  let csv='sep=;\nRELATÓRIO DE DESEMPENHO — CRÔNICAS DA CONTABILIDADE\n';
+  csv+=`Aluno;${S.user.nome}\nUsuário;${S.user.username}\nData;${ds}\nHora;${ts}\nTempo de Prova;${em}min ${es}s\n\n`;
+  csv+='Módulo;Acertos;Total;Nota (0-10)\n';
+  names.forEach((n,i)=>csv+=`${n};${S.scores[i]};3;${mg[i].toFixed(2)}\n`);
+  csv+=`\nMÉDIA FINAL;${S.scores.reduce((a,b)=>a+b,0)};12;${avg.toFixed(2)}\nSituação;${avg>=7?'APROVADO':avg>=5?'RECUPERAÇÃO':'REPROVADO'}\n\n`;
+  csv+='Módulo;Questão;Resposta do Aluno;Correta?\n';
+  MODS.forEach((mod,mi)=>{
+    mod.qs.forEach((q,qi)=>{
+      const a=S.answers[mi][qi];
+      const L=['A','B','C'];
+      csv+=`${mod.title};Q${qi+1};${a?L[a.chosen]:'-'};${a?(a.correct?'SIM':'NÃO'):'-'}\n`;
+    });
+  });
+  const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url; a.download=`prova_${S.user.username}_${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}.csv`;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+}
+
+// ═══════════════════════════════════════════════════════
+// UTILS
+// ═══════════════════════════════════════════════════════
+function go(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));document.getElementById(id).classList.add('on');window.scrollTo(0,0);}
+function showOv(id){document.getElementById(id).classList.add('on');}
+function hideOv(id){document.getElementById(id).classList.remove('on');}
+
+function spawnConf(){
+  const c=document.getElementById('conf');
+  const cols=['#f0c040','#ffd700','#ff6600','#4488ff','#00cc66','#ff4488'];
+  for(let i=0;i<60;i++){
+    const el=document.createElement('div');
+    const sz=4+Math.random()*7;
+    el.style.cssText=`position:absolute;width:${sz}px;height:${sz}px;background:${cols[Math.floor(Math.random()*cols.length)]};left:${Math.random()*100}%;top:-10px;border-radius:${Math.random()>.5?'50%':'2px'};animation:cf ${1.5+Math.random()*2}s ease ${Math.random()*.5}s both;`;
+    c.appendChild(el);
+  }
+}
+function clearConf(){document.getElementById('conf').innerHTML='';}
+(()=>{const s=document.createElement('style');s.textContent='@keyframes cf{from{transform:translateY(0) rotate(0deg);opacity:1}to{transform:translateY(100vh) rotate(720deg);opacity:0}}';document.head.appendChild(s);})();
+
+// ═══════════════════════════════════════════════════════
+// PARTICLES
+// ═══════════════════════════════════════════════════════
+(()=>{
+  const cv=document.getElementById('bg'),ctx=cv.getContext('2d');
+  let W,H,pts=[];
+  function resize(){W=cv.width=window.innerWidth;H=cv.height=window.innerHeight;}
+  resize();window.addEventListener('resize',resize);
+  function P(){this.x=Math.random()*W;this.y=Math.random()*H+H;this.r=Math.random()*1.6+.3;this.vy=-(Math.random()*.35+.12);this.vx=(Math.random()-.5)*.2;this.a=Math.random()*.35+.07;this.c=Math.random()>.7?'#f0c040':Math.random()>.5?'#e05a00':'#7a3300';}
+  P.prototype.tick=function(){this.y+=this.vy;this.x+=this.vx;if(this.y<-6){this.y=H+6;this.x=Math.random()*W;}};
+  for(let i=0;i<45;i++)pts.push(new P());
+  function loop(){ctx.clearRect(0,0,W,H);pts.forEach(p=>{p.tick();ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fillStyle=p.c;ctx.globalAlpha=p.a;ctx.fill();});ctx.globalAlpha=1;requestAnimationFrame(loop);}
+  loop();
+})();
+
+initUsers();
+</script>
+</body>
+</html>
