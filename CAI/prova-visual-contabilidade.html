@@ -370,11 +370,12 @@ canvas#bg { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
 // ═══════════════════════════════════════════════════════
 // USERS (localStorage)
 // ═══════════════════════════════════════════════════════
-const UK = 'gcont_v2';
+const UK = 'gcont_v3';
 function initUsers(){
   if(!localStorage.getItem(UK)){
     localStorage.setItem(UK, JSON.stringify([
-      {username:'igor', password:'igor17gamer', nome:'Igor', used:false}
+      {username:'igor',      password:'igor_123', nome:'Igor',      used:false},
+      {username:'guilherme', password:'gui_123',  nome:'Guilherme', used:false}
     ]));
   }
 }
