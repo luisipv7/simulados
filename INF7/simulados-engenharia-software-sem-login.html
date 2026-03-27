@@ -1,0 +1,2392 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Simulados — Engenharia de Software</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Merriweather:wght@700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --primary: #1a3a5c;
+        --primary-light: #2557a7;
+        --primary-pale: #e8f0fb;
+        --accent: #0d6efd;
+        --green: #198754;
+        --green-pale: #d1e7dd;
+        --red: #dc3545;
+        --red-pale: #f8d7da;
+        --yellow: #ffc107;
+        --yellow-pale: #fff3cd;
+        --gray-100: #f8f9fa;
+        --gray-200: #e9ecef;
+        --gray-300: #dee2e6;
+        --gray-400: #ced4da;
+        --gray-500: #adb5bd;
+        --gray-600: #6c757d;
+        --gray-700: #495057;
+        --gray-800: #343a40;
+        --gray-900: #212529;
+        --white: #ffffff;
+        --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
+        --shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        --shadow-lg: 0 4px 20px rgba(0, 0, 0, 0.12);
+        --radius: 8px;
+        --radius-sm: 5px;
+      }
+
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        font-family: 'Inter', sans-serif;
+        background: var(--gray-100);
+        color: var(--gray-900);
+        min-height: 100vh;
+        font-size: 15px;
+        line-height: 1.6;
+      }
+
+      /* ── SCREENS ── */
+      .screen {
+        display: none;
+        min-height: 100vh;
+        align-items: center;
+        justify-content: center;
+        padding: 24px 16px;
+      }
+      .screen.on {
+        display: flex;
+        flex-direction: column;
+      }
+
+      /* ── CARD ── */
+      .card {
+        background: var(--white);
+        border: 1px solid var(--gray-300);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        padding: 36px 40px;
+        max-width: 780px;
+        width: 100%;
+      }
+
+      /* ── HEADER INSTITUCIONAL ── */
+      .inst-header {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding-bottom: 18px;
+        margin-bottom: 18px;
+        border-bottom: 2px solid var(--primary);
+      }
+      .inst-logo {
+        width: 54px;
+        height: 54px;
+        background: var(--primary);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 22px;
+        flex-shrink: 0;
+      }
+      .inst-info {
+        flex: 1;
+      }
+      .inst-name {
+        font-family: 'Merriweather', serif;
+        font-size: 1rem;
+        font-weight: 700;
+        color: var(--primary);
+        line-height: 1.3;
+      }
+      .inst-sub {
+        font-size: 0.78rem;
+        color: var(--gray-600);
+        margin-top: 2px;
+      }
+      .inst-badge {
+        background: var(--primary);
+        color: white;
+        font-size: 0.7rem;
+        font-weight: 700;
+        letter-spacing: 1px;
+        padding: 4px 10px;
+        border-radius: 20px;
+        text-transform: uppercase;
+        white-space: nowrap;
+      }
+
+      /* ── TITLES ── */
+      h1.page-title {
+        font-family: 'Merriweather', serif;
+        font-size: 1.5rem;
+        color: var(--primary);
+        margin-bottom: 4px;
+        text-align: center;
+      }
+      h2.section-title {
+        font-size: 1.05rem;
+        font-weight: 700;
+        color: var(--primary);
+        margin-bottom: 14px;
+      }
+      .simulado-title {
+        font-family: 'Merriweather', serif;
+        font-size: 1.15rem;
+        color: var(--primary);
+        font-weight: 700;
+        text-align: center;
+        margin-bottom: 2px;
+      }
+      .simulado-subtitle {
+        font-size: 0.82rem;
+        color: var(--gray-600);
+        text-align: center;
+        margin-bottom: 20px;
+      }
+
+      /* ── DIVIDER ── */
+      .divider {
+        height: 1px;
+        background: var(--gray-200);
+        margin: 20px 0;
+      }
+
+      /* ── LOGIN ── */
+      .login-wrap {
+        max-width: 460px;
+      }
+      .field-group {
+        margin-bottom: 16px;
+      }
+      .field-label {
+        display: block;
+        font-size: 0.82rem;
+        font-weight: 700;
+        color: var(--gray-700);
+        margin-bottom: 5px;
+      }
+      .field-input {
+        width: 100%;
+        border: 1px solid var(--gray-400);
+        border-radius: var(--radius-sm);
+        padding: 10px 14px;
+        font-family: 'Inter', sans-serif;
+        font-size: 0.95rem;
+        color: var(--gray-900);
+        background: var(--white);
+        outline: none;
+        transition:
+          border-color 0.2s,
+          box-shadow 0.2s;
+      }
+      .field-input:focus {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.15);
+      }
+      .alert {
+        padding: 10px 14px;
+        border-radius: var(--radius-sm);
+        font-size: 0.85rem;
+        font-weight: 600;
+        margin-top: 10px;
+        display: none;
+      }
+      .alert-danger {
+        background: var(--red-pale);
+        border: 1px solid #f5c2c7;
+        color: #842029;
+      }
+      .alert-warning {
+        background: var(--yellow-pale);
+        border: 1px solid #ffecb5;
+        color: #664d03;
+      }
+
+      /* ── BUTTONS ── */
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-family: 'Inter', sans-serif;
+        font-size: 0.88rem;
+        font-weight: 700;
+        border: none;
+        border-radius: var(--radius-sm);
+        padding: 10px 24px;
+        cursor: pointer;
+        transition: all 0.18s;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+      .btn-primary {
+        background: var(--primary);
+        color: white;
+      }
+      .btn-primary:hover {
+        background: var(--primary-light);
+      }
+      .btn-primary:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+      }
+      .btn-success {
+        background: var(--green);
+        color: white;
+      }
+      .btn-success:hover {
+        background: #157347;
+      }
+      .btn-outline {
+        background: transparent;
+        border: 1.5px solid var(--primary);
+        color: var(--primary);
+      }
+      .btn-outline:hover {
+        background: var(--primary-pale);
+      }
+      .btn-sm {
+        padding: 7px 16px;
+        font-size: 0.8rem;
+      }
+
+      /* ── SIMULADO SELECTOR ── */
+      .sim-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 14px;
+        margin: 20px 0;
+      }
+      .sim-card {
+        border: 2px solid var(--gray-300);
+        border-radius: var(--radius);
+        padding: 20px 16px;
+        cursor: pointer;
+        transition: all 0.2s;
+        text-align: center;
+        background: var(--white);
+      }
+      .sim-card:hover {
+        border-color: var(--accent);
+        box-shadow: var(--shadow);
+        transform: translateY(-2px);
+      }
+      .sim-card.selected {
+        border-color: var(--primary);
+        background: var(--primary-pale);
+      }
+      .sim-card .sc-num {
+        font-family: 'Merriweather', serif;
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--primary);
+        line-height: 1;
+        margin-bottom: 6px;
+      }
+      .sim-card .sc-title {
+        font-size: 0.8rem;
+        font-weight: 700;
+        color: var(--gray-700);
+        margin-bottom: 4px;
+      }
+      .sim-card .sc-desc {
+        font-size: 0.75rem;
+        color: var(--gray-500);
+      }
+      .sim-card.done .sc-num {
+        color: var(--green);
+      }
+      .sim-card.done {
+        border-color: var(--green);
+        background: var(--green-pale);
+      }
+      .sim-card.done::after {
+        content: '✓ Concluído';
+        display: block;
+        font-size: 0.72rem;
+        font-weight: 700;
+        color: var(--green);
+        margin-top: 8px;
+      }
+
+      /* ── PROGRESS BAR ── */
+      .prog-wrap {
+        margin: 14px 0 20px;
+      }
+      .prog-info {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.78rem;
+        font-weight: 700;
+        color: var(--gray-600);
+        margin-bottom: 5px;
+      }
+      .prog-track {
+        height: 8px;
+        background: var(--gray-200);
+        border-radius: 4px;
+        overflow: hidden;
+      }
+      .prog-fill {
+        height: 100%;
+        background: var(--primary);
+        border-radius: 4px;
+        transition: width 0.5s ease;
+      }
+
+      /* ── EXAM HEADER ── */
+      .exam-meta {
+        display: flex;
+        gap: 16px;
+        flex-wrap: wrap;
+        background: var(--primary-pale);
+        border: 1px solid #c0d4f5;
+        border-radius: var(--radius-sm);
+        padding: 12px 16px;
+        margin-bottom: 20px;
+        font-size: 0.8rem;
+      }
+      .meta-item {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        color: var(--gray-700);
+        font-weight: 600;
+      }
+      .meta-item span:first-child {
+        color: var(--primary);
+        font-size: 1rem;
+      }
+
+      /* ── QUESTION ── */
+      .q-block {
+        border: 1px solid var(--gray-200);
+        border-radius: var(--radius);
+        margin-bottom: 20px;
+        overflow: hidden;
+        animation: fadeIn 0.3s ease;
+      }
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(6px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .q-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 18px;
+        background: var(--gray-100);
+        border-bottom: 1px solid var(--gray-200);
+      }
+      .q-badge {
+        background: var(--primary);
+        color: white;
+        font-size: 0.7rem;
+        font-weight: 700;
+        padding: 3px 10px;
+        border-radius: 20px;
+        white-space: nowrap;
+        flex-shrink: 0;
+      }
+      .q-badge.essay {
+        background: var(--gray-700);
+      }
+      .q-type-tag {
+        font-size: 0.72rem;
+        color: var(--gray-500);
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .q-body {
+        padding: 18px;
+      }
+
+      /* VISUAL AID */
+      .q-visual {
+        background: var(--primary-pale);
+        border: 1px solid #c0d4f5;
+        border-radius: var(--radius-sm);
+        padding: 14px 16px;
+        margin-bottom: 16px;
+        display: flex;
+        gap: 12px;
+        align-items: flex-start;
+        flex-wrap: wrap;
+      }
+      .qv-icon {
+        font-size: 2rem;
+        flex-shrink: 0;
+        line-height: 1;
+        margin-top: 2px;
+      }
+      .qv-content {
+        flex: 1;
+        min-width: 180px;
+      }
+      .qv-label {
+        font-size: 0.7rem;
+        font-weight: 700;
+        color: var(--primary);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 6px;
+      }
+      .qv-chips {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+      .chip {
+        display: inline-flex;
+        flex-direction: column;
+        align-items: center;
+        background: white;
+        border: 1px solid;
+        border-radius: 6px;
+        padding: 7px 10px;
+        min-width: 70px;
+        text-align: center;
+      }
+      .chip .ci {
+        font-size: 1.2rem;
+      }
+      .chip .cv {
+        font-size: 0.78rem;
+        font-weight: 700;
+        margin-top: 2px;
+      }
+      .chip .cl {
+        font-size: 0.65rem;
+        color: var(--gray-500);
+      }
+      .chip.blue {
+        border-color: #90c4f8;
+        background: #f0f7ff;
+      }
+      .chip.green {
+        border-color: #86d9a8;
+        background: #f0faf4;
+      }
+      .chip.red {
+        border-color: #f1adb5;
+        background: #fef5f5;
+      }
+      .chip.gold {
+        border-color: #f5c842;
+        background: #fffbec;
+      }
+      .chip.gray {
+        border-color: var(--gray-300);
+        background: var(--gray-100);
+      }
+
+      .q-stem {
+        font-size: 0.98rem;
+        color: var(--gray-800);
+        line-height: 1.7;
+        margin-bottom: 16px;
+        font-weight: 500;
+      }
+      .q-stem strong {
+        color: var(--primary);
+      }
+
+      /* OPTIONS */
+      .opts-list {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .opt-btn {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        background: white;
+        border: 1.5px solid var(--gray-300);
+        border-radius: var(--radius-sm);
+        padding: 11px 14px;
+        cursor: pointer;
+        transition: all 0.18s;
+        font-family: 'Inter', sans-serif;
+        font-size: 0.9rem;
+        color: var(--gray-800);
+        text-align: left;
+        line-height: 1.5;
+        width: 100%;
+      }
+      .opt-btn:hover:not(.locked) {
+        border-color: var(--accent);
+        background: var(--primary-pale);
+      }
+      .opt-letter {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        background: var(--gray-200);
+        border: 1.5px solid var(--gray-400);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.72rem;
+        font-weight: 800;
+        color: var(--gray-700);
+        flex-shrink: 0;
+        margin-top: 1px;
+      }
+      .opt-btn.selected .opt-letter {
+        background: var(--accent);
+        border-color: var(--accent);
+        color: white;
+      }
+      .opt-btn.correct {
+        border-color: var(--green) !important;
+        background: var(--green-pale) !important;
+      }
+      .opt-btn.correct .opt-letter {
+        background: var(--green);
+        border-color: var(--green);
+        color: white;
+      }
+      .opt-btn.wrong {
+        border-color: var(--red) !important;
+        background: var(--red-pale) !important;
+      }
+      .opt-btn.wrong .opt-letter {
+        background: var(--red);
+        border-color: var(--red);
+        color: white;
+      }
+      .opt-btn.reveal {
+        border-color: var(--green) !important;
+        background: #f0faf4 !important;
+      }
+      .opt-btn.locked {
+        cursor: default;
+      }
+
+      /* FEEDBACK */
+      .q-feedback {
+        display: none;
+        margin-top: 12px;
+        padding: 10px 14px;
+        border-radius: var(--radius-sm);
+        font-size: 0.85rem;
+        font-weight: 600;
+        line-height: 1.6;
+        animation: fadeIn 0.25s ease;
+      }
+      .q-feedback.ok {
+        background: var(--green-pale);
+        border: 1px solid #a3cfbb;
+        color: #0a3622;
+      }
+      .q-feedback.nok {
+        background: var(--red-pale);
+        border: 1px solid #f1adb5;
+        color: #58151c;
+      }
+
+      /* ESSAY */
+      .essay-textarea {
+        width: 100%;
+        min-height: 120px;
+        border: 1.5px solid var(--gray-400);
+        border-radius: var(--radius-sm);
+        padding: 12px 14px;
+        font-family: 'Inter', sans-serif;
+        font-size: 0.92rem;
+        color: var(--gray-800);
+        resize: vertical;
+        outline: none;
+        transition:
+          border-color 0.2s,
+          box-shadow 0.2s;
+        line-height: 1.6;
+      }
+      .essay-textarea:focus {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.12);
+      }
+      .essay-hint {
+        font-size: 0.75rem;
+        color: var(--gray-500);
+        margin-top: 5px;
+      }
+      .essay-rubric {
+        background: var(--yellow-pale);
+        border: 1px solid #ffecb5;
+        border-radius: var(--radius-sm);
+        padding: 10px 14px;
+        font-size: 0.8rem;
+        color: #664d03;
+        margin-bottom: 12px;
+      }
+      .essay-rubric strong {
+        color: #4a3700;
+      }
+
+      /* SCORE BADGE */
+      .score-inline {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.78rem;
+        font-weight: 700;
+        padding: 3px 10px;
+        border-radius: 20px;
+        margin-left: 8px;
+      }
+      .score-inline.ok {
+        background: var(--green-pale);
+        color: #0a3622;
+      }
+      .score-inline.nok {
+        background: var(--red-pale);
+        color: #58151c;
+      }
+
+      /* ── RESULT ── */
+      .result-summary {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: 14px;
+        margin: 20px 0;
+      }
+      .res-box {
+        border: 1px solid var(--gray-300);
+        border-radius: var(--radius);
+        padding: 18px 14px;
+        text-align: center;
+        background: var(--white);
+      }
+      .res-box .rb-val {
+        font-family: 'Merriweather', serif;
+        font-size: 2rem;
+        font-weight: 700;
+        line-height: 1;
+        margin-bottom: 4px;
+      }
+      .res-box .rb-lbl {
+        font-size: 0.75rem;
+        color: var(--gray-500);
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+      .res-box.hi {
+        border-color: #86d9a8;
+        background: var(--green-pale);
+      }
+      .res-box.hi .rb-val {
+        color: var(--green);
+      }
+      .res-box.md {
+        border-color: #f5c842;
+        background: var(--yellow-pale);
+      }
+      .res-box.md .rb-val {
+        color: #856404;
+      }
+      .res-box.lo {
+        border-color: #f1adb5;
+        background: var(--red-pale);
+      }
+      .res-box.lo .rb-val {
+        color: var(--red);
+      }
+      .res-box.neu {
+        border-color: var(--gray-300);
+      }
+      .res-box.neu .rb-val {
+        color: var(--primary);
+      }
+
+      .sim-result-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 16px;
+        border: 1px solid var(--gray-200);
+        border-radius: var(--radius-sm);
+        margin: 8px 0;
+        background: var(--white);
+      }
+      .srr-left {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .srr-icon {
+        font-size: 1.3rem;
+      }
+      .srr-name {
+        font-size: 0.88rem;
+        font-weight: 600;
+        color: var(--gray-700);
+      }
+      .srr-grade {
+        font-size: 1.1rem;
+        font-weight: 800;
+      }
+      .srr-grade.hi {
+        color: var(--green);
+      }
+      .srr-grade.md {
+        color: #856404;
+      }
+      .srr-grade.lo {
+        color: var(--red);
+      }
+
+      /* ESSAY REVIEW */
+      .essay-review {
+        background: var(--gray-100);
+        border: 1px solid var(--gray-200);
+        border-radius: var(--radius-sm);
+        padding: 14px;
+        margin-top: 10px;
+      }
+      .essay-review-q {
+        font-size: 0.82rem;
+        font-weight: 700;
+        color: var(--gray-700);
+        margin-bottom: 6px;
+      }
+      .essay-review-a {
+        font-size: 0.88rem;
+        color: var(--gray-800);
+        font-style: italic;
+        line-height: 1.6;
+      }
+      .essay-review-a.empty {
+        color: var(--gray-500);
+      }
+
+      /* STATUS BANNER */
+      .status-banner {
+        padding: 12px 18px;
+        border-radius: var(--radius-sm);
+        font-weight: 700;
+        font-size: 0.92rem;
+        text-align: center;
+        margin-bottom: 16px;
+      }
+      .status-banner.approved {
+        background: var(--green-pale);
+        border: 1px solid #a3cfbb;
+        color: #0a3622;
+      }
+      .status-banner.recovery {
+        background: var(--yellow-pale);
+        border: 1px solid #ffecb5;
+        color: #664d03;
+      }
+      .status-banner.failed {
+        background: var(--red-pale);
+        border: 1px solid #f1adb5;
+        color: #58151c;
+      }
+
+      /* ── TIMER ── */
+      .timer-fixed {
+        position: fixed;
+        top: 14px;
+        right: 16px;
+        background: white;
+        border: 1.5px solid var(--gray-300);
+        border-radius: var(--radius-sm);
+        padding: 7px 14px;
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: var(--gray-700);
+        z-index: 100;
+        box-shadow: var(--shadow-sm);
+        display: none;
+      }
+      .timer-fixed.warn {
+        color: var(--red);
+        border-color: #f1adb5;
+        animation: blink 0.8s infinite;
+      }
+      @keyframes blink {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.5;
+        }
+      }
+
+      /* ── BOTTOM BAR ── */
+      .bottom-bar {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: white;
+        border-top: 1px solid var(--gray-300);
+        padding: 10px 20px;
+        display: none;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        z-index: 100;
+        box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.06);
+        flex-wrap: wrap;
+      }
+      .bottom-bar.on {
+        display: flex;
+      }
+      .bb-dots {
+        display: flex;
+        gap: 6px;
+        align-items: center;
+      }
+      .bb-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: var(--gray-300);
+        border: 1.5px solid var(--gray-400);
+        transition: all 0.3s;
+      }
+      .bb-dot.active {
+        background: var(--primary);
+        border-color: var(--primary);
+      }
+      .bb-dot.done {
+        background: var(--green);
+        border-color: var(--green);
+      }
+      .bb-label {
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: var(--gray-600);
+      }
+
+      /* ── BLOCKED ── */
+      .blocked-icon {
+        font-size: 4rem;
+        text-align: center;
+        margin: 16px 0;
+      }
+
+      /* ── PRINT ── */
+      @media print {
+        .timer-fixed,
+        .bottom-bar,
+        .btn-success,
+        .btn-primary,
+        .btn-outline {
+          display: none !important;
+        }
+        .card {
+          box-shadow: none;
+          border: none;
+          padding: 0;
+        }
+        body {
+          background: white;
+        }
+      }
+
+      @media (max-width: 560px) {
+        .card {
+          padding: 22px 16px;
+        }
+        .inst-header {
+          flex-direction: column;
+          text-align: center;
+        }
+        .q-visual {
+          flex-direction: column;
+        }
+        .result-summary {
+          grid-template-columns: 1fr 1fr;
+        }
+        .timer-fixed {
+          top: 8px;
+          right: 8px;
+          font-size: 0.75rem;
+          padding: 5px 10px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- ═══════════ LOGIN ═══════════ -->
+    <div class="screen on" id="s-login">
+      <div class="card login-wrap" style="max-width: 480px">
+        <div class="inst-header">
+          <div class="inst-logo">🎓</div>
+          <div class="inst-info">
+            <div class="inst-name">
+              Escola Técnica Estadual<br />Marechal Mascarenhas de Moraes
+            </div>
+            <div class="inst-sub">Sistema de Avaliação Digital</div>
+          </div>
+          <div class="inst-badge">2025</div>
+        </div>
+
+        <h1 class="page-title" style="font-size: 1.25rem; margin-bottom: 2px">
+          Simulados
+        </h1>
+        <p
+          style="
+            text-align: center;
+            font-size: 0.85rem;
+            color: var(--gray-600);
+            margin-bottom: 20px;
+          "
+        >
+          Engenharia de Software — Aulas 1 a 4
+        </p>
+        <div class="divider"></div>
+
+        <p
+          style="
+            font-size: 0.85rem;
+            color: var(--gray-700);
+            margin-bottom: 16px;
+          "
+        >
+          Acesso liberado. Os simulados podem ser iniciados sem login.
+        </p>
+
+        <div class="field-group">
+          <label class="field-label" for="iu">Usuário</label>
+          <input
+            class="field-input"
+            id="iu"
+            type="text"
+            placeholder="Digite seu usuário"
+            autocomplete="off"
+            spellcheck="false"
+          />
+        </div>
+        <div class="field-group">
+          <label class="field-label" for="ip">Senha</label>
+          <input
+            class="field-input"
+            id="ip"
+            type="password"
+            placeholder="Digite sua senha"
+            autocomplete="off"
+          />
+        </div>
+        <div class="alert alert-danger" id="err"></div>
+        <div style="margin-top: 18px">
+          <button
+            class="btn btn-primary"
+            style="width: 100%; justify-content: center"
+            onclick="doLogin()"
+          >
+            Continuar →
+          </button>
+        </div>
+        <p
+          style="
+            font-size: 0.72rem;
+            color: var(--gray-500);
+            text-align: center;
+            margin-top: 14px;
+          "
+        >
+          Professor: <code>window.RESET_USER('usuario')</code> no console do
+          navegador
+        </p>
+      </div>
+    </div>
+
+    <!-- ═══════════ SELEÇÃO DE SIMULADO ═══════════ -->
+    <div class="screen" id="s-select">
+      <div class="card" style="max-width: 680px">
+        <div class="inst-header">
+          <div class="inst-logo">🎓</div>
+          <div class="inst-info">
+            <div class="inst-name">Engenharia de Software</div>
+            <div class="inst-sub" id="sel-user-label">—</div>
+          </div>
+          <button class="btn btn-outline btn-sm" onclick="doLogout()">
+            Reiniciar
+          </button>
+        </div>
+
+        <h2 class="section-title">Escolha o Simulado</h2>
+        <p
+          style="
+            font-size: 0.85rem;
+            color: var(--gray-600);
+            margin-bottom: 16px;
+          "
+        >
+          Cada simulado contém <strong>8 questões de múltipla escolha</strong> e
+          <strong>2 questões dissertativas</strong>. Tempo: 45 minutos.
+        </p>
+
+        <div class="sim-grid" id="sim-grid">
+          <!-- preenchido via JS -->
+        </div>
+
+        <div
+          class="alert alert-warning"
+          id="sel-warn"
+          style="display: none"
+        ></div>
+        <div
+          style="margin-top: 18px; display: flex; gap: 10px; flex-wrap: wrap"
+        >
+          <button class="btn btn-primary" onclick="startSelectedSim()">
+            Iniciar Simulado →
+          </button>
+          <button
+            class="btn btn-outline"
+            onclick="goResultsOverview()"
+            id="btn-ver-resultados"
+            style="display: none"
+          >
+            Ver Resultados
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════ PROVA ═══════════ -->
+    <div class="screen" id="s-exam">
+      <div
+        class="card"
+        id="exam-card"
+        style="max-width: 760px; margin-bottom: 70px"
+      ></div>
+    </div>
+
+    <!-- ═══════════ RESULTADO SIMULADO ═══════════ -->
+    <div class="screen" id="s-result">
+      <div class="card" style="max-width: 720px">
+        <div class="inst-header">
+          <div class="inst-logo">📊</div>
+          <div class="inst-info">
+            <div class="inst-name" id="r-simname">Resultado</div>
+            <div class="inst-sub" id="r-username">—</div>
+          </div>
+        </div>
+
+        <div class="status-banner" id="r-banner">—</div>
+
+        <div class="result-summary" id="r-summary"></div>
+
+        <div class="divider"></div>
+        <h2 class="section-title">Desempenho por Tipo</h2>
+        <div id="r-breakdown"></div>
+
+        <div class="divider"></div>
+        <h2 class="section-title">Suas Respostas Dissertativas</h2>
+        <div id="r-essays"></div>
+
+        <div class="divider"></div>
+        <div style="display: flex; gap: 10px; flex-wrap: wrap">
+          {{/*
+          <button class="btn btn-success" onclick="downloadCSV()">
+            ⬇ Baixar Relatório (CSV)
+          </button>
+          */}}
+          <button class="btn btn-outline" onclick="go('s-select')">
+            ← Voltar aos Simulados
+          </button>
+        </div>
+        <p style="font-size: 0.75rem; color: var(--gray-500); margin-top: 10px">
+          ⚠️ As questões dissertativas são registradas mas avaliadas pelo
+          professor.
+        </p>
+      </div>
+    </div>
+
+    <!-- ═══════════ BLOQUEADO ═══════════ -->
+    <div class="screen" id="s-blocked">
+      <div class="card" style="max-width: 460px; text-align: center">
+        <div class="blocked-icon">🔒</div>
+        <h2 class="page-title">Acesso Bloqueado</h2>
+        <div class="divider"></div>
+        <p
+          style="
+            color: var(--gray-700);
+            font-size: 0.9rem;
+            line-height: 1.7;
+            margin-bottom: 20px;
+          "
+        >
+          Esta conta já realizou todos os simulados disponíveis ou foi
+          bloqueada. Consulte seu professor para redefinição de acesso.
+        </p>
+        <button class="btn btn-outline" onclick="go('s-login')">
+          ← Voltar ao Login
+        </button>
+        <p style="font-size: 0.72rem; color: var(--gray-400); margin-top: 16px">
+          Professor: <code>window.RESET_USER('usuario')</code>
+        </p>
+      </div>
+    </div>
+
+    <!-- TIMER + BOTTOM BAR -->
+    <div class="timer-fixed" id="timer-box">
+      ⏱ <span id="tclock">45:00</span>
+    </div>
+    <div class="bottom-bar" id="bbar">
+      <div class="bb-dots" id="bb-dots"></div>
+      <div class="bb-label" id="bb-label"></div>
+      <button
+        class="btn btn-primary btn-sm"
+        id="btn-finish"
+        onclick="finishExam()"
+        style="display: none"
+      >
+        🏁 Finalizar
+      </button>
+    </div>
+
+    <script>
+      // ══════════════════════════════════════════════
+      // USERS
+      // ══════════════════════════════════════════════
+      const UK = 'eng_soft_v1';
+
+      function initUsers() {
+        if (!localStorage.getItem(UK)) {
+          localStorage.setItem(
+            UK,
+            JSON.stringify([
+              {
+                username: 'igor',
+                password: 'igor_123',
+                nome: 'Igor',
+                done: [],
+              },
+              {
+                username: 'guilherme',
+                password: 'gui_123',
+                nome: 'Guilherme',
+                done: [],
+              },
+            ]),
+          );
+        }
+      }
+      function getUsers() {
+        return JSON.parse(localStorage.getItem(UK) || '[]');
+      }
+      function saveUsers(u) {
+        localStorage.setItem(UK, JSON.stringify(u));
+      }
+      function ensureGuestUser() {
+        const us = getUsers();
+        let guest = us.find((u) => u.username === 'visitante');
+        if (!guest) {
+          guest = {
+            username: 'visitante',
+            password: '',
+            nome: 'Visitante',
+            done: [],
+          };
+          us.push(guest);
+          saveUsers(us);
+        }
+        return guest;
+      }
+      function markDone(uname, simIdx) {
+        const us = getUsers(),
+          i = us.findIndex((u) => u.username === uname);
+        if (i !== -1 && !us[i].done.includes(simIdx)) {
+          us[i].done.push(simIdx);
+          saveUsers(us);
+        }
+      }
+      window.RESET_USER = function (uname) {
+        const us = getUsers(),
+          i = us.findIndex((u) => u.username === uname);
+        if (i !== -1) {
+          us[i].done = [];
+          const np = prompt(`Nova senha para ${uname}:`);
+          if (np) us[i].password = np;
+          saveUsers(us);
+          console.log('✅ Redefinido.');
+        } else console.log('❌ Não encontrado.');
+      };
+      window.LIST_USERS = function () {
+        console.table(getUsers().map((u) => ({ ...u, password: '***' })));
+      };
+
+      // ══════════════════════════════════════════════
+      // SIMULADOS DATA — 3 simulados, 8 MC + 2 essay
+      // ══════════════════════════════════════════════
+      const SIMS = [
+        // ─────────── SIMULADO 1 ───────────
+        {
+          id: 0,
+          title: 'Simulado 1',
+          subtitle: 'Fundamentos e Tipos de Software',
+          topics: 'Aulas 1 e 2',
+          icon: '📘',
+          questions: [
+            // MC 1
+            {
+              type: 'mc',
+              visual: {
+                icon: '💻',
+                label: 'Conceito de Software',
+                chips: [
+                  { icon: '📄', val: 'Código', cls: 'blue' },
+                  { icon: '📚', val: 'Documentação', cls: 'blue' },
+                  { icon: '⚙️', val: 'Configuração', cls: 'blue' },
+                ],
+                caption: 'Software vai muito além do código executável.',
+              },
+              stem: 'De acordo com a Engenharia de Software, o conceito de <strong>software</strong> abrange:',
+              opts: [
+                'Apenas o código executável que roda no computador.',
+                'Os programas de computador e toda a documentação associada, arquivos de configuração e manuais necessários para que sejam úteis.',
+                'Somente os arquivos de instalação de um programa.',
+                'O hardware e os periféricos utilizados pelo usuário.',
+              ],
+              answer: 1,
+              exp: 'Software inclui programas, documentação, manuais, arquivos de configuração e sites de suporte — não apenas o código executável.',
+            },
+            // MC 2
+            {
+              type: 'mc',
+              visual: {
+                icon: '📅',
+                label: 'Contexto Histórico',
+                chips: [
+                  { icon: '🗓️', val: '1968', cls: 'gold' },
+                  { icon: '⚠️', val: 'Crise', cls: 'red' },
+                  { icon: '💸', val: 'Custo alto', cls: 'red' },
+                ],
+                caption:
+                  'Um marco importante na história do desenvolvimento de software.',
+              },
+              stem: 'O conceito de <strong>"Crise do Software"</strong>, proposto em 1968, referia-se ao fato de que:',
+              opts: [
+                'Os computadores eram caros demais para universidades e empresas.',
+                'A falta de linguagens de programação impedia o avanço dos sistemas.',
+                'As abordagens informais de programação não escalavam para sistemas grandes, gerando sistemas não confiáveis, caros e entregues com atraso.',
+                'Os vírus de computador destruíam os sistemas desenvolvidos.',
+              ],
+              answer: 2,
+              exp: 'A Crise do Software mostrou que programar informalmente não funcionava para sistemas grandes — os resultados eram sistemas instáveis, caros e atrasados.',
+            },
+            // MC 3
+            {
+              type: 'mc',
+              visual: {
+                icon: '🔧',
+                label: 'Definição da Disciplina',
+                chips: [
+                  { icon: '📐', val: 'Métodos', cls: 'blue' },
+                  { icon: '🛠️', val: 'Ferramentas', cls: 'blue' },
+                  { icon: '💡', val: 'Teorias', cls: 'blue' },
+                ],
+                caption: 'Uma disciplina completa, do início ao fim do ciclo.',
+              },
+              stem: 'A <strong>Engenharia de Software</strong> se diferencia da simples programação porque:',
+              opts: [
+                'Usa apenas linguagens de programação mais avançadas.',
+                'Preocupa-se com todos os aspectos da produção, da especificação à manutenção, aplicando teorias, métodos e ferramentas dentro de limites organizacionais e financeiros.',
+                'É voltada exclusivamente para sistemas bancários e militares.',
+                'Substitui completamente o papel do programador por ferramentas automatizadas.',
+              ],
+              answer: 1,
+              exp: 'A ES aplica abordagem de engenharia ao software: cobre todo o ciclo de vida e usa métodos e ferramentas adequados aos limites do projeto.',
+            },
+            // MC 4
+            {
+              type: 'mc',
+              visual: {
+                icon: '🏷️',
+                label: 'Tipos de Produto de Software',
+                chips: [
+                  { icon: '🛒', val: 'Genérico', cls: 'green' },
+                  { icon: '🎯', val: 'Personalizado', cls: 'gold' },
+                ],
+                caption: 'Dois grandes grupos de produtos de software.',
+              },
+              stem: 'Um sistema de gestão desenvolvido exclusivamente para uma clínica médica específica é um exemplo de software:',
+              opts: [
+                'Genérico — pois pode ser instalado em qualquer computador.',
+                'De sistema — pois controla recursos do hardware.',
+                'Personalizado — pois foi feito sob medida para um cliente específico.',
+                'Embutido — pois opera diretamente no hardware da clínica.',
+              ],
+              answer: 2,
+              exp: 'Software personalizado (ou customizado) é desenvolvido sob medida para um cliente específico, diferente dos genéricos que são produzidos para um mercado aberto.',
+            },
+            // MC 5
+            {
+              type: 'mc',
+              visual: {
+                icon: '🖥️',
+                label: 'Aplicações Stand-alone',
+                chips: [
+                  { icon: '💾', val: 'Local', cls: 'blue' },
+                  { icon: '🚫', val: 'Sem rede obrigatória', cls: 'gray' },
+                  { icon: '📦', val: 'Autossuficiente', cls: 'green' },
+                ],
+                caption: 'Contém toda a funcionalidade instalada localmente.',
+              },
+              stem: 'Sistemas do tipo <strong>stand-alone (desktop)</strong> são caracterizados por:',
+              opts: [
+                'Exigirem conexão permanente com a internet para funcionar.',
+                'Executarem em computadores remotos acessados por navegadores.',
+                'Conterem toda a funcionalidade necessária e executarem em computador local sem precisar, obrigatoriamente, de rede.',
+                'Serem instalados diretamente no firmware do dispositivo.',
+              ],
+              answer: 2,
+              exp: 'Aplicações stand-alone têm toda a lógica instalada localmente e não dependem de rede para operar — ex.: editores de texto tradicionais.',
+            },
+            // MC 6
+            {
+              type: 'mc',
+              visual: {
+                icon: '📱',
+                label: 'Software Embutido',
+                chips: [
+                  { icon: '🚗', val: 'ABS', cls: 'red' },
+                  { icon: '📱', val: 'Celular', cls: 'blue' },
+                  { icon: '⚡', val: 'Restrições severas', cls: 'gold' },
+                ],
+                caption:
+                  'Restrições de potência e memória são características marcantes.',
+              },
+              stem: 'O software de controle do sistema de freios ABS de um automóvel é classificado como:',
+              opts: [
+                'Software de aplicação web — pois utiliza rede interna do veículo.',
+                'Software de sistema embutido — pois gerencia diretamente um dispositivo de hardware com restrições severas.',
+                'Software corporativo de lotes — pois processa dados em grande volume.',
+                'Software stand-alone — pois funciona sem internet.',
+              ],
+              answer: 1,
+              exp: 'Sistemas embutidos controlam hardware diretamente e têm restrições severas de potência e memória. O ABS e o software de celulares são exemplos clássicos.',
+            },
+            // MC 7
+            {
+              type: 'mc',
+              visual: {
+                icon: '🏢',
+                label: 'Sistemas Corporativos',
+                chips: [
+                  { icon: '📦', val: 'Batch', cls: 'gray' },
+                  { icon: '🔗', val: 'ERP', cls: 'blue' },
+                ],
+                caption: 'Dois tipos importantes de software corporativo.',
+              },
+              stem: 'Um sistema de folha de pagamento que processa todos os contracheques de uma empresa de uma só vez, ao final do mês, é um exemplo de:',
+              opts: [
+                'Aplicação web interativa — pois os funcionários acessam pelo navegador.',
+                'Sistema embutido — pois controla os terminais de ponto eletrônico.',
+                'Processamento em lotes (Batch) — pois processa grande volume de entradas de uma só vez.',
+                'Sistema de Sistemas (ERP) — pois integra todos os departamentos.',
+              ],
+              answer: 2,
+              exp: 'Sistemas batch processam grandes volumes de entradas de uma só vez. Folha de pagamento e faturamento são exemplos clássicos de processamento em lotes.',
+            },
+            // MC 8
+            {
+              type: 'mc',
+              visual: {
+                icon: '🌐',
+                label: 'Aplicações Web',
+                chips: [
+                  { icon: '🖥️', val: 'Servidor remoto', cls: 'blue' },
+                  { icon: '🌍', val: 'Navegador', cls: 'green' },
+                  { icon: '🔄', val: 'Transações', cls: 'gold' },
+                ],
+                caption: 'Executadas remotamente, acessadas pelo navegador.',
+              },
+              stem: 'Uma loja virtual que você acessa pelo navegador, realiza compras e acompanha pedidos em tempo real é um exemplo de:',
+              opts: [
+                'Software de sistema — pois gerencia recursos do servidor.',
+                'Aplicação interativa baseada em transações (Web) — pois é executada remotamente e acessada pelo navegador.',
+                'Sistema stand-alone — pois funciona em qualquer computador.',
+                'Software embutido — pois é instalado no roteador do usuário.',
+              ],
+              answer: 1,
+              exp: 'Aplicações web são executadas em servidores remotos, baseadas em transações, e acessadas pelos usuários via navegador.',
+            },
+            // DISSERTATIVA 1
+            {
+              type: 'essay',
+              stem: 'Explique, com suas próprias palavras, por que a "Crise do Software" (1968) foi importante para o surgimento da Engenharia de Software como disciplina. Cite ao menos dois problemas que as abordagens informais causavam.',
+              rubric:
+                'Critérios: identificação dos problemas (sistemas não confiáveis, custos altos, atrasos) e relação com a necessidade de métodos formais. Valor: 1,0 ponto.',
+            },
+            // DISSERTATIVA 2
+            {
+              type: 'essay',
+              stem: 'Cite dois tipos de software estudados e dê um exemplo real (diferente dos exemplos da aula) para cada um. Justifique sua classificação.',
+              rubric:
+                'Critérios: correta identificação do tipo e justificativa coerente para o exemplo escolhido. Valor: 1,0 ponto.',
+            },
+          ],
+        },
+
+        // ─────────── SIMULADO 2 ───────────
+        {
+          id: 1,
+          title: 'Simulado 2',
+          subtitle: 'Processo e Etapas de Desenvolvimento',
+          topics: 'Aula 3',
+          icon: '📗',
+          questions: [
+            // MC 1
+            {
+              type: 'mc',
+              visual: {
+                icon: '🔄',
+                label: 'Processo de Software',
+                chips: [
+                  { icon: '📋', val: 'Atividades', cls: 'blue' },
+                  { icon: '🎯', val: 'Produto', cls: 'green' },
+                  { icon: '👔', val: 'Gerenciado', cls: 'gold' },
+                ],
+                caption: 'Diferente de programar por "tentativa e erro".',
+              },
+              stem: 'Um <strong>processo de software</strong> pode ser definido como:',
+              opts: [
+                'O conjunto de linguagens de programação usadas no desenvolvimento.',
+                'Um conjunto de atividades relacionadas que levam à produção de um sistema de software, de forma gerenciada e profissional.',
+                'O manual de instruções entregue ao cliente junto com o sistema.',
+                'A metodologia de vendas utilizada pela empresa de tecnologia.',
+              ],
+              answer: 1,
+              exp: 'Processo de software é um conjunto estruturado de atividades gerenciadas que levam à produção de um sistema — vai além da simples codificação.',
+            },
+            // MC 2
+            {
+              type: 'mc',
+              visual: {
+                icon: '📐',
+                label: 'Etapa: Especificação',
+                chips: [
+                  { icon: '🤝', val: 'Cliente + Engenheiro', cls: 'blue' },
+                  { icon: '📝', val: 'Requisitos', cls: 'gold' },
+                  { icon: '🚧', val: 'Restrições', cls: 'red' },
+                ],
+                caption: 'A primeira etapa define o "o quê" antes do "como".',
+              },
+              stem: 'Na etapa de <strong>Especificação (Planejamento)</strong>, o principal objetivo é:',
+              opts: [
+                'Escrever o código-fonte do sistema em linguagem de programação.',
+                'Testar o sistema para encontrar erros antes da entrega.',
+                'Clientes e engenheiros definirem o que o software deve produzir e quais são as restrições de sua operação.',
+                'Fazer a manutenção do sistema após a entrega ao cliente.',
+              ],
+              answer: 2,
+              exp: 'Especificação é a etapa de planejamento onde se define o que o sistema deve fazer, quais são os requisitos e as restrições antes de qualquer desenvolvimento.',
+            },
+            // MC 3
+            {
+              type: 'mc',
+              visual: {
+                icon: '🏗️',
+                label: 'Etapa: Desenvolvimento',
+                chips: [
+                  { icon: '🎨', val: 'Projeto', cls: 'blue' },
+                  { icon: '💻', val: 'Implementação', cls: 'green' },
+                ],
+                caption: 'Arquitetura + código: o sistema ganha forma.',
+              },
+              stem: 'A etapa de <strong>Desenvolvimento</strong> no processo de software é composta por:',
+              opts: [
+                'Apenas a programação do código-fonte, sem planejamento de arquitetura.',
+                'A concepção da arquitetura do software (projeto) e a programação efetiva do código (implementação).',
+                'A entrega do sistema ao cliente e o treinamento dos usuários.',
+                'A definição dos requisitos e a elaboração dos casos de uso.',
+              ],
+              answer: 1,
+              exp: 'O desenvolvimento engloba duas sub-atividades: o projeto (arquitetura, estrutura do sistema) e a implementação (codificação efetiva).',
+            },
+            // MC 4
+            {
+              type: 'mc',
+              visual: {
+                icon: '🧪',
+                label: 'Etapa: Testes / Validação',
+                chips: [
+                  { icon: '✅', val: 'Especificação', cls: 'green' },
+                  { icon: '👤', val: 'Cliente', cls: 'gold' },
+                  { icon: '🔍', val: 'Análise intensa', cls: 'blue' },
+                ],
+                caption: 'Provar que o sistema faz o que deveria fazer.',
+              },
+              stem: 'A etapa de <strong>Testes (Validação)</strong> tem como propósito:',
+              opts: [
+                'Adicionar novas funcionalidades ao sistema conforme pedido dos usuários.',
+                'Analisar intensamente o programa para provar que satisfaz a especificação e atende às expectativas do cliente.',
+                'Criar a documentação técnica para o departamento de TI.',
+                'Realizar o backup dos dados antes da entrega do sistema.',
+              ],
+              answer: 1,
+              exp: 'Validação serve para verificar se o sistema funciona conforme especificado e atende às necessidades reais do cliente.',
+            },
+            // MC 5
+            {
+              type: 'mc',
+              visual: {
+                icon: '🔩',
+                label: 'Etapa: Manutenção / Evolução',
+                chips: [
+                  { icon: '📅', val: 'Pós-entrega', cls: 'gray' },
+                  { icon: '🔄', val: 'Mudanças', cls: 'gold' },
+                  { icon: '📈', val: 'Mercado', cls: 'blue' },
+                ],
+                caption: 'O sistema continua mudando depois de entregue.',
+              },
+              stem: 'A etapa de <strong>Manutenção (Evolução)</strong> refere-se a:',
+              opts: [
+                'Corrigir erros de digitação no código antes da entrega.',
+                'A modificação do software após a entrega para refletir mudanças nos requisitos dos clientes e do mercado ao longo do tempo.',
+                'A fase de testes de carga e desempenho do sistema.',
+                'A instalação do sistema nos computadores dos usuários finais.',
+              ],
+              answer: 1,
+              exp: 'Manutenção ocorre após a entrega e adapta o software às novas necessidades do cliente e do mercado — é uma atividade contínua.',
+            },
+            // MC 6
+            {
+              type: 'mc',
+              visual: {
+                icon: '🏫',
+                label: 'Cenário Prático',
+                chips: [
+                  { icon: '🏛️', val: 'Secretaria', cls: 'blue' },
+                  { icon: '📋', val: 'Requisitos', cls: 'gold' },
+                  { icon: '🗣️', val: 'Definição conjunta', cls: 'green' },
+                ],
+                caption: 'Sistema de cadastro de alunos em desenvolvimento.',
+              },
+              stem: 'Para desenvolver um sistema de cadastro de alunos, a equipe se reúne com a secretaria escolar para definir quais dados serão coletados e quais são as regras do sistema. Essa atividade corresponde a qual etapa?',
+              opts: [
+                'Desenvolvimento — pois envolve a equipe de TI.',
+                'Testes — pois busca identificar erros nos requisitos.',
+                'Manutenção — pois adapta o sistema às normas escolares.',
+                'Especificação — pois clientes e engenheiros definem o que o sistema deve produzir.',
+              ],
+              answer: 3,
+              exp: 'Reunir-se com o cliente (secretaria) para definir o que o sistema deve fazer é exatamente a etapa de Especificação.',
+            },
+            // MC 7
+            {
+              type: 'mc',
+              visual: {
+                icon: '🧱',
+                label: 'Projeto de Banco de Dados',
+                chips: [
+                  { icon: '🗄️', val: 'BD', cls: 'blue' },
+                  { icon: '🎨', val: 'Interface', cls: 'green' },
+                  { icon: '🏗️', val: 'Arquitetura', cls: 'gold' },
+                ],
+                caption: 'Fase em que o sistema ganha estrutura e forma.',
+              },
+              stem: 'Ao projetar o banco de dados e a interface visual do sistema de cadastro de alunos, a equipe está realizando qual atividade do processo de software?',
+              opts: [
+                'Especificação — pois envolve levantar os requisitos do banco de dados.',
+                'Desenvolvimento — pois inclui o projeto (arquitetura) e a implementação do sistema.',
+                'Manutenção — pois adapta o banco de dados ao sistema legado.',
+                'Validação — pois verifica se a interface atende ao usuário.',
+              ],
+              answer: 1,
+              exp: 'Projetar banco de dados e interface faz parte da etapa de Desenvolvimento — especificamente da sub-atividade de Projeto (antes da codificação).',
+            },
+            // MC 8
+            {
+              type: 'mc',
+              visual: {
+                icon: '🔢',
+                label: 'As 4 Etapas Universais',
+                chips: [
+                  { icon: '1️⃣', val: 'Especificação', cls: 'blue' },
+                  { icon: '2️⃣', val: 'Desenvolvimento', cls: 'green' },
+                  { icon: '3️⃣', val: 'Testes', cls: 'gold' },
+                  { icon: '4️⃣', val: 'Manutenção', cls: 'gray' },
+                ],
+                caption: 'Presentes em todo processo de software profissional.',
+              },
+              stem: 'Independentemente da empresa ou do modelo adotado, todo processo de software profissional deve incluir:',
+              opts: [
+                'Apenas especificação e desenvolvimento, pois são as etapas técnicas principais.',
+                'Somente testes e manutenção, pois são as mais caras do projeto.',
+                'As quatro etapas fundamentais: Especificação, Desenvolvimento, Testes e Manutenção.',
+                'Apenas a etapa de desenvolvimento, pois as demais são opcionais em projetos ágeis.',
+              ],
+              answer: 2,
+              exp: 'Todo processo de software profissional, independentemente do modelo (cascata, ágil etc.), inclui as quatro atividades fundamentais.',
+            },
+            // DISSERTATIVA 1
+            {
+              type: 'essay',
+              stem: 'Descreva com suas palavras a diferença entre a etapa de Testes e a etapa de Manutenção. Por que ambas são necessárias mesmo após o sistema estar aparentemente "pronto"?',
+              rubric:
+                'Critérios: distinção clara entre validar antes da entrega (testes) e adaptar após a entrega (manutenção). Valor: 1,0 ponto.',
+            },
+            // DISSERTATIVA 2
+            {
+              type: 'essay',
+              stem: 'Imagine que o Ministério da Educação (MEC) alterou o formato dos números de matrícula escolar. Aplique as 4 etapas do processo de software para descrever como a equipe de TI de uma escola deveria lidar com essa mudança no sistema de cadastro.',
+              rubric:
+                'Critérios: aplicação correta das 4 etapas ao cenário proposto, com coerência nas ações descritas. Valor: 1,0 ponto.',
+            },
+          ],
+        },
+
+        // ─────────── SIMULADO 3 ───────────
+        {
+          id: 2,
+          title: 'Simulado 3',
+          subtitle: 'Modelos de Processo de Software',
+          topics: 'Aula 4',
+          icon: '📙',
+          questions: [
+            // MC 1
+            {
+              type: 'mc',
+              visual: {
+                icon: '🗺️',
+                label: 'Modelos de Processo',
+                chips: [
+                  { icon: '📐', val: 'Representação', cls: 'blue' },
+                  { icon: '👁️', val: 'Perspectiva', cls: 'gold' },
+                  { icon: '🏛️', val: 'Arquitetural', cls: 'gray' },
+                ],
+                caption: 'Simplificam para mostrar a estrutura do processo.',
+              },
+              stem: '<strong>Modelos de processo de software</strong> são:',
+              opts: [
+                'Softwares que automatizam o desenvolvimento de outros sistemas.',
+                'Representações simplificadas ou arquiteturais de um processo de software que mostram sua estrutura a partir de uma perspectiva específica.',
+                'Documentos que listam todos os bugs encontrados no sistema.',
+                'Contratos assinados entre cliente e empresa de desenvolvimento.',
+              ],
+              answer: 1,
+              exp: 'Modelos de processo são abstrações que mostram como o desenvolvimento está organizado — não são o processo em si, mas uma visão simplificada dele.',
+            },
+            // MC 2
+            {
+              type: 'mc',
+              visual: {
+                icon: '🌊',
+                label: 'Modelo Cascata (Waterfall)',
+                chips: [
+                  { icon: '1️⃣', val: 'Especificação', cls: 'blue' },
+                  { icon: '2️⃣', val: 'Desenvolvimento', cls: 'blue' },
+                  { icon: '3️⃣', val: 'Testes', cls: 'blue' },
+                  { icon: '4️⃣', val: 'Evolução', cls: 'blue' },
+                ],
+                caption: 'Uma etapa só começa após a anterior estar concluída.',
+              },
+              stem: 'A principal característica do <strong>Modelo Cascata</strong> é:',
+              opts: [
+                'Permitir retornar a qualquer etapa anterior a qualquer momento.',
+                'Entregar versões parciais do sistema a cada duas semanas.',
+                'Representar as atividades fundamentais como fases distintas e em estrita sequência, com progresso dirigido por planos e documentos assinados.',
+                'Realizar avaliação de riscos no início de cada iteração.',
+              ],
+              answer: 2,
+              exp: 'No Cascata, cada fase deve ser concluída e documentada antes da próxima começar. É o modelo mais rígido e linear.',
+            },
+            // MC 3
+            {
+              type: 'mc',
+              visual: {
+                icon: '🔀',
+                label: 'Modelo Incremental',
+                chips: [
+                  { icon: '📦', val: 'v1.0', cls: 'green' },
+                  { icon: '📦', val: 'v2.0', cls: 'green' },
+                  { icon: '📦', val: 'v3.0', cls: 'green' },
+                ],
+                caption:
+                  'Cada entrega agrega novas funcionalidades à anterior.',
+              },
+              stem: 'No <strong>Modelo Incremental</strong>, o sistema é desenvolvido e entregue como:',
+              opts: [
+                'Um único produto completo, apenas ao final do projeto.',
+                'Uma série de versões (incrementos), onde cada versão agrega novas funcionalidades à anterior.',
+                'Um conjunto de módulos independentes sem integração entre si.',
+                'Uma sequência de documentos aprovados pelo cliente.',
+              ],
+              answer: 1,
+              exp: 'O modelo incremental entrega versões funcionais progressivas — cada incremento adiciona funcionalidades ao sistema já entregue.',
+            },
+            // MC 4
+            {
+              type: 'mc',
+              visual: {
+                icon: '🌀',
+                label: 'Modelo Espiral',
+                chips: [
+                  { icon: '🔄', val: 'Ciclos', cls: 'blue' },
+                  { icon: '⚠️', val: 'Riscos', cls: 'red' },
+                  { icon: '📋', val: 'Planejamento', cls: 'gold' },
+                ],
+                caption:
+                  'Cada volta na espiral avalia riscos antes de continuar.',
+              },
+              stem: 'O <strong>Modelo Espiral de Boehm</strong> se destaca por:',
+              opts: [
+                'Proibir qualquer mudança de requisitos após a primeira reunião com o cliente.',
+                'Ser idêntico ao Cascata, mas com etapas realizadas em paralelo.',
+                'Incluir, em cada volta do ciclo, atividades explícitas de avaliação e gerenciamento de risco antes do planejamento da próxima iteração.',
+                'Entregar o sistema completo apenas após todos os ciclos da espiral serem concluídos.',
+              ],
+              answer: 2,
+              exp: 'O diferencial do Modelo Espiral é a gestão de risco explícita em cada ciclo — antes de avançar, a equipe avalia os riscos da próxima etapa.',
+            },
+            // MC 5
+            {
+              type: 'mc',
+              visual: {
+                icon: '🆚',
+                label: 'Rigidez dos Modelos',
+                chips: [
+                  { icon: '🧱', val: 'Cascata', cls: 'red' },
+                  { icon: '🔄', val: 'Incremental', cls: 'green' },
+                  { icon: '🌀', val: 'Espiral', cls: 'blue' },
+                ],
+                caption: 'Qual modelo permite menos flexibilidade?',
+              },
+              stem: 'Comparando os três modelos estudados, qual é considerado o <strong>mais rígido</strong> e menos flexível a mudanças?',
+              opts: [
+                'Modelo Incremental — pois as versões são fixas desde o início.',
+                'Modelo Espiral — pois os ciclos são difíceis de modificar.',
+                'Modelo Cascata — pois as fases são sequenciais e dirigidas por documentos, dificultando retrocessos.',
+                'Todos os modelos têm a mesma rigidez, apenas com nomes diferentes.',
+              ],
+              answer: 2,
+              exp: 'O Cascata é o modelo mais rígido — uma vez que uma fase está documentada e aprovada, retroceder é custoso e difícil.',
+            },
+            // MC 6
+            {
+              type: 'mc',
+              visual: {
+                icon: '🏛️',
+                label: 'Quando usar o Cascata?',
+                chips: [
+                  { icon: '📜', val: 'Requisitos fixos', cls: 'blue' },
+                  { icon: '🔒', val: 'Documentação formal', cls: 'gold' },
+                  { icon: '🏗️', val: 'Sistemas críticos', cls: 'gray' },
+                ],
+                caption:
+                  'Funciona melhor quando tudo é bem definido desde o início.',
+              },
+              stem: 'O <strong>Modelo Cascata</strong> é mais adequado para projetos em que:',
+              opts: [
+                'Os requisitos mudam frequentemente ao longo do desenvolvimento.',
+                'O cliente deseja receber partes do sistema antes do prazo final.',
+                'Os requisitos são bem definidos e estáveis desde o início, como em sistemas embarcados críticos ou contratos governamentais.',
+                'A equipe é pequena e prefere trabalhar sem documentação formal.',
+              ],
+              answer: 2,
+              exp: 'Cascata funciona bem quando os requisitos são estáveis e bem documentados desde o início, comuns em sistemas embarcados ou contratos com especificações rígidas.',
+            },
+            // MC 7
+            {
+              type: 'mc',
+              visual: {
+                icon: '🚀',
+                label: 'Quando usar o Incremental?',
+                chips: [
+                  { icon: '🔄', val: 'Mudanças', cls: 'green' },
+                  { icon: '⚡', val: 'Entrega rápida', cls: 'gold' },
+                  { icon: '👤', val: 'Feedback', cls: 'blue' },
+                ],
+                caption: 'Ideal para projetos com requisitos em evolução.',
+              },
+              stem: 'Uma startup que desenvolve um aplicativo de delivery e precisa lançar rapidamente uma versão inicial, coletando feedback dos usuários para aprimorar o sistema, deveria usar qual modelo?',
+              opts: [
+                'Cascata — pois garante que o produto final esteja 100% completo antes do lançamento.',
+                'Incremental — pois permite entregar versões funcionais progressivamente, incorporando o feedback dos usuários.',
+                'Espiral — pois o gerenciamento de risco é essencial para startups.',
+                'Nenhum modelo formal — startups devem usar apenas métodos ágeis proprietários.',
+              ],
+              answer: 1,
+              exp: 'O Incremental é ideal para ambientes dinâmicos onde a entrega rápida e a incorporação de feedback são prioritárias.',
+            },
+            // MC 8
+            {
+              type: 'mc',
+              visual: {
+                icon: '⚠️',
+                label: 'Quando usar o Espiral?',
+                chips: [
+                  { icon: '💊', val: 'Saúde', cls: 'red' },
+                  { icon: '✈️', val: 'Aeronáutica', cls: 'blue' },
+                  { icon: '⚠️', val: 'Alto risco', cls: 'red' },
+                ],
+                caption: 'Risco alto exige avaliação explícita a cada ciclo.',
+              },
+              stem: 'O <strong>Modelo Espiral</strong> é especialmente indicado para projetos:',
+              opts: [
+                'Pequenos e simples, onde a documentação deve ser mínima.',
+                'Que precisam de entrega semanal de versões ao cliente.',
+                'Grandes, complexos e com alto risco, onde a avaliação de riscos a cada ciclo é fundamental para decisões de continuidade.',
+                'Com requisitos completamente definidos e sem possibilidade de mudança.',
+              ],
+              answer: 2,
+              exp: 'O Espiral é ideal para projetos grandes e arriscados (como software médico ou aeronáutico) onde gerenciar riscos a cada ciclo é indispensável.',
+            },
+            // DISSERTATIVA 1
+            {
+              type: 'essay',
+              stem: 'Explique com suas palavras a diferença entre o Modelo Cascata e o Modelo Incremental. Em qual situação cada um seria mais adequado? Justifique sua resposta.',
+              rubric:
+                'Critérios: distinção correta entre sequencial (Cascata) e iterativo (Incremental), com justificativa de adequação a cada cenário. Valor: 1,0 ponto.',
+            },
+            // DISSERTATIVA 2
+            {
+              type: 'essay',
+              stem: 'O Modelo Espiral inclui, em cada ciclo, uma etapa de avaliação de riscos. Explique por que isso é importante e dê um exemplo de risco que poderia ser identificado no desenvolvimento de um sistema hospitalar.',
+              rubric:
+                'Critérios: compreensão da importância da gestão de riscos e exemplo coerente com o contexto hospitalar. Valor: 1,0 ponto.',
+            },
+          ],
+        },
+      ];
+
+      // ══════════════════════════════════════════════
+      // STATE
+      // ══════════════════════════════════════════════
+      let STATE = {
+        user: null,
+        simIdx: null,
+        qIdx: 0,
+        answers: [], // { type, chosen, correct, essay }
+        scores: { mc: 0, total_mc: 8 },
+        answered: false,
+        timerID: null,
+        secs: 45 * 60,
+        done: false,
+      };
+
+      // ══════════════════════════════════════════════
+      // LOGIN
+      // ══════════════════════════════════════════════
+      function doLogin() {
+        initUsers();
+        STATE.user = ensureGuestUser();
+        go('s-select');
+        renderSelector();
+      }
+      function doLogout() {
+        STATE.user = ensureGuestUser();
+        go('s-select');
+        renderSelector();
+      }
+
+      function showErr(m) {
+        const e = document.getElementById('err');
+        e.textContent = m;
+        e.style.display = 'block';
+      }
+      document.addEventListener('keydown', (e) => {
+        if (
+          e.key === 'Enter' &&
+          document.getElementById('s-login').classList.contains('on')
+        )
+          doLogin();
+      });
+
+      // ══════════════════════════════════════════════
+      // SELECTOR
+      // ══════════════════════════════════════════════
+      function renderSelector() {
+        document.getElementById('sel-user-label').textContent =
+          `Aluno: ${STATE.user.nome}`;
+        const done = STATE.user.done || [];
+        const grid = document.getElementById('sim-grid');
+        grid.innerHTML = '';
+        SIMS.forEach((s, i) => {
+          const isDone = done.includes(i);
+          const div = document.createElement('div');
+          div.className = 'sim-card' + (isDone ? ' done' : '');
+          div.id = 'sc-' + i;
+          div.innerHTML = `
+      <div class="sc-num">${s.icon}</div>
+      <div class="sc-title">${s.title}</div>
+      <div class="sc-desc">${s.subtitle}</div>
+      <div style="font-size:.72rem;color:var(--gray-400);margin-top:4px;">${s.topics}</div>`;
+          if (!isDone) div.onclick = () => selectSim(i);
+          grid.appendChild(div);
+        });
+        // show results button if at least one done
+        document.getElementById('btn-ver-resultados').style.display =
+          done.length > 0 ? 'inline-flex' : 'none';
+        // auto-select first available
+        const first = SIMS.findIndex((_, i) => !done.includes(i));
+        if (first !== -1) selectSim(first);
+      }
+
+      let _selectedSim = null;
+      function selectSim(idx) {
+        _selectedSim = idx;
+        document.querySelectorAll('.sim-card').forEach((c, i) => {
+          if (!c.classList.contains('done'))
+            c.classList.toggle('selected', i === idx);
+        });
+        const sw = document.getElementById('sel-warn');
+        sw.style.display = 'none';
+      }
+
+      function startSelectedSim() {
+        if (_selectedSim === null) {
+          showSelWarn('Selecione um simulado.');
+          return;
+        }
+        const done = STATE.user.done || [];
+        if (done.includes(_selectedSim)) {
+          showSelWarn('Você já concluiu este simulado.');
+          return;
+        }
+        STATE.simIdx = _selectedSim;
+        STATE.qIdx = 0;
+        STATE.answers = [];
+        STATE.scores = { mc: 0, total_mc: 8 };
+        STATE.answered = false;
+        STATE.done = false;
+        STATE.secs = 45 * 60;
+        go('s-exam');
+        document.getElementById('bbar').classList.add('on');
+        document.getElementById('timer-box').style.display = 'block';
+        startTimer();
+        renderQ();
+      }
+
+      function showSelWarn(m) {
+        const sw = document.getElementById('sel-warn');
+        sw.textContent = m;
+        sw.style.display = 'block';
+      }
+
+      function goResultsOverview() {
+        go('s-result');
+      }
+
+      // ══════════════════════════════════════════════
+      // TIMER
+      // ══════════════════════════════════════════════
+      function startTimer() {
+        clearInterval(STATE.timerID);
+        STATE.timerID = setInterval(() => {
+          STATE.secs--;
+          const m = Math.floor(STATE.secs / 60),
+            s = STATE.secs % 60;
+          document.getElementById('tclock').textContent =
+            String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+          const box = document.getElementById('timer-box');
+          if (STATE.secs <= 300) box.classList.add('warn');
+          else box.classList.remove('warn');
+          if (STATE.secs <= 0) {
+            clearInterval(STATE.timerID);
+            finishExam();
+          }
+        }, 1000);
+      }
+
+      // ══════════════════════════════════════════════
+      // RENDER QUESTION
+      // ══════════════════════════════════════════════
+      function buildVisual(v) {
+        if (!v) return '';
+        const chips = (v.chips || [])
+          .map(
+            (c) => `
+    <div class="chip ${c.cls}">
+      <span class="ci">${c.icon}</span>
+      <span class="cv">${c.val}</span>
+    </div>`,
+          )
+          .join('');
+        return `<div class="q-visual">
+    <div class="qv-icon">${v.icon}</div>
+    <div class="qv-content">
+      <div class="qv-label">${v.label}</div>
+      <div class="qv-chips">${chips}</div>
+      ${v.caption ? `<p style="font-size:.78rem;color:var(--gray-600);margin-top:8px;font-style:italic;">${v.caption}</p>` : ''}
+    </div>
+  </div>`;
+      }
+
+      function renderQ() {
+        const sim = SIMS[STATE.simIdx];
+        const q = sim.questions[STATE.qIdx];
+        const total = sim.questions.length;
+        const pct = Math.round((STATE.qIdx / total) * 100);
+        const isMC = q.type === 'mc';
+        const isLast = STATE.qIdx === total - 1;
+        STATE.answered = false;
+
+        // bottom bar dots
+        const dots = document.getElementById('bb-dots');
+        dots.innerHTML = '<span class="bb-label">Questão&nbsp;</span>';
+        sim.questions.forEach((qq, i) => {
+          const d = document.createElement('div');
+          d.className =
+            'bb-dot' +
+            (i < STATE.qIdx ? ' done' : i === STATE.qIdx ? ' active' : '');
+          d.title = `Q${i + 1}`;
+          dots.appendChild(d);
+        });
+        document.getElementById('bb-label').textContent =
+          `${STATE.qIdx + 1} / ${total}`;
+        document.getElementById('btn-finish').style.display = isLast
+          ? 'inline-flex'
+          : 'none';
+
+        const mcNum = isMC
+          ? STATE.answers.filter((a) => a.type === 'mc').length + 1
+          : null;
+        const essayNum = !isMC
+          ? STATE.answers.filter((a) => a.type === 'essay').length + 1
+          : null;
+
+        let bodyHtml = '';
+
+        if (isMC) {
+          const letters = ['A', 'B', 'C', 'D'];
+          const optsHtml = q.opts
+            .map(
+              (o, i) => `
+      <button class="opt-btn" id="ob${i}" onclick="pickMC(${i})">
+        <span class="opt-letter">${letters[i]}</span>
+        <span>${o}</span>
+      </button>`,
+            )
+            .join('');
+          bodyHtml = `
+      ${buildVisual(q.visual)}
+      <p class="q-stem">${q.stem}</p>
+      <div class="opts-list">${optsHtml}</div>
+      <div class="q-feedback" id="qfb"></div>
+      <div style="display:flex;justify-content:flex-end;margin-top:16px;">
+        <button class="btn btn-primary" id="btn-next" onclick="nextQ()" disabled>
+          ${isLast ? '🏁 Finalizar Simulado' : 'Próxima →'}
+        </button>
+      </div>`;
+        } else {
+          bodyHtml = `
+      <div class="essay-rubric"><strong>Critérios de avaliação:</strong> ${q.rubric}</div>
+      <p class="q-stem">${q.stem}</p>
+      <textarea class="essay-textarea" id="essay-inp" placeholder="Escreva sua resposta aqui..."></textarea>
+      <p class="essay-hint">Mínimo recomendado: 3 a 5 linhas. Seja objetivo e claro.</p>
+      <div style="display:flex;justify-content:flex-end;margin-top:14px;">
+        <button class="btn btn-primary" id="btn-next" onclick="nextQ()">
+          ${isLast ? '🏁 Finalizar Simulado' : 'Próxima →'}
+        </button>
+      </div>`;
+        }
+
+        const qLabel = isMC
+          ? `Questão ${mcNum} de 8 — Múltipla Escolha`
+          : `Questão Dissertativa ${essayNum} de 2`;
+        const badgeCls = isMC ? '' : 'essay';
+
+        document.getElementById('exam-card').innerHTML = `
+    <div class="inst-header" style="padding-bottom:14px;margin-bottom:14px;">
+      <div class="inst-logo" style="width:40px;height:40px;font-size:16px;">${sim.icon}</div>
+      <div class="inst-info">
+        <div class="inst-name" style="font-size:.9rem;">${sim.title} — ${sim.subtitle}</div>
+        <div class="inst-sub">Aluno: ${STATE.user.nome} · ${sim.topics}</div>
+      </div>
+    </div>
+    <div class="prog-wrap">
+      <div class="prog-info"><span>Progresso</span><span>${STATE.qIdx}/${total}</span></div>
+      <div class="prog-track"><div class="prog-fill" style="width:${pct}%"></div></div>
+    </div>
+    <div class="q-block">
+      <div class="q-header">
+        <span class="q-badge ${badgeCls}">Q${STATE.qIdx + 1}</span>
+        <span class="q-type-tag">${qLabel}</span>
+      </div>
+      <div class="q-body">${bodyHtml}</div>
+    </div>`;
+      }
+
+      // ══════════════════════════════════════════════
+      // ANSWER HANDLERS
+      // ══════════════════════════════════════════════
+      function pickMC(idx) {
+        if (STATE.answered) return;
+        STATE.answered = true;
+        const q = SIMS[STATE.simIdx].questions[STATE.qIdx];
+        const correct = idx === q.answer;
+        if (correct) STATE.scores.mc++;
+        STATE.answers.push({
+          type: 'mc',
+          qIdx: STATE.qIdx,
+          chosen: idx,
+          correct,
+        });
+
+        for (let i = 0; i < 4; i++) {
+          const b = document.getElementById('ob' + i);
+          if (!b) continue;
+          b.classList.add('locked');
+          if (i === q.answer) b.classList.add('correct');
+          else if (i === idx && !correct) b.classList.add('wrong');
+        }
+        const fb = document.getElementById('qfb');
+        fb.style.display = 'block';
+        fb.className = 'q-feedback ' + (correct ? 'ok' : 'nok');
+        fb.innerHTML =
+          (correct
+            ? '✔ Resposta correta! '
+            : `✘ Resposta incorreta. A alternativa correta é <strong>${['A', 'B', 'C', 'D'][q.answer]}</strong>. `) +
+          q.exp;
+        document.getElementById('btn-next').disabled = false;
+      }
+
+      function nextQ() {
+        // save essay if applicable
+        const q = SIMS[STATE.simIdx].questions[STATE.qIdx];
+        if (q.type === 'essay') {
+          const val = (
+            document.getElementById('essay-inp')?.value || ''
+          ).trim();
+          STATE.answers.push({ type: 'essay', qIdx: STATE.qIdx, essay: val });
+        }
+        STATE.qIdx++;
+        if (STATE.qIdx >= SIMS[STATE.simIdx].questions.length) {
+          finishExam();
+        } else {
+          renderQ();
+          window.scrollTo(0, 0);
+        }
+      }
+
+      // ══════════════════════════════════════════════
+      // FINISH
+      // ══════════════════════════════════════════════
+      function finishExam() {
+        if (STATE.done) return;
+        STATE.done = true;
+        clearInterval(STATE.timerID);
+        // save last essay if on essay q
+        const q = SIMS[STATE.simIdx].questions[STATE.qIdx - 1];
+        // mark done
+        markDone(STATE.user.username, STATE.simIdx);
+        // reload user
+        STATE.user = getUsers().find((u) => u.username === STATE.user.username);
+        document.getElementById('bbar').classList.remove('on');
+        document.getElementById('timer-box').style.display = 'none';
+        buildResultScreen();
+        go('s-result');
+        window.scrollTo(0, 0);
+      }
+
+      // ══════════════════════════════════════════════
+      // RESULT SCREEN
+      // ══════════════════════════════════════════════
+      function buildResultScreen() {
+        const sim = SIMS[STATE.simIdx];
+        const mc = STATE.scores.mc;
+        const mcGrade = (mc / 8) * 8; // 8 pts
+        const essayAnswers = STATE.answers.filter((a) => a.type === 'essay');
+        const elapsed = 45 * 60 - STATE.secs;
+        const em = Math.floor(elapsed / 60),
+          es = elapsed % 60;
+
+        document.getElementById('r-simname').textContent =
+          `${sim.title} — ${sim.subtitle}`;
+        document.getElementById('r-username').textContent =
+          `Aluno: ${STATE.user.nome}`;
+
+        // Status banner (MC only — essays are graded by teacher)
+        const pct = mc / 8;
+        let bannerCls, bannerTxt;
+        if (pct >= 0.7) {
+          bannerCls = 'approved';
+          bannerTxt = '✔ Desempenho Satisfatório nas Questões Objetivas';
+        } else if (pct >= 0.5) {
+          bannerCls = 'recovery';
+          bannerTxt = '⚠ Desempenho Intermediário — Revise o conteúdo';
+        } else {
+          bannerCls = 'failed';
+          bannerTxt = '✘ Desempenho Abaixo do Esperado — Atenção ao conteúdo';
+        }
+        const banner = document.getElementById('r-banner');
+        banner.className = 'status-banner ' + bannerCls;
+        banner.textContent = bannerTxt;
+
+        // Summary boxes
+        document.getElementById('r-summary').innerHTML = `
+    <div class="res-box ${pct >= 0.7 ? 'hi' : pct >= 0.5 ? 'md' : 'lo'}">
+      <div class="rb-val">${mc}/8</div>
+      <div class="rb-lbl">Acertos Objetivas</div>
+    </div>
+    <div class="res-box ${pct >= 0.7 ? 'hi' : pct >= 0.5 ? 'md' : 'lo'}">
+      <div class="rb-val">${(pct * 100).toFixed(0)}%</div>
+      <div class="rb-lbl">Aproveitamento</div>
+    </div>
+    <div class="res-box neu">
+      <div class="rb-val">2</div>
+      <div class="rb-lbl">Dissertativas (prof.)</div>
+    </div>
+    <div class="res-box neu">
+      <div class="rb-val">${em}m${String(es).padStart(2, '0')}s</div>
+      <div class="rb-lbl">Tempo utilizado</div>
+    </div>`;
+
+        // Breakdown per MC question
+        let bdHtml = '';
+        STATE.answers
+          .filter((a) => a.type === 'mc')
+          .forEach((a, i) => {
+            const q = sim.questions[a.qIdx];
+            const letters = ['A', 'B', 'C', 'D'];
+            bdHtml += `
+      <div class="sim-result-row">
+        <div class="srr-left">
+          <span class="srr-icon">${a.correct ? '✅' : '❌'}</span>
+          <div>
+            <div class="srr-name">Q${i + 1} — ${q.stem.replace(/<[^>]+>/g, '').substring(0, 60)}...</div>
+            <div style="font-size:.75rem;color:var(--gray-500);margin-top:2px;">
+              Sua resposta: <strong>${letters[a.chosen]}</strong> · 
+              Correta: <strong>${letters[q.answer]}</strong>
+            </div>
+          </div>
+        </div>
+        <span class="srr-grade ${a.correct ? 'hi' : 'lo'}">${a.correct ? '1,0' : '0,0'}</span>
+      </div>`;
+          });
+        document.getElementById('r-breakdown').innerHTML = bdHtml;
+
+        // Essays
+        let essHtml = '';
+        STATE.answers
+          .filter((a) => a.type === 'essay')
+          .forEach((a, i) => {
+            const q = sim.questions[a.qIdx];
+            essHtml += `
+      <div class="q-block" style="margin-bottom:14px;">
+        <div class="q-header">
+          <span class="q-badge essay">Dissertativa ${i + 1}</span>
+          <span class="q-type-tag">Aguardando correção do professor</span>
+        </div>
+        <div class="q-body">
+          <p class="q-stem" style="margin-bottom:10px;">${q.stem}</p>
+          <div class="essay-review">
+            <div class="essay-review-q">Sua resposta:</div>
+            <div class="essay-review-a ${!a.essay ? 'empty' : ''}">${a.essay || '(Não respondida)'}</div>
+          </div>
+        </div>
+      </div>`;
+          });
+        document.getElementById('r-essays').innerHTML = essHtml;
+      }
+
+      // ══════════════════════════════════════════════
+      // CSV DOWNLOAD
+      // ══════════════════════════════════════════════
+      function downloadCSV() {
+        const sim = SIMS[STATE.simIdx];
+        const mc = STATE.scores.mc;
+        const pct = ((mc / 8) * 100).toFixed(1);
+        const now = new Date();
+        const ds = now.toLocaleDateString('pt-BR');
+        const ts = now.toLocaleTimeString('pt-BR');
+        const elapsed = 45 * 60 - STATE.secs;
+        const em = Math.floor(elapsed / 60),
+          es = elapsed % 60;
+        const letters = ['A', 'B', 'C', 'D'];
+
+        let csv = 'sep=;\n';
+        csv += `RELATÓRIO DE SIMULADO — ENGENHARIA DE SOFTWARE\n`;
+        csv += `Aluno;${STATE.user.nome}\n`;
+        csv += `Usuário;${STATE.user.username}\n`;
+        csv += `Simulado;${sim.title} — ${sim.subtitle}\n`;
+        csv += `Tópicos;${sim.topics}\n`;
+        csv += `Data;${ds}\nHora;${ts}\n`;
+        csv += `Tempo de Prova;${em}min ${String(es).padStart(2, '0')}s\n\n`;
+
+        csv += `QUESTÕES OBJETIVAS\n`;
+        csv += `Acertos;${mc}\nTotal;8\nAproveitamento;${pct}%\n\n`;
+
+        csv += `Nº;Enunciado (resumo);Resposta do Aluno;Resposta Correta;Resultado\n`;
+        STATE.answers
+          .filter((a) => a.type === 'mc')
+          .forEach((a, i) => {
+            const q = sim.questions[a.qIdx];
+            const stem = q.stem
+              .replace(/<[^>]+>/g, '')
+              .substring(0, 80)
+              .replace(/;/g, ',');
+            csv += `Q${i + 1};${stem}...;${letters[a.chosen]};${letters[q.answer]};${a.correct ? 'CORRETO' : 'INCORRETO'}\n`;
+          });
+
+        csv += `\nQUESTÕES DISSERTATIVAS (Correção pelo Professor)\n`;
+        STATE.answers
+          .filter((a) => a.type === 'essay')
+          .forEach((a, i) => {
+            const q = sim.questions[a.qIdx];
+            const stem = q.stem
+              .replace(/<[^>]+>/g, '')
+              .substring(0, 80)
+              .replace(/;/g, ',');
+            const resp = (a.essay || '(Não respondida)')
+              .replace(/;/g, ',')
+              .replace(/\n/g, ' ');
+            csv += `\nDissertativa ${i + 1};\nEnunciado;${stem}...\nResposta;${resp}\nCritérios;${q.rubric.replace(/;/g, ',')}\n`;
+          });
+
+        const blob = new Blob(['\uFEFF' + csv], {
+          type: 'text/csv;charset=utf-8;',
+        });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `simulado${sim.id + 1}_${STATE.user.username}_${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }
+
+      // ══════════════════════════════════════════════
+      // UTILS
+      // ══════════════════════════════════════════════
+      function go(id) {
+        document
+          .querySelectorAll('.screen')
+          .forEach((s) => s.classList.remove('on'));
+        document.getElementById(id).classList.add('on');
+        window.scrollTo(0, 0);
+      }
+
+      initUsers();
+      STATE.user = ensureGuestUser();
+      go('s-select');
+      renderSelector();
+    </script>
+  </body>
+</html>
