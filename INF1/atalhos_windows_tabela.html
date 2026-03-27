@@ -1,0 +1,210 @@
+
+<style>
+  body { margin: 0; padding: 0; }
+  .container { padding: 16px 0; font-size: 14px; color: var(--color-text-primary); }
+  .search-bar { display: flex; gap: 10px; margin-bottom: 16px; align-items: center; }
+  .search-bar input {
+    flex: 1; padding: 8px 12px; border-radius: var(--border-radius-md);
+    border: 1px solid var(--color-border-secondary); background: var(--color-background-secondary);
+    color: var(--color-text-primary); font-size: 14px; outline: none;
+  }
+  .search-bar input:focus { border-color: var(--color-border-primary); }
+  .tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+  .tab {
+    padding: 5px 12px; border-radius: 999px; font-size: 12px; font-weight: 500;
+    border: 1px solid var(--color-border-secondary); cursor: pointer;
+    background: var(--color-background-secondary); color: var(--color-text-secondary);
+    transition: background .15s, color .15s;
+  }
+  .tab.active, .tab:hover { background: var(--color-background-primary); color: var(--color-text-primary); border-color: var(--color-border-primary); }
+  table { width: 100%; border-collapse: collapse; }
+  thead th { font-size: 12px; font-weight: 500; color: var(--color-text-secondary); text-align: left; padding: 6px 10px; border-bottom: 1px solid var(--color-border-tertiary); }
+  tbody tr { border-bottom: 1px solid var(--color-border-tertiary); }
+  tbody tr:hover { background: var(--color-background-secondary); }
+  tbody tr:last-child { border-bottom: none; }
+  td { padding: 8px 10px; vertical-align: middle; font-size: 13px; line-height: 1.5; }
+  td:first-child { width: 36%; }
+  .kbd { display: inline-flex; align-items: center; gap: 2px; flex-wrap: wrap; }
+  .k {
+    display: inline-block; padding: 2px 7px; font-family: var(--font-mono);
+    font-size: 11px; font-weight: 500; border-radius: 4px;
+    background: var(--color-background-tertiary); border: 1px solid var(--color-border-secondary);
+    color: var(--color-text-primary); white-space: nowrap; line-height: 1.6;
+  }
+  .plus { font-size: 11px; color: var(--color-text-tertiary); padding: 0 1px; }
+  .cat-badge { font-size: 11px; padding: 2px 8px; border-radius: 999px; font-weight: 500; }
+  .empty { text-align: center; color: var(--color-text-tertiary); padding: 32px 0; font-size: 13px; }
+  .count { font-size: 12px; color: var(--color-text-tertiary); margin-left: auto; align-self: center; }
+</style>
+<div class="container">
+  <div class="search-bar">
+    <input type="text" id="q" placeholder="Buscar atalho ou função..." oninput="render()">
+    <span class="count" id="cnt"></span>
+  </div>
+  <div class="tabs" id="tabs"></div>
+  <table>
+    <thead><tr><th>Atalho</th><th>Função</th><th>Categoria</th></tr></thead>
+    <tbody id="tbody"></tbody>
+  </table>
+</div>
+<script>
+const cats = {
+  "Sistema": { color: "#3B8BD4", bg: "#E6F1FB", dbg: "#0C447C", dbbg: "#042C53" },
+  "Janelas": { color: "#1D9E75", bg: "#E1F5EE", dbg: "#085041", dbbg: "#04342C" },
+  "Área de trabalho": { color: "#BA7517", bg: "#FAEEDA", dbg: "#633806", dbbg: "#412402" },
+  "Acessibilidade": { color: "#993556", bg: "#FBEAF0", dbg: "#72243E", dbbg: "#4B1528" },
+  "Explorador de arquivos": { color: "#534AB7", bg: "#EEEDFE", dbg: "#3C3489", dbbg: "#26215C" },
+  "Edição de texto": { color: "#A32D2D", bg: "#FCEBEB", dbg: "#791F1F", dbbg: "#501313" },
+  "Virtualização/Snap": { color: "#3B6D11", bg: "#EAF3DE", dbg: "#27500A", dbbg: "#173404" },
+  "Ferramentas nativas": { color: "#5F5E5A", bg: "#F1EFE8", dbg: "#444441", dbbg: "#2C2C2A" },
+};
+
+const data = [
+  // Sistema
+  { k: ["Win"], desc: "Abrir/fechar menu Iniciar", cat: "Sistema" },
+  { k: ["Win","D"], desc: "Mostrar/ocultar área de trabalho", cat: "Sistema" },
+  { k: ["Win","L"], desc: "Bloquear a tela", cat: "Sistema" },
+  { k: ["Win","I"], desc: "Abrir Configurações", cat: "Sistema" },
+  { k: ["Win","X"], desc: "Menu de acesso rápido (admin)", cat: "Sistema" },
+  { k: ["Win","R"], desc: "Abrir caixa Executar", cat: "Sistema" },
+  { k: ["Win","S"], desc: "Abrir Pesquisa do Windows", cat: "Sistema" },
+  { k: ["Win","A"], desc: "Abrir Central de Ações / Ajustes rápidos", cat: "Sistema" },
+  { k: ["Win","N"], desc: "Abrir painel de Notificações (Win 11)", cat: "Sistema" },
+  { k: ["Win","K"], desc: "Abrir Conexão Rápida (Transmitir)", cat: "Sistema" },
+  { k: ["Win","P"], desc: "Modo de projeção de tela", cat: "Sistema" },
+  { k: ["Win","U"], desc: "Abrir Central de Facilidade de Acesso", cat: "Sistema" },
+  { k: ["Win","Pause"], desc: "Abrir informações do sistema", cat: "Sistema" },
+  { k: ["Ctrl","Shift","Esc"], desc: "Abrir Gerenciador de Tarefas", cat: "Sistema" },
+  { k: ["Ctrl","Alt","Del"], desc: "Tela de segurança do Windows", cat: "Sistema" },
+  { k: ["Alt","F4"], desc: "Fechar janela/aplicativo atual", cat: "Sistema" },
+  { k: ["Alt","Tab"], desc: "Alternar entre janelas abertas", cat: "Sistema" },
+  { k: ["Win","Tab"], desc: "Visão de Tarefas (Task View)", cat: "Sistema" },
+  { k: ["Win","V"], desc: "Histórico da área de transferência", cat: "Sistema" },
+  { k: ["PrtScn"], desc: "Capturar tela inteira (área de transferência)", cat: "Sistema" },
+  { k: ["Win","Shift","S"], desc: "Captura de tela parcial (Recorte)", cat: "Sistema" },
+  { k: ["Win","."], desc: "Abrir painel de Emojis", cat: "Sistema" },
+
+  // Janelas
+  { k: ["Win","←"], desc: "Encaixar janela à esquerda", cat: "Janelas" },
+  { k: ["Win","→"], desc: "Encaixar janela à direita", cat: "Janelas" },
+  { k: ["Win","↑"], desc: "Maximizar janela", cat: "Janelas" },
+  { k: ["Win","↓"], desc: "Minimizar / restaurar janela", cat: "Janelas" },
+  { k: ["Win","Shift","↑"], desc: "Esticar janela verticalmente", cat: "Janelas" },
+  { k: ["Win","M"], desc: "Minimizar todas as janelas", cat: "Janelas" },
+  { k: ["Win","Shift","M"], desc: "Restaurar janelas minimizadas", cat: "Janelas" },
+  { k: ["Win","Home"], desc: "Minimizar janelas não ativas", cat: "Janelas" },
+  { k: ["Alt","Espaço"], desc: "Menu de controle da janela", cat: "Janelas" },
+
+  // Área de trabalho
+  { k: ["Win","Ctrl","D"], desc: "Criar nova área de trabalho virtual", cat: "Área de trabalho" },
+  { k: ["Win","Ctrl","F4"], desc: "Fechar área de trabalho virtual atual", cat: "Área de trabalho" },
+  { k: ["Win","Ctrl","→"], desc: "Ir para próxima área de trabalho", cat: "Área de trabalho" },
+  { k: ["Win","Ctrl","←"], desc: "Ir para área de trabalho anterior", cat: "Área de trabalho" },
+
+  // Explorador de arquivos
+  { k: ["Win","E"], desc: "Abrir Explorador de Arquivos", cat: "Explorador de arquivos" },
+  { k: ["Alt","←"], desc: "Voltar no histórico de navegação", cat: "Explorador de arquivos" },
+  { k: ["Alt","→"], desc: "Avançar no histórico de navegação", cat: "Explorador de arquivos" },
+  { k: ["Alt","↑"], desc: "Subir um nível de pasta", cat: "Explorador de arquivos" },
+  { k: ["F2"], desc: "Renomear arquivo/pasta selecionado", cat: "Explorador de arquivos" },
+  { k: ["F5"], desc: "Atualizar janela", cat: "Explorador de arquivos" },
+  { k: ["Delete"], desc: "Mover para Lixeira", cat: "Explorador de arquivos" },
+  { k: ["Shift","Delete"], desc: "Excluir permanentemente (sem Lixeira)", cat: "Explorador de arquivos" },
+  { k: ["Ctrl","N"], desc: "Abrir nova janela do Explorador", cat: "Explorador de arquivos" },
+  { k: ["Ctrl","W"], desc: "Fechar janela atual", cat: "Explorador de arquivos" },
+  { k: ["Ctrl","E"], desc: "Focar na barra de pesquisa", cat: "Explorador de arquivos" },
+  { k: ["Ctrl","L"], desc: "Selecionar barra de endereços", cat: "Explorador de arquivos" },
+  { k: ["Ctrl","Shift","N"], desc: "Criar nova pasta", cat: "Explorador de arquivos" },
+
+  // Edição de texto
+  { k: ["Ctrl","C"], desc: "Copiar", cat: "Edição de texto" },
+  { k: ["Ctrl","X"], desc: "Recortar", cat: "Edição de texto" },
+  { k: ["Ctrl","V"], desc: "Colar", cat: "Edição de texto" },
+  { k: ["Ctrl","Z"], desc: "Desfazer", cat: "Edição de texto" },
+  { k: ["Ctrl","Y"], desc: "Refazer", cat: "Edição de texto" },
+  { k: ["Ctrl","A"], desc: "Selecionar tudo", cat: "Edição de texto" },
+  { k: ["Ctrl","F"], desc: "Localizar", cat: "Edição de texto" },
+  { k: ["Ctrl","H"], desc: "Localizar e substituir", cat: "Edição de texto" },
+  { k: ["Ctrl","→"], desc: "Mover cursor uma palavra à frente", cat: "Edição de texto" },
+  { k: ["Ctrl","←"], desc: "Mover cursor uma palavra atrás", cat: "Edição de texto" },
+  { k: ["Home"], desc: "Ir ao início da linha", cat: "Edição de texto" },
+  { k: ["End"], desc: "Ir ao fim da linha", cat: "Edição de texto" },
+  { k: ["Ctrl","Home"], desc: "Ir ao início do documento", cat: "Edição de texto" },
+  { k: ["Ctrl","End"], desc: "Ir ao fim do documento", cat: "Edição de texto" },
+
+  // Virtualização/Snap
+  { k: ["Win","Z"], desc: "Abrir layouts Snap (Win 11)", cat: "Virtualização/Snap" },
+  { k: ["Win","Ctrl","Shift","B"], desc: "Reiniciar driver de vídeo", cat: "Virtualização/Snap" },
+
+  // Acessibilidade
+  { k: ["Win","+"], desc: "Abrir e ampliar com Lupa", cat: "Acessibilidade" },
+  { k: ["Win","-"], desc: "Diminuir zoom da Lupa", cat: "Acessibilidade" },
+  { k: ["Win","Esc"], desc: "Fechar Lupa", cat: "Acessibilidade" },
+  { k: ["Win","Enter"], desc: "Abrir Narrador", cat: "Acessibilidade" },
+  { k: ["Win","Ctrl","O"], desc: "Abrir Teclado Virtual", cat: "Acessibilidade" },
+
+  // Ferramentas nativas
+  { k: ["Win","R"], desc: "Executar → 'mspaint' para Paint", cat: "Ferramentas nativas" },
+  { k: ["Win","R"], desc: "Executar → 'notepad' para Bloco de Notas", cat: "Ferramentas nativas" },
+  { k: ["Win","R"], desc: "Executar → 'calc' para Calculadora", cat: "Ferramentas nativas" },
+  { k: ["Win","R"], desc: "Executar → 'mstsc' para Área de Trabalho Remota", cat: "Ferramentas nativas" },
+  { k: ["Win","R"], desc: "Executar → 'snippingtool' para Ferramenta de Recorte", cat: "Ferramentas nativas" },
+  { k: ["Win","R"], desc: "Executar → 'msconfig' para Configuração do Sistema", cat: "Ferramentas nativas" },
+  { k: ["Win","R"], desc: "Executar → 'regedit' para Editor do Registro", cat: "Ferramentas nativas" },
+  { k: ["Win","R"], desc: "Executar → 'gpedit.msc' para Editor de Política de Grupo", cat: "Ferramentas nativas" },
+  { k: ["Win","R"], desc: "Executar → 'diskmgmt.msc' para Gerenciamento de Disco", cat: "Ferramentas nativas" },
+  { k: ["Win","R"], desc: "Executar → 'services.msc' para Serviços do Windows", cat: "Ferramentas nativas" },
+  { k: ["Win","R"], desc: "Executar → 'eventvwr' para Visualizador de Eventos", cat: "Ferramentas nativas" },
+  { k: ["Win","R"], desc: "Executar → 'devmgmt.msc' para Gerenciador de Dispositivos", cat: "Ferramentas nativas" },
+  { k: ["Win","R"], desc: "Executar → 'control' para Painel de Controle", cat: "Ferramentas nativas" },
+  { k: ["Win","R"], desc: "Executar → 'perfmon' para Monitor de Desempenho", cat: "Ferramentas nativas" },
+  { k: ["Win","R"], desc: "Executar → 'resmon' para Monitor de Recursos", cat: "Ferramentas nativas" },
+];
+
+let activeCat = "Todos";
+
+function badge(cat) {
+  const dark = matchMedia('(prefers-color-scheme: dark)').matches;
+  const c = cats[cat];
+  const bg = dark ? c.dbbg : c.bg;
+  const col = dark ? c.bg : c.color;
+  return `<span class="cat-badge" style="background:${bg};color:${col}">${cat}</span>`;
+}
+
+function kbd(keys) {
+  return `<span class="kbd">${keys.map((k,i) => `${i>0?'<span class="plus">+</span>':''}<span class="k">${k}</span>`).join('')}</span>`;
+}
+
+function render() {
+  const q = document.getElementById('q').value.toLowerCase();
+  const rows = data.filter(r =>
+    (activeCat === "Todos" || r.cat === activeCat) &&
+    (r.desc.toLowerCase().includes(q) || r.k.join('').toLowerCase().includes(q) || r.cat.toLowerCase().includes(q))
+  );
+  const tbody = document.getElementById('tbody');
+  document.getElementById('cnt').textContent = rows.length + ' atalho' + (rows.length !== 1 ? 's' : '');
+  if (!rows.length) {
+    tbody.innerHTML = `<tr><td colspan="3" class="empty">Nenhum atalho encontrado.</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = rows.map(r =>
+    `<tr><td>${kbd(r.k)}</td><td style="color:var(--color-text-secondary)">${r.desc}</td><td>${badge(r.cat)}</td></tr>`
+  ).join('');
+}
+
+function buildTabs() {
+  const all = ["Todos", ...Object.keys(cats)];
+  document.getElementById('tabs').innerHTML = all.map(c =>
+    `<button class="tab${c===activeCat?' active':''}" onclick="setTab('${c}')">${c}</button>`
+  ).join('');
+}
+
+function setTab(cat) {
+  activeCat = cat;
+  buildTabs();
+  render();
+}
+
+buildTabs();
+render();
+</script>
