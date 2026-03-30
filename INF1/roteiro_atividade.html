@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>INF1 — Projeto: Meu Computador Organizado</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow:wght@400;600;700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --green: #00FF87;
+    --green-dim: #00cc6a;
+    --green-dark: #003d20;
+    --amber: #FFB800;
+    --red: #FF4444;
+    --bg: #0a0f0a;
+    --bg2: #0f1a10;
+    --bg3: #162018;
+    --border: #1e3320;
+    --text: #c8e6c9;
+    --text-dim: #6a9b72;
+    --mono: 'Share Tech Mono', monospace;
+    --sans: 'Barlow', sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Scanline overlay */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0,0,0,0.07) 2px,
+      rgba(0,0,0,0.07) 4px
+    );
+    pointer-events: none;
+    z-index: 999;
+  }
+
+  /* Noise texture */
+  body::after {
+    content: '';
+    position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+    pointer-events: none; z-index: 998; opacity: 0.4;
+  }
+
+  .page { max-width: 860px; margin: 0 auto; padding: 48px 24px 80px; position: relative; z-index: 1; }
+
+  /* ─── HEADER ─── */
+  header { margin-bottom: 48px; }
+
+  .sys-line {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-dim);
+    letter-spacing: 0.08em;
+    margin-bottom: 20px;
+    display: flex; gap: 24px; flex-wrap: wrap;
+  }
+  .sys-line span { color: var(--green); }
+
+  .badge-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
+  .badge {
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em;
+    padding: 3px 10px; border-radius: 2px;
+    background: var(--green-dark); color: var(--green);
+    border: 1px solid var(--green-dim);
+  }
+  .badge.amber { background: #2a1f00; color: var(--amber); border-color: #7a5500; }
+  .badge.red   { background: #1f0000; color: var(--red);   border-color: #7a0000; }
+
+  h1 {
+    font-family: var(--sans);
+    font-size: clamp(32px, 6vw, 56px);
+    font-weight: 900;
+    line-height: 1;
+    color: var(--green);
+    text-shadow: 0 0 40px rgba(0,255,135,0.25);
+    letter-spacing: -0.02em;
+    margin-bottom: 8px;
+  }
+  h1 em { color: var(--text-dim); font-style: normal; }
+
+  .subtitle {
+    font-size: 15px; color: var(--text-dim); max-width: 560px;
+    line-height: 1.6; margin-top: 12px;
+  }
+
+  /* ─── DIVIDER ─── */
+  .divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 36px 0;
+    position: relative;
+  }
+  .divider::before {
+    content: attr(data-label);
+    position: absolute; left: 0; top: -9px;
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em;
+    color: var(--text-dim); background: var(--bg);
+    padding-right: 12px;
+  }
+
+  /* ─── OBJECTIVE BOX ─── */
+  .objective {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--green);
+    padding: 20px 24px;
+    border-radius: 4px;
+    margin-bottom: 32px;
+  }
+  .objective h3 {
+    font-family: var(--mono); font-size: 11px; letter-spacing: 0.15em;
+    color: var(--green-dim); text-transform: uppercase; margin-bottom: 10px;
+  }
+  .objective p { font-size: 14px; line-height: 1.7; color: var(--text); }
+
+  /* ─── COMMAND REFERENCE ─── */
+  .cmd-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 12px;
+    margin-bottom: 32px;
+  }
+  .cmd-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 14px 16px;
+    transition: border-color .2s, background .2s;
+  }
+  .cmd-card:hover { border-color: var(--green-dim); background: var(--bg3); }
+  .cmd-name {
+    font-family: var(--mono); font-size: 13px; font-weight: bold;
+    color: var(--green); margin-bottom: 4px;
+  }
+  .cmd-syn {
+    font-family: var(--mono); font-size: 10px; color: var(--text-dim);
+    margin-bottom: 6px; word-break: break-all;
+  }
+  .cmd-desc { font-size: 12px; color: var(--text-dim); line-height: 1.5; }
+
+  /* ─── STEPS ─── */
+  .steps { counter-reset: step; display: flex; flex-direction: column; gap: 0; }
+
+  .step {
+    display: grid;
+    grid-template-columns: 48px 1fr;
+    gap: 0 20px;
+    padding-bottom: 36px;
+    position: relative;
+  }
+  .step:last-child { padding-bottom: 0; }
+
+  /* vertical line */
+  .step:not(:last-child) .step-num::after {
+    content: '';
+    position: absolute;
+    left: 23px; top: 48px; bottom: 0;
+    width: 1px;
+    background: linear-gradient(to bottom, var(--green-dim), transparent);
+  }
+
+  .step-num {
+    width: 48px; height: 48px; flex-shrink: 0;
+    border: 2px solid var(--green);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--mono); font-size: 13px; color: var(--green);
+    background: var(--bg);
+    position: relative;
+    counter-increment: step;
+    box-shadow: 0 0 16px rgba(0,255,135,0.12);
+  }
+
+  .step-body { padding-top: 12px; }
+  .step-title {
+    font-size: 16px; font-weight: 700; color: var(--text);
+    margin-bottom: 6px; letter-spacing: -0.01em;
+  }
+  .step-desc { font-size: 13px; color: var(--text-dim); line-height: 1.6; margin-bottom: 12px; }
+
+  /* code block */
+  pre {
+    background: #060c07;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 14px 16px;
+    overflow-x: auto;
+    font-family: var(--mono);
+    font-size: 12px;
+    line-height: 1.8;
+    color: var(--text);
+    margin-bottom: 10px;
+    position: relative;
+  }
+  pre .prompt { color: var(--green-dim); user-select: none; }
+  pre .cmd    { color: var(--green); }
+  pre .arg    { color: var(--amber); }
+  pre .cmt    { color: #3a5c40; font-style: italic; }
+  pre .var    { color: #6ac8ff; }
+
+  .pre-label {
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em;
+    color: var(--text-dim); margin-bottom: 4px;
+    text-transform: uppercase;
+  }
+
+  /* tip */
+  .tip {
+    display: flex; gap: 10px; align-items: flex-start;
+    background: #0a1a0a; border: 1px solid #1a3d2a;
+    border-radius: 4px; padding: 10px 14px;
+    font-size: 12px; color: var(--text-dim); line-height: 1.5;
+    margin-top: 8px;
+  }
+  .tip-icon { color: var(--green); font-size: 14px; flex-shrink: 0; margin-top: 1px; }
+  .tip strong { color: var(--green-dim); }
+
+  /* warning */
+  .warn {
+    display: flex; gap: 10px; align-items: flex-start;
+    background: #1a1000; border: 1px solid #4a3000;
+    border-radius: 4px; padding: 10px 14px;
+    font-size: 12px; color: #c8a000; line-height: 1.5;
+    margin-top: 8px;
+  }
+  .warn-icon { flex-shrink: 0; }
+
+  /* ─── FOLDER TREE ─── */
+  .tree {
+    background: #060c07;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 16px 20px;
+    font-family: var(--mono);
+    font-size: 12px;
+    line-height: 2;
+  }
+  .tree-root { color: var(--green); font-weight: bold; }
+  .tree-dir  { color: var(--amber); }
+  .tree-file { color: var(--text-dim); }
+  .tree-line { color: #2a4a30; }
+
+  /* ─── CHALLENGE ─── */
+  .challenge {
+    background: var(--bg2);
+    border: 1px solid #3a2a00;
+    border-top: 3px solid var(--amber);
+    border-radius: 4px;
+    padding: 24px;
+    margin: 36px 0;
+  }
+  .challenge h3 {
+    font-family: var(--mono); font-size: 11px; letter-spacing: 0.15em;
+    color: var(--amber); text-transform: uppercase; margin-bottom: 4px;
+  }
+  .challenge h4 {
+    font-size: 18px; font-weight: 700; color: var(--text);
+    margin-bottom: 16px; letter-spacing: -0.01em;
+  }
+  .check-list { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+  .check-list li {
+    display: flex; gap: 10px; align-items: flex-start;
+    font-size: 13px; color: var(--text-dim); line-height: 1.5;
+  }
+  .check-list li::before {
+    content: '[ ]';
+    font-family: var(--mono); font-size: 11px;
+    color: var(--amber); flex-shrink: 0; margin-top: 1px;
+  }
+  .check-list li strong { color: var(--text); }
+
+  /* ─── DELIVERABLES ─── */
+  .deliver {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 24px;
+  }
+  .deliver h3 {
+    font-family: var(--mono); font-size: 11px; letter-spacing: 0.15em;
+    color: var(--green-dim); text-transform: uppercase; margin-bottom: 4px;
+  }
+  .deliver h4 { font-size: 17px; font-weight: 700; color: var(--text); margin-bottom: 16px; }
+  .deliver-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .deliver-item {
+    border: 1px dashed var(--border);
+    border-radius: 4px; padding: 12px 14px;
+  }
+  .deliver-item .num {
+    font-family: var(--mono); font-size: 10px; color: var(--green-dim);
+    margin-bottom: 4px;
+  }
+  .deliver-item .name { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 3px; }
+  .deliver-item .detail { font-size: 11px; color: var(--text-dim); line-height: 1.4; }
+
+  @media (max-width: 540px) {
+    .deliver-grid { grid-template-columns: 1fr; }
+    .cmd-grid { grid-template-columns: 1fr; }
+  }
+
+  /* ─── FOOTER ─── */
+  footer {
+    margin-top: 60px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+    display: flex; justify-content: space-between; align-items: center;
+    flex-wrap: wrap; gap: 12px;
+  }
+  footer span { font-family: var(--mono); font-size: 10px; color: var(--text-dim); }
+
+  /* ─── ANIMATIONS ─── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .page > * { animation: fadeUp .5s ease backwards; }
+  .page > *:nth-child(1) { animation-delay: .05s; }
+  .page > *:nth-child(2) { animation-delay: .1s; }
+  .page > *:nth-child(3) { animation-delay: .15s; }
+  .page > *:nth-child(4) { animation-delay: .2s; }
+  .page > *:nth-child(5) { animation-delay: .25s; }
+  .page > *:nth-child(6) { animation-delay: .3s; }
+
+  .blink { animation: blink 1s step-end infinite; }
+  @keyframes blink { 50% { opacity: 0; } }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- HEADER -->
+  <header>
+    <div class="sys-line">
+      <span>INF1</span>
+      <span style="color:var(--text-dim)">Introdução ao CLI do Windows</span>
+      <span style="color:var(--text-dim)">Unidade 2 — Automação com .BAT</span>
+    </div>
+    <div class="badge-row">
+      <span class="badge">ATIVIDADE PRÁTICA</span>
+      <span class="badge amber">⏱ 90 MIN</span>
+      <span class="badge red">INDIVIDUAL</span>
+    </div>
+    <h1>Meu Computador<br><em>Organizado</em> <span class="blink">_</span></h1>
+    <p class="subtitle">
+      Crie um script <code style="font-family:var(--mono);color:var(--green)">.bat</code> que organize automaticamente arquivos em pastas por família, 
+      gere documentos de texto e abra o Paint para produzir uma imagem — tudo via linha de comando.
+    </p>
+  </header>
+
+  <!-- OBJECTIVE -->
+  <div class="objective">
+    <h3>▸ Objetivo de aprendizagem</h3>
+    <p>
+      Ao final desta atividade você será capaz de criar arquivos <strong style="color:var(--text)">.bat</strong>, 
+      usar variáveis de ambiente, criar e navegar entre pastas com o <strong style="color:var(--text)">CMD</strong>, 
+      gerar arquivos de texto automaticamente, abrir programas nativos do Windows e organizar arquivos 
+      em uma estrutura de diretórios por família de tipo.
+    </p>
+  </div>
+
+  <hr class="divider" data-label="REFERÊNCIA RÁPIDA DE COMANDOS">
+
+  <!-- COMMAND REFERENCE -->
+  <div class="cmd-grid">
+    <div class="cmd-card">
+      <div class="cmd-name">@echo off</div>
+      <div class="cmd-syn">@echo off</div>
+      <div class="cmd-desc">Impede que cada linha do script seja exibida no terminal. Coloque sempre na 1ª linha.</div>
+    </div>
+    <div class="cmd-card">
+      <div class="cmd-name">REM</div>
+      <div class="cmd-syn">REM isso é um comentário</div>
+      <div class="cmd-desc">Linha de comentário. O sistema ignora tudo que vem após REM.</div>
+    </div>
+    <div class="cmd-card">
+      <div class="cmd-name">echo</div>
+      <div class="cmd-syn">echo Olá mundo<br>echo texto &gt; arquivo.txt<br>echo mais &gt;&gt; arquivo.txt</div>
+      <div class="cmd-desc">Exibe texto no terminal. Com <code>&gt;</code> cria/sobrescreve um arquivo. Com <code>&gt;&gt;</code> adiciona ao fim.</div>
+    </div>
+    <div class="cmd-card">
+      <div class="cmd-name">mkdir</div>
+      <div class="cmd-syn">mkdir NomeDaPasta<br>mkdir "C:\Caminho\Pasta"</div>
+      <div class="cmd-desc">Cria uma ou mais pastas. Use aspas se o nome tiver espaços.</div>
+    </div>
+    <div class="cmd-card">
+      <div class="cmd-name">set</div>
+      <div class="cmd-syn">set NOME=valor<br>echo %NOME%</div>
+      <div class="cmd-desc">Cria uma variável. Use <code>%VARIAVEL%</code> para recuperar o valor depois.</div>
+    </div>
+    <div class="cmd-card">
+      <div class="cmd-name">copy / move</div>
+      <div class="cmd-syn">copy origem destino\<br>move arquivo "pasta\"</div>
+      <div class="cmd-desc"><code>copy</code> duplica o arquivo. <code>move</code> transfere para outro lugar.</div>
+    </div>
+    <div class="cmd-card">
+      <div class="cmd-name">start</div>
+      <div class="cmd-syn">start mspaint<br>start /wait mspaint</div>
+      <div class="cmd-desc">Abre um programa. <code>/wait</code> faz o script pausar até o programa ser fechado.</div>
+    </div>
+    <div class="cmd-card">
+      <div class="cmd-name">if exist</div>
+      <div class="cmd-syn">if exist "arquivo.txt" (<br>&nbsp; echo existe<br>) else (<br>&nbsp; echo não existe<br>)</div>
+      <div class="cmd-desc">Verifica se um arquivo ou pasta existe antes de agir.</div>
+    </div>
+    <div class="cmd-card">
+      <div class="cmd-name">pause</div>
+      <div class="cmd-syn">pause<br>pause &gt;nul</div>
+      <div class="cmd-desc">Pausa o script esperando o usuário. <code>&gt;nul</code> esconde a mensagem padrão.</div>
+    </div>
+    <div class="cmd-card">
+      <div class="cmd-name">cls / title</div>
+      <div class="cmd-syn">cls<br>title Meu Script</div>
+      <div class="cmd-desc"><code>cls</code> limpa a tela. <code>title</code> muda o título da janela do terminal.</div>
+    </div>
+    <div class="cmd-card">
+      <div class="cmd-name">tree</div>
+      <div class="cmd-syn">tree "C:\pasta" /f</div>
+      <div class="cmd-desc">Exibe a árvore de diretórios visualmente. <code>/f</code> inclui os arquivos.</div>
+    </div>
+    <div class="cmd-card">
+      <div class="cmd-name">explorer</div>
+      <div class="cmd-syn">explorer "C:\pasta"</div>
+      <div class="cmd-desc">Abre o Explorador de Arquivos do Windows na pasta indicada.</div>
+    </div>
+  </div>
+
+  <hr class="divider" data-label="ESTRUTURA ESPERADA DO PROJETO">
+
+  <!-- FOLDER TREE -->
+  <div class="tree">
+    <div class="tree-root">📁 ProjetoINF1\  <span style="color:var(--text-dim);font-size:10px">(criada na Área de Trabalho)</span></div>
+    <div><span class="tree-line">├──</span> <span class="tree-dir">📁 Imagens\</span>       <span class="tree-file" style="font-size:10px">→ .bmp  .png  .jpg</span></div>
+    <div><span class="tree-line">│   └──</span> <span class="tree-file">meu_desenho.bmp</span></div>
+    <div><span class="tree-line">├──</span> <span class="tree-dir">📁 Documentos\</span>    <span class="tree-file" style="font-size:10px">→ .txt  .doc</span></div>
+    <div><span class="tree-line">│   ├──</span> <span class="tree-file">bemvindo.txt</span></div>
+    <div><span class="tree-line">│   └──</span> <span class="tree-file">lista_compras.txt</span></div>
+    <div><span class="tree-line">├──</span> <span class="tree-dir">📁 Musicas\</span>       <span class="tree-file" style="font-size:10px">→ .mp3  .wav</span></div>
+    <div><span class="tree-line">├──</span> <span class="tree-dir">📁 Videos\</span>        <span class="tree-file" style="font-size:10px">→ .mp4  .avi</span></div>
+    <div><span class="tree-line">├──</span> <span class="tree-dir">📁 Programas\</span>     <span class="tree-file" style="font-size:10px">→ .exe  .bat</span></div>
+    <div><span class="tree-line">│   └──</span> <span class="tree-file">projeto_meu_computador.bat</span></div>
+    <div><span class="tree-line">└──</span> <span class="tree-file">LEIA-ME.txt</span></div>
+  </div>
+
+  <hr class="divider" data-label="PASSO A PASSO">
+
+  <!-- STEPS -->
+  <div class="steps">
+
+    <div class="step">
+      <div class="step-num">01</div>
+      <div class="step-body">
+        <div class="step-title">Abrir o Bloco de Notas e criar o arquivo .bat</div>
+        <div class="step-desc">
+          Todo script <code>.bat</code> é um arquivo de texto simples. Abra o Bloco de Notas, escreva os comandos 
+          e salve com a extensão <code>.bat</code> — não <code>.txt</code>!
+        </div>
+        <div class="pre-label">como abrir</div>
+        <pre><span class="prompt">Win+R  →  </span><span class="cmd">notepad</span>   <span class="cmt">← abre o Bloco de Notas</span></pre>
+        <div class="pre-label">ao salvar (Ctrl+S)</div>
+        <pre><span class="cmt">Nome do arquivo:</span>  <span class="arg">projeto_meu_computador.bat</span>
+<span class="cmt">Tipo:</span>             <span class="arg">Todos os Arquivos (*.*)</span>   <span class="cmt">← IMPORTANTE!</span></pre>
+        <div class="tip">
+          <span class="tip-icon">💡</span>
+          <span>Se você salvar como <strong>.txt</strong>, o Windows não vai executar o script. Sempre escolha "Todos os Arquivos" ao salvar um <strong>.bat</strong>.</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">02</div>
+      <div class="step-body">
+        <div class="step-title">Configurar o cabeçalho e variáveis</div>
+        <div class="step-desc">
+          Comece o script desligando o eco dos comandos, definindo um título e criando uma 
+          variável com o caminho da pasta principal do projeto.
+        </div>
+        <div class="pre-label">código</div>
+        <pre><span class="cmd">@echo off</span>
+<span class="cmt">REM Desliga a exibição de cada linha no terminal</span>
+
+<span class="cmd">title</span> <span class="arg">Projeto INF1</span>
+<span class="cmt">REM Muda o título da janela do CMD</span>
+
+<span class="cmd">set</span> <span class="var">PROJETO</span>=<span class="arg">%USERPROFILE%\Desktop\ProjetoINF1</span>
+<span class="cmt">REM %USERPROFILE% aponta para C:\Users\SeuNome automaticamente</span>
+
+<span class="cmd">echo</span> Iniciando projeto em: <span class="var">%PROJETO%</span>
+<span class="cmd">pause</span></pre>
+        <div class="tip">
+          <span class="tip-icon">💡</span>
+          <span>Variáveis de ambiente como <strong>%USERPROFILE%</strong>, <strong>%DATE%</strong>, <strong>%TIME%</strong> e <strong>%USERNAME%</strong> já existem no Windows — você pode usar sem precisar criar.</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">03</div>
+      <div class="step-body">
+        <div class="step-title">Criar a estrutura de pastas por família</div>
+        <div class="step-desc">
+          Use <code>mkdir</code> para criar a pasta principal e todas as subpastas. Lembre-se: 
+          cada família de arquivo tem sua própria pasta!
+        </div>
+        <div class="pre-label">código</div>
+        <pre><span class="cmd">mkdir</span> <span class="arg">"%PROJETO%"</span>
+<span class="cmd">mkdir</span> <span class="arg">"%PROJETO%\Imagens"</span>
+<span class="cmd">mkdir</span> <span class="arg">"%PROJETO%\Documentos"</span>
+<span class="cmd">mkdir</span> <span class="arg">"%PROJETO%\Musicas"</span>
+<span class="cmd">mkdir</span> <span class="arg">"%PROJETO%\Videos"</span>
+<span class="cmd">mkdir</span> <span class="arg">"%PROJETO%\Programas"</span>
+
+<span class="cmd">echo</span> Pastas criadas com sucesso!</pre>
+        <div class="warn">
+          <span class="warn-icon">⚠</span>
+          <span>Se a pasta já existir, o <code>mkdir</code> exibe um erro — mas o script <strong>continua rodando normalmente</strong>. Isso é esperado na segunda execução.</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">04</div>
+      <div class="step-body">
+        <div class="step-title">Gerar arquivos de texto automaticamente</div>
+        <div class="step-desc">
+          Crie pelo menos <strong>dois arquivos .txt</strong> dentro da pasta <code>Documentos</code> usando 
+          <code>echo</code> com os operadores <code>&gt;</code> e <code>&gt;&gt;</code>.
+        </div>
+        <div class="pre-label">código</div>
+        <pre><span class="cmt">REM Cria o arquivo (> sobrescreve se já existir)</span>
+<span class="cmd">echo</span> <span class="arg">Meu primeiro documento via CMD!</span> <span class="cmt">&gt;</span> <span class="arg">"%PROJETO%\Documentos\bemvindo.txt"</span>
+<span class="cmd">echo</span> <span class="arg">Criado em: %DATE%</span>                <span class="cmt">&gt;&gt;</span> <span class="arg">"%PROJETO%\Documentos\bemvindo.txt"</span>
+<span class="cmd">echo</span> <span class="arg">Usuario: %USERNAME%</span>               <span class="cmt">&gt;&gt;</span> <span class="arg">"%PROJETO%\Documentos\bemvindo.txt"</span>
+
+<span class="cmt">REM Cria um segundo documento</span>
+<span class="cmd">echo</span> <span class="arg">Minhas materias favoritas:</span>       <span class="cmt">&gt;</span>  <span class="arg">"%PROJETO%\Documentos\materias.txt"</span>
+<span class="cmd">echo</span> <span class="arg">- Informatica</span>                    <span class="cmt">&gt;&gt;</span> <span class="arg">"%PROJETO%\Documentos\materias.txt"</span>
+<span class="cmd">echo</span> <span class="arg">- Matematica</span>                     <span class="cmt">&gt;&gt;</span> <span class="arg">"%PROJETO%\Documentos\materias.txt"</span></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">05</div>
+      <div class="step-body">
+        <div class="step-title">Abrir o Paint e salvar o desenho na pasta Imagens</div>
+        <div class="step-desc">
+          Use <code>start /wait mspaint</code> para abrir o Paint. O <code>/wait</code> faz o script 
+          esperar você terminar de desenhar. Quando fechar o Paint, o script continua!
+        </div>
+        <div class="pre-label">código</div>
+        <pre><span class="cmd">echo</span> O Paint vai abrir. Faca um desenho e salve em:
+<span class="cmd">echo</span> <span class="arg">%PROJETO%\Imagens\meu_desenho.bmp</span>
+<span class="cmd">echo</span> Depois FECHE o Paint para continuar.
+<span class="cmd">pause</span>
+
+<span class="cmd">start /wait</span> <span class="arg">mspaint</span>
+<span class="cmt">REM O script fica pausado aqui até você fechar o Paint!</span>
+
+<span class="cmd">echo</span> Paint fechado. Verificando...
+
+<span class="cmt">REM Verifica se o arquivo foi salvo corretamente</span>
+<span class="cmd">if exist</span> <span class="arg">"%PROJETO%\Imagens\meu_desenho.bmp"</span> (
+    <span class="cmd">echo</span> <span class="arg">[OK] Desenho encontrado!</span>
+) <span class="cmd">else</span> (
+    <span class="cmd">echo</span> <span class="arg">[AVISO] Salve o desenho na pasta Imagens!</span>
+)</pre>
+        <div class="tip">
+          <span class="tip-icon">💡</span>
+          <span>No Paint: <strong>Arquivo → Salvar como → BMP</strong> e navegue até a pasta <code>Imagens</code> do seu projeto.</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">06</div>
+      <div class="step-body">
+        <div class="step-title">Copiar o próprio script para a pasta Programas</div>
+        <div class="step-desc">
+          Um script que se auto-organiza! Copie o arquivo <code>.bat</code> para a pasta <code>Programas</code>
+          usando a variável especial <code>%~f0</code> — ela contém o caminho do próprio script.
+        </div>
+        <div class="pre-label">código</div>
+        <pre><span class="cmd">copy</span> <span class="arg">"%~f0"</span> <span class="arg">"%PROJETO%\Programas\meu_projeto.bat"</span> <span class="cmt">&gt;nul</span>
+<span class="cmd">echo</span> Script copiado para Programas!
+
+<span class="cmt">REM %~f0 = caminho completo do arquivo .bat em execução</span></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">07</div>
+      <div class="step-body">
+        <div class="step-title">Exibir a estrutura final e abrir o Explorador</div>
+        <div class="step-desc">
+          Finalize o script mostrando a árvore de pastas e arquivos com <code>tree</code>, 
+          depois abra o Explorador para confirmar visualmente o resultado.
+        </div>
+        <div class="pre-label">código</div>
+        <pre><span class="cmd">echo</span> ====================================
+<span class="cmd">echo</span>  ESTRUTURA FINAL DO PROJETO:
+<span class="cmd">echo</span> ====================================
+<span class="cmd">tree</span> <span class="arg">"%PROJETO%"</span> <span class="arg">/f</span>
+
+<span class="cmd">explorer</span> <span class="arg">"%PROJETO%"</span>
+<span class="cmt">REM Abre o Explorador de Arquivos na pasta do projeto</span>
+
+<span class="cmd">echo</span> Projeto concluido!
+<span class="cmd">pause</span> <span class="cmt">&gt;nul</span></pre>
+      </div>
+    </div>
+
+  </div>
+
+  <hr class="divider" data-label="DESAFIO">
+
+  <!-- CHALLENGE -->
+  <div class="challenge">
+    <h3>▸ Desafio extra</h3>
+    <h4>Faça o seu script ir além!</h4>
+    <ul class="check-list">
+      <li><strong>Crie pelo menos 3 documentos .txt</strong> com conteúdos diferentes — um diário, uma lista, uma receita, o que quiser.</li>
+      <li><strong>Adicione uma subpasta dentro de Imagens</strong> chamada <code>Rascunhos</code> e salve um segundo desenho lá.</li>
+      <li><strong>Crie um arquivo de log</strong> em <code>LEIA-ME.txt</code> com seu nome, data, hora e nome do computador usando variáveis de ambiente.</li>
+      <li><strong>Use <code>if exist</code></strong> para verificar cada arquivo criado e exibir <code>[OK]</code> ou <code>[ERRO]</code> para cada um.</li>
+      <li><strong>Crie um tema diferente</strong> — em vez de escola, organize como se fosse um projeto de jogo (pasta <code>Sprites</code>, <code>Sons</code>, <code>Mapas</code>, <code>Scripts</code>).</li>
+    </ul>
+  </div>
+
+  <!-- DELIVERABLES -->
+  <div class="deliver">
+    <h3>▸ O que entregar</h3>
+    <h4>Critérios de avaliação</h4>
+    <div class="deliver-grid">
+      <div class="deliver-item">
+        <div class="num">01</div>
+        <div class="name">Arquivo .bat funcionando</div>
+        <div class="detail">O script deve rodar sem erros críticos e criar toda a estrutura de pastas.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <span>INF1 — INTRODUÇÃO AO CLI DO WINDOWS</span>
+    <span>ATIVIDADE 2 — AUTOMAÇÃO COM .BAT</span>
+  </footer>
+
+</div>
+</body>
+</html>
