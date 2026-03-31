@@ -1,0 +1,1665 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Simulados — Fundamentos Backend</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Merriweather:wght@700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --primary: #1a3a5c;
+        --primary-light: #2557a7;
+        --primary-pale: #e8f0fb;
+        --accent: #0d6efd;
+        --green: #198754;
+        --green-pale: #d1e7dd;
+        --red: #dc3545;
+        --red-pale: #f8d7da;
+        --yellow: #ffc107;
+        --yellow-pale: #fff3cd;
+        --gray-100: #f8f9fa;
+        --gray-200: #e9ecef;
+        --gray-300: #dee2e6;
+        --gray-400: #ced4da;
+        --gray-500: #adb5bd;
+        --gray-600: #6c757d;
+        --gray-700: #495057;
+        --gray-800: #343a40;
+        --gray-900: #212529;
+        --white: #ffffff;
+        --shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        --radius: 8px;
+        --radius-sm: 5px;
+      }
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      html {
+        scroll-behavior: smooth;
+      }
+      body {
+        font-family: 'Inter', sans-serif;
+        background: var(--gray-100);
+        color: var(--gray-900);
+        min-height: 100vh;
+        font-size: 15px;
+        line-height: 1.6;
+      }
+
+      /* SCREENS */
+      .screen {
+        display: none;
+        min-height: 100vh;
+        align-items: center;
+        justify-content: center;
+        padding: 24px 16px 80px;
+      }
+      .screen.on {
+        display: flex;
+        flex-direction: column;
+      }
+
+      /* CARD */
+      .card {
+        background: var(--white);
+        border: 1px solid var(--gray-300);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        padding: 36px 40px;
+        max-width: 800px;
+        width: 100%;
+      }
+
+      /* HEADER */
+      .inst-header {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding-bottom: 16px;
+        margin-bottom: 16px;
+        border-bottom: 2px solid var(--primary);
+      }
+      .inst-logo {
+        width: 50px;
+        height: 50px;
+        background: var(--primary);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 20px;
+        flex-shrink: 0;
+      }
+      .inst-name {
+        font-family: 'Merriweather', serif;
+        font-size: 0.95rem;
+        font-weight: 700;
+        color: var(--primary);
+        line-height: 1.3;
+      }
+      .inst-sub {
+        font-size: 0.76rem;
+        color: var(--gray-600);
+        margin-top: 2px;
+      }
+      .inst-badge {
+        background: var(--primary);
+        color: white;
+        font-size: 0.68rem;
+        font-weight: 700;
+        letter-spacing: 1px;
+        padding: 4px 10px;
+        border-radius: 20px;
+        text-transform: uppercase;
+        white-space: nowrap;
+      }
+
+      /* TYPOGRAPHY */
+      h1.page-title {
+        font-family: 'Merriweather', serif;
+        font-size: 1.4rem;
+        color: var(--primary);
+        text-align: center;
+        margin-bottom: 4px;
+      }
+      h2.sec-title {
+        font-size: 1rem;
+        font-weight: 700;
+        color: var(--primary);
+        margin-bottom: 12px;
+      }
+      .divider {
+        height: 1px;
+        background: var(--gray-200);
+        margin: 18px 0;
+      }
+
+      /* SIM SELECTOR */
+      .sim-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+        gap: 14px;
+        margin: 18px 0;
+      }
+      .sim-card {
+        border: 2px solid var(--gray-300);
+        border-radius: var(--radius);
+        padding: 20px 14px;
+        cursor: pointer;
+        transition: all 0.2s;
+        text-align: center;
+        background: var(--white);
+      }
+      .sim-card:hover {
+        border-color: var(--accent);
+        box-shadow: var(--shadow);
+        transform: translateY(-2px);
+      }
+      .sim-card.selected {
+        border-color: var(--primary);
+        background: var(--primary-pale);
+      }
+      .sim-card.done {
+        border-color: var(--green);
+        background: var(--green-pale);
+        cursor: default;
+      }
+      .sim-card.done::after {
+        content: '✓ Concluído';
+        display: block;
+        font-size: 0.7rem;
+        font-weight: 700;
+        color: var(--green);
+        margin-top: 6px;
+      }
+      .sc-num {
+        font-family: 'Merriweather', serif;
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--primary);
+        line-height: 1;
+        margin-bottom: 6px;
+      }
+      .sc-title {
+        font-size: 0.8rem;
+        font-weight: 700;
+        color: var(--gray-700);
+        margin-bottom: 3px;
+      }
+      .sc-desc {
+        font-size: 0.73rem;
+        color: var(--gray-500);
+      }
+      .sim-card.done .sc-num {
+        color: var(--green);
+      }
+
+      /* ALERT */
+      .alert {
+        padding: 10px 14px;
+        border-radius: var(--radius-sm);
+        font-size: 0.84rem;
+        font-weight: 600;
+        margin-top: 10px;
+        display: none;
+      }
+      .alert-warn {
+        background: var(--yellow-pale);
+        border: 1px solid #ffecb5;
+        color: #664d03;
+      }
+
+      /* BUTTONS */
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-family: 'Inter', sans-serif;
+        font-size: 0.86rem;
+        font-weight: 700;
+        border: none;
+        border-radius: var(--radius-sm);
+        padding: 10px 22px;
+        cursor: pointer;
+        transition: all 0.18s;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+      }
+      .btn-primary {
+        background: var(--primary);
+        color: white;
+      }
+      .btn-primary:hover {
+        background: var(--primary-light);
+      }
+      .btn-primary:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+      }
+      .btn-outline {
+        background: transparent;
+        border: 1.5px solid var(--primary);
+        color: var(--primary);
+      }
+      .btn-outline:hover {
+        background: var(--primary-pale);
+      }
+      .btn-success {
+        background: var(--green);
+        color: white;
+      }
+      .btn-success:hover {
+        background: #157347;
+      }
+      .btn-sm {
+        padding: 7px 16px;
+        font-size: 0.78rem;
+      }
+
+      /* PROGRESS */
+      .prog-wrap {
+        margin: 12px 0 18px;
+      }
+      .prog-info {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.76rem;
+        font-weight: 700;
+        color: var(--gray-600);
+        margin-bottom: 4px;
+      }
+      .prog-track {
+        height: 8px;
+        background: var(--gray-200);
+        border-radius: 4px;
+        overflow: hidden;
+      }
+      .prog-fill {
+        height: 100%;
+        background: var(--primary);
+        border-radius: 4px;
+        transition: width 0.5s ease;
+      }
+
+      /* EXAM HEADER */
+      .exam-meta {
+        display: flex;
+        gap: 14px;
+        flex-wrap: wrap;
+        background: var(--primary-pale);
+        border: 1px solid #c0d4f5;
+        border-radius: var(--radius-sm);
+        padding: 10px 14px;
+        margin-bottom: 18px;
+        font-size: 0.78rem;
+      }
+      .meta-item {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        color: var(--gray-700);
+        font-weight: 600;
+      }
+
+      /* QUESTION BLOCK */
+      .q-block {
+        border: 1px solid var(--gray-200);
+        border-radius: var(--radius);
+        margin-bottom: 18px;
+        overflow: hidden;
+        animation: fadeUp 0.3s ease;
+      }
+      @keyframes fadeUp {
+        from {
+          opacity: 0;
+          transform: translateY(6px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      .q-header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 16px;
+        background: var(--gray-100);
+        border-bottom: 1px solid var(--gray-200);
+      }
+      .q-badge {
+        background: var(--primary);
+        color: white;
+        font-size: 0.68rem;
+        font-weight: 700;
+        padding: 3px 10px;
+        border-radius: 20px;
+        white-space: nowrap;
+        flex-shrink: 0;
+      }
+      .q-badge.essay {
+        background: var(--gray-700);
+      }
+      .q-type-tag {
+        font-size: 0.7rem;
+        color: var(--gray-500);
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+      .q-body {
+        padding: 16px 18px;
+      }
+
+      /* VISUAL */
+      .q-visual {
+        background: var(--primary-pale);
+        border: 1px solid #c0d4f5;
+        border-radius: var(--radius-sm);
+        padding: 12px 14px;
+        margin-bottom: 14px;
+        display: flex;
+        gap: 12px;
+        align-items: flex-start;
+        flex-wrap: wrap;
+      }
+      .qv-icon {
+        font-size: 1.9rem;
+        flex-shrink: 0;
+        line-height: 1;
+        margin-top: 2px;
+      }
+      .qv-content {
+        flex: 1;
+        min-width: 160px;
+      }
+      .qv-label {
+        font-size: 0.68rem;
+        font-weight: 700;
+        color: var(--primary);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 5px;
+      }
+      .qv-chips {
+        display: flex;
+        gap: 7px;
+        flex-wrap: wrap;
+      }
+      .chip {
+        display: inline-flex;
+        flex-direction: column;
+        align-items: center;
+        background: white;
+        border: 1px solid;
+        border-radius: 6px;
+        padding: 6px 9px;
+        min-width: 64px;
+        text-align: center;
+      }
+      .chip .ci {
+        font-size: 1.1rem;
+      }
+      .chip .cv {
+        font-size: 0.75rem;
+        font-weight: 700;
+        margin-top: 2px;
+      }
+      .chip .cl {
+        font-size: 0.62rem;
+        color: var(--gray-500);
+      }
+      .chip.blue {
+        border-color: #90c4f8;
+        background: #f0f7ff;
+      }
+      .chip.green {
+        border-color: #86d9a8;
+        background: #f0faf4;
+      }
+      .chip.red {
+        border-color: #f1adb5;
+        background: #fef5f5;
+      }
+      .chip.gold {
+        border-color: #f5c842;
+        background: #fffbec;
+      }
+      .chip.gray {
+        border-color: var(--gray-300);
+        background: var(--gray-100);
+      }
+
+      .q-stem {
+        font-size: 0.96rem;
+        color: var(--gray-800);
+        line-height: 1.7;
+        margin-bottom: 14px;
+        font-weight: 500;
+      }
+      .q-stem strong {
+        color: var(--primary);
+      }
+      .q-stem code {
+        background: var(--gray-100);
+        border: 1px solid var(--gray-300);
+        border-radius: 3px;
+        padding: 1px 5px;
+        font-size: 0.88rem;
+        color: var(--red);
+      }
+
+      /* OPTIONS */
+      .opts-list {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .opt-btn {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        background: white;
+        border: 1.5px solid var(--gray-300);
+        border-radius: var(--radius-sm);
+        padding: 10px 13px;
+        cursor: pointer;
+        transition: all 0.18s;
+        font-family: 'Inter', sans-serif;
+        font-size: 0.88rem;
+        color: var(--gray-800);
+        text-align: left;
+        line-height: 1.5;
+        width: 100%;
+      }
+      .opt-btn:hover:not(.locked) {
+        border-color: var(--accent);
+        background: var(--primary-pale);
+      }
+      .opt-letter {
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        background: var(--gray-200);
+        border: 1.5px solid var(--gray-400);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.68rem;
+        font-weight: 800;
+        color: var(--gray-700);
+        flex-shrink: 0;
+        margin-top: 1px;
+      }
+      .opt-btn.correct {
+        border-color: var(--green) !important;
+        background: var(--green-pale) !important;
+      }
+      .opt-btn.correct .opt-letter {
+        background: var(--green);
+        border-color: var(--green);
+        color: white;
+      }
+      .opt-btn.wrong {
+        border-color: var(--red) !important;
+        background: var(--red-pale) !important;
+      }
+      .opt-btn.wrong .opt-letter {
+        background: var(--red);
+        border-color: var(--red);
+        color: white;
+      }
+      .opt-btn.reveal {
+        border-color: var(--green) !important;
+        background: #f0faf4 !important;
+      }
+      .opt-btn.locked {
+        cursor: default;
+      }
+
+      /* FEEDBACK */
+      .q-feedback {
+        display: none;
+        margin-top: 10px;
+        padding: 10px 13px;
+        border-radius: var(--radius-sm);
+        font-size: 0.83rem;
+        font-weight: 600;
+        line-height: 1.6;
+        animation: fadeUp 0.25s ease;
+      }
+      .q-feedback.ok {
+        background: var(--green-pale);
+        border: 1px solid #a3cfbb;
+        color: #0a3622;
+      }
+      .q-feedback.nok {
+        background: var(--red-pale);
+        border: 1px solid #f1adb5;
+        color: #58151c;
+      }
+
+      /* MATCHING */
+      .match-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 14px;
+        font-size: 0.88rem;
+      }
+      .match-table th {
+        background: var(--primary);
+        color: white;
+        padding: 8px 12px;
+        text-align: left;
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+      .match-table td {
+        padding: 9px 12px;
+        border-bottom: 1px solid var(--gray-200);
+      }
+      .match-table tr:last-child td {
+        border-bottom: none;
+      }
+      .match-table tr:nth-child(even) td {
+        background: var(--gray-100);
+      }
+
+      /* ESSAY */
+      .essay-rubric {
+        background: var(--yellow-pale);
+        border: 1px solid #ffecb5;
+        border-radius: var(--radius-sm);
+        padding: 9px 13px;
+        font-size: 0.78rem;
+        color: #664d03;
+        margin-bottom: 10px;
+      }
+      .essay-rubric strong {
+        color: #4a3700;
+      }
+      .essay-textarea {
+        width: 100%;
+        min-height: 110px;
+        border: 1.5px solid var(--gray-400);
+        border-radius: var(--radius-sm);
+        padding: 11px 13px;
+        font-family: 'Inter', sans-serif;
+        font-size: 0.9rem;
+        color: var(--gray-800);
+        resize: vertical;
+        outline: none;
+        transition:
+          border-color 0.2s,
+          box-shadow 0.2s;
+        line-height: 1.6;
+      }
+      .essay-textarea:focus {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.12);
+      }
+      .essay-hint {
+        font-size: 0.73rem;
+        color: var(--gray-500);
+        margin-top: 4px;
+      }
+
+      /* RESULT */
+      .status-banner {
+        padding: 11px 16px;
+        border-radius: var(--radius-sm);
+        font-weight: 700;
+        font-size: 0.9rem;
+        text-align: center;
+        margin-bottom: 14px;
+      }
+      .status-banner.approved {
+        background: var(--green-pale);
+        border: 1px solid #a3cfbb;
+        color: #0a3622;
+      }
+      .status-banner.recovery {
+        background: var(--yellow-pale);
+        border: 1px solid #ffecb5;
+        color: #664d03;
+      }
+      .status-banner.failed {
+        background: var(--red-pale);
+        border: 1px solid #f1adb5;
+        color: #58151c;
+      }
+
+      .res-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+        gap: 12px;
+        margin: 16px 0;
+      }
+      .res-box {
+        border: 1px solid var(--gray-300);
+        border-radius: var(--radius);
+        padding: 16px 12px;
+        text-align: center;
+        background: var(--white);
+      }
+      .res-box .rb-val {
+        font-family: 'Merriweather', serif;
+        font-size: 1.9rem;
+        font-weight: 700;
+        line-height: 1;
+        margin-bottom: 3px;
+      }
+      .res-box .rb-lbl {
+        font-size: 0.7rem;
+        color: var(--gray-500);
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+      }
+      .res-box.hi {
+        border-color: #86d9a8;
+        background: var(--green-pale);
+      }
+      .res-box.hi .rb-val {
+        color: var(--green);
+      }
+      .res-box.md {
+        border-color: #f5c842;
+        background: var(--yellow-pale);
+      }
+      .res-box.md .rb-val {
+        color: #856404;
+      }
+      .res-box.lo {
+        border-color: #f1adb5;
+        background: var(--red-pale);
+      }
+      .res-box.lo .rb-val {
+        color: var(--red);
+      }
+      .res-box.neu .rb-val {
+        color: var(--primary);
+      }
+
+      .res-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 14px;
+        border: 1px solid var(--gray-200);
+        border-radius: var(--radius-sm);
+        margin: 6px 0;
+        background: var(--white);
+      }
+      .rr-left {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+      }
+      .rr-name {
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--gray-700);
+      }
+      .rr-detail {
+        font-size: 0.72rem;
+        color: var(--gray-500);
+        margin-top: 1px;
+      }
+      .rr-grade {
+        font-size: 1rem;
+        font-weight: 800;
+      }
+      .rr-grade.hi {
+        color: var(--green);
+      }
+      .rr-grade.lo {
+        color: var(--red);
+      }
+
+      .essay-review {
+        background: var(--gray-100);
+        border: 1px solid var(--gray-200);
+        border-radius: var(--radius-sm);
+        padding: 12px 14px;
+        margin-top: 8px;
+      }
+      .essay-review-q {
+        font-size: 0.8rem;
+        font-weight: 700;
+        color: var(--gray-700);
+        margin-bottom: 5px;
+      }
+      .essay-review-a {
+        font-size: 0.86rem;
+        color: var(--gray-800);
+        font-style: italic;
+        line-height: 1.6;
+      }
+      .essay-review-a.empty {
+        color: var(--gray-500);
+      }
+
+      /* TIMER */
+      .timer-box {
+        position: fixed;
+        top: 14px;
+        right: 16px;
+        background: white;
+        border: 1.5px solid var(--gray-300);
+        border-radius: var(--radius-sm);
+        padding: 7px 13px;
+        font-size: 0.84rem;
+        font-weight: 700;
+        color: var(--gray-700);
+        z-index: 100;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+        display: none;
+      }
+      .timer-box.warn {
+        color: var(--red);
+        border-color: #f1adb5;
+        animation: blink 0.8s infinite;
+      }
+      @keyframes blink {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.45;
+        }
+      }
+
+      /* BOTTOM BAR */
+      .bbar {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: white;
+        border-top: 1px solid var(--gray-300);
+        padding: 9px 20px;
+        display: none;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        z-index: 100;
+        box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.06);
+        flex-wrap: wrap;
+      }
+      .bbar.on {
+        display: flex;
+      }
+      .bb-dots {
+        display: flex;
+        gap: 5px;
+        align-items: center;
+      }
+      .bb-dot {
+        width: 9px;
+        height: 9px;
+        border-radius: 50%;
+        background: var(--gray-300);
+        border: 1.5px solid var(--gray-400);
+        transition: all 0.3s;
+      }
+      .bb-dot.active {
+        background: var(--primary);
+        border-color: var(--primary);
+      }
+      .bb-dot.done {
+        background: var(--green);
+        border-color: var(--green);
+      }
+      .bb-label {
+        font-size: 0.73rem;
+        font-weight: 700;
+        color: var(--gray-600);
+      }
+
+      @media (max-width: 560px) {
+        .card {
+          padding: 20px 14px;
+        }
+        .q-visual {
+          flex-direction: column;
+        }
+        .res-grid {
+          grid-template-columns: 1fr 1fr;
+        }
+        .timer-box {
+          top: 8px;
+          right: 8px;
+          font-size: 0.74rem;
+          padding: 5px 9px;
+        }
+        .match-table {
+          font-size: 0.8rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- ════════════ SELEÇÃO ════════════ -->
+    <div class="screen on" id="s-select">
+      <div class="card" style="max-width: 680px">
+        <div class="inst-header">
+          <div class="inst-logo">💻</div>
+          <div style="flex: 1">
+            <div class="inst-name">
+              Escola Técnica Estadual<br />Marechal Mascarenhas de Moraes
+            </div>
+            <div class="inst-sub">Módulo 1 — Fundamentos Backend</div>
+          </div>
+          <div class="inst-badge">2025</div>
+        </div>
+
+        <h1 class="page-title">Simulados — Fundamentos Backend</h1>
+        <p
+          style="
+            text-align: center;
+            font-size: 0.83rem;
+            color: var(--gray-600);
+            margin-bottom: 4px;
+          "
+        >
+          Aulas 1 a 4 · 8 questões objetivas + 2 dissertativas · 45 minutos
+        </p>
+
+        <div class="divider"></div>
+        <h2 class="sec-title">Escolha o Simulado</h2>
+
+        <div class="sim-grid" id="sim-grid"></div>
+
+        <div class="alert alert-warn" id="sel-warn"></div>
+        <div
+          style="margin-top: 16px; display: flex; gap: 10px; flex-wrap: wrap"
+        >
+          <button class="btn btn-primary" id="btn-start">
+            Iniciar Simulado →
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════════ PROVA ════════════ -->
+    <div class="screen" id="s-exam">
+      <div
+        class="card"
+        id="exam-card"
+        style="max-width: 780px; margin-bottom: 70px"
+      ></div>
+    </div>
+
+    <!-- ════════════ RESULTADO ════════════ -->
+    <div class="screen" id="s-result">
+      <div class="card" style="max-width: 720px">
+        <div class="inst-header">
+          <div class="inst-logo">📊</div>
+          <div style="flex: 1">
+            <div class="inst-name" id="r-simname">Resultado</div>
+            <div class="inst-sub" id="r-simtopics">—</div>
+          </div>
+        </div>
+        <div class="status-banner" id="r-banner">—</div>
+        <div class="res-grid" id="r-summary"></div>
+        <div class="divider"></div>
+        <h2 class="sec-title">Detalhamento das Objetivas</h2>
+        <div id="r-breakdown"></div>
+        <div class="divider"></div>
+        <h2 class="sec-title">Suas Respostas Dissertativas</h2>
+        <div id="r-essays"></div>
+        <div class="divider"></div>
+        <div style="display: flex; gap: 10px; flex-wrap: wrap">
+          <button class="btn btn-success" id="btn-download">
+            ⬇ Baixar Relatório (CSV)
+          </button>
+          <button class="btn btn-outline" id="btn-back-to-select">
+            ← Voltar
+          </button>
+        </div>
+        <p style="font-size: 0.72rem; color: var(--gray-500); margin-top: 8px">
+          ⚠ Questões dissertativas são registradas para correção pelo professor.
+        </p>
+      </div>
+    </div>
+
+    <!-- TIMER + BOTTOM BAR -->
+    <div class="timer-box" id="timer-box">⏱ <span id="tclock">45:00</span></div>
+    <div class="bbar" id="bbar">
+      <div class="bb-dots" id="bb-dots"></div>
+      <div class="bb-label" id="bb-label"></div>
+      <button
+        class="btn btn-primary btn-sm"
+        id="btn-finish"
+        style="display: none"
+      >
+        🏁 Finalizar
+      </button>
+    </div>
+
+    <script>
+      // ══════════════════════════════════
+      // DADOS DOS SIMULADOS
+      // ══════════════════════════════════
+      const SIMS = [
+
+      // ───────── SIMULADO 1 ─────────
+      {
+        id:0, title:'Simulado 1', subtitle:'Arquitetura Web e HTTP',
+        topics:'Aulas 1 e 2', icon:'🌐',
+        questions:[
+          {
+            type:'mc',
+            visual:{icon:'🏗️',label:'Estático vs Dinâmico',chips:[
+              {icon:'📄',val:'Estático',cl:'Arquivo fixo',cls:'blue'},
+              {icon:'⚡',val:'Dinâmico',cl:'Gerado na hora',cls:'green'},
+            ],caption:'Um retorna sempre o mesmo arquivo; o outro consulta o banco.'},
+            stem:'Qual é a principal diferença entre um site <strong>estático</strong> e um site <strong>dinâmico</strong>?',
+            opts:[
+              'Sites estáticos usam banco de dados, enquanto os dinâmicos usam apenas HTML.',
+              'Sites estáticos entregam sempre o mesmo conteúdo salvo no servidor, enquanto sites dinâmicos geram o conteúdo na hora, conectando-se a um banco de dados.',
+              'Sites estáticos só funcionam offline.',
+              'Não há diferença; ambos processam regras de negócio complexas.'
+            ],
+            answer:1,
+            exp:'Sites estáticos retornam arquivos fixos. Sites dinâmicos consultam bancos de dados e constroem a página em tempo real.'
+          },
+          {
+            type:'mc',
+            visual:{icon:'🔄',label:'Ciclo HTTP',chips:[
+              {icon:'📤',val:'Request',cl:'Cliente envia',cls:'blue'},
+              {icon:'📥',val:'Response',cl:'Servidor responde',cls:'green'},
+            ],caption:'Toda comunicação web segue esse par de mensagens.'},
+            stem:'Como é chamado o ciclo padrão de mensagens trocadas entre o navegador e o servidor no protocolo HTTP?',
+            opts:[
+              'GET e POST',
+              'JSON e XML',
+              'Request (Requisição) e Response (Resposta)',
+              'Frontend e Backend'
+            ],
+            answer:2,
+            exp:'A comunicação HTTP é sempre baseada no par Request/Response: o cliente envia uma requisição e o servidor devolve uma resposta.'
+          },
+          {
+            type:'mc',
+            visual:{icon:'🔗',label:'Métodos HTTP × SQL',chips:[
+              {icon:'🔍',val:'GET',cl:'SELECT',cls:'blue'},
+              {icon:'➕',val:'POST',cl:'INSERT',cls:'green'},
+              {icon:'✏️',val:'PUT',cl:'UPDATE',cls:'gold'},
+              {icon:'🗑️',val:'DELETE',cl:'DELETE',cls:'red'},
+            ],caption:'Cada método HTTP corresponde a uma operação no banco.'},
+            stem:'Qual alternativa apresenta a correspondência <strong>completamente correta</strong> entre Métodos HTTP e comandos SQL?',
+            opts:[
+              'GET → INSERT / POST → SELECT / PUT → DELETE / DELETE → UPDATE',
+              'GET → SELECT / POST → INSERT / PUT → UPDATE / DELETE → DELETE',
+              'GET → UPDATE / POST → DELETE / PUT → SELECT / DELETE → INSERT',
+              'GET → DELETE / POST → UPDATE / PUT → INSERT / DELETE → SELECT'
+            ],
+            answer:1,
+            exp:'GET recupera dados (SELECT), POST cria novos registros (INSERT), PUT atualiza (UPDATE) e DELETE remove (DELETE).'
+          },
+          {
+            type:'mc',
+            visual:{icon:'📦',label:'Formatos de Dados',chips:[
+              {icon:'📋',val:'JSON',cl:'Leve · APIs REST',cls:'green'},
+              {icon:'🏷️',val:'XML',cl:'Tags · Legado',cls:'gold'},
+            ],caption:'JSON domina as APIs modernas; XML ainda é usado em sistemas legados.'},
+            stem:'Em comunicações via HTTP, qual formato é <strong>mais leve</strong>, usa pares de atributo-valor e é o <strong>padrão predominante nas APIs REST</strong> atuais?',
+            opts:['XML','HTML','JSON','SQL'],
+            answer:2,
+            exp:'JSON (JavaScript Object Notation) é leve, baseado em pares atributo-valor e domina as APIs REST modernas.'
+          },
+          {
+            type:'mc',
+            visual:{icon:'🎨',label:'Frontend × Backend',chips:[
+              {icon:'🎨',val:'Frontend',cl:'Interface visual',cls:'blue'},
+              {icon:'⚙️',val:'Backend',cl:'Regras + BD',cls:'gold'},
+            ],caption:'Camadas distintas com responsabilidades diferentes.'},
+            stem:'Qual afirmação sobre <strong>Frontend e Backend</strong> está CORRETA?',
+            opts:[
+              'O Frontend contém as regras de negócio e acessa diretamente o banco de dados.',
+              'O Backend é a interface visual com a qual o usuário interage no navegador.',
+              'O Frontend é a camada visual (HTML, CSS, JS) e o Backend é o código que roda no servidor, com as regras de negócio e acesso ao banco.',
+              'Frontend e Backend são sinônimos para o mesmo código-fonte.'
+            ],
+            answer:2,
+            exp:'Frontend = interface visual no navegador. Backend = código no servidor com regras de negócio e acesso ao banco de dados.'
+          },
+          {
+            type:'mc',
+            visual:{icon:'📤',label:'Método POST',chips:[
+              {icon:'🔒',val:'Dados ocultos',cl:'Não aparece na URL',cls:'green'},
+              {icon:'💾',val:'Cria recurso',cl:'INSERT no BD',cls:'blue'},
+            ],caption:'Ideal para enviar dados sensíveis com segurança.'},
+            stem:'Para enviar <strong>senha e e-mail</strong> de um formulário ao servidor de forma segura, <strong>sem que apareçam na URL</strong>, qual método HTTP deve ser usado?',
+            opts:['GET','DELETE','POST','TRACE'],
+            answer:2,
+            exp:'POST envia os dados no corpo da requisição, não na URL — ideal para dados sensíveis como senhas e e-mails.'
+          },
+          {
+            type:'mc',
+            visual:{icon:'🏛️',label:'Modelo Cliente-Servidor',chips:[
+              {icon:'💻',val:'Cliente',cl:'Solicita',cls:'blue'},
+              {icon:'🖥️',val:'Servidor',cl:'Processa',cls:'gold'},
+            ],caption:'A web funciona de forma distribuída.'},
+            stem:'No modelo <strong>Cliente-Servidor</strong>, qual é o papel correto de cada parte?',
+            opts:[
+              'O servidor solicita páginas e o cliente processa as respostas.',
+              'Ambos processam as regras de negócio de forma igual.',
+              'O cliente (navegador) solicita dados e o servidor processa e devolve a informação.',
+              'O cliente armazena os dados e o servidor apenas os exibe.'
+            ],
+            answer:2,
+            exp:'O cliente (navegador) faz as requisições; o servidor hospeda a aplicação, processa e devolve as respostas.'
+          },
+          {
+            type:'mc',
+            visual:{icon:'📡',label:'O que é HTTP?',chips:[
+              {icon:'🌍',val:'Web',cl:'World Wide Web',cls:'blue'},
+              {icon:'🗣️',val:'Protocolo',cl:'Idioma padrão',cls:'gold'},
+            ],caption:'A linguagem que define como cliente e servidor conversam.'},
+            stem:'HTTP é definido corretamente como:',
+            opts:[
+              'Uma linguagem de programação usada para criar páginas web dinâmicas.',
+              'Um banco de dados que armazena as páginas web no servidor.',
+              'O protocolo (idioma) base de transferência de dados na World Wide Web, permitindo a comunicação entre cliente e servidor.',
+              'Um formato de arquivo para organizar dados em pares de atributo-valor.'
+            ],
+            answer:2,
+            exp:'HTTP (HyperText Transfer Protocol) é o protocolo de comunicação base da web — define as regras de como cliente e servidor trocam mensagens.'
+          },
+          {
+            type:'essay',
+            stem:'Explique com suas palavras a diferença entre um site estático e um site dinâmico. Dê um exemplo real de cada tipo e justifique sua classificação.',
+            rubric:'Critérios: distinção correta (estático = arquivo fixo; dinâmico = gerado na hora com BD), exemplos coerentes e justificativa clara. Valor: 1,0 ponto.'
+          },
+          {
+            type:'essay',
+            stem:'Cite os quatro métodos HTTP (GET, POST, PUT, DELETE) e explique, com um exemplo prático para cada um, em que situação do dia a dia eles seriam utilizados em uma aplicação de rede social.',
+            rubric:'Critérios: descrição correta de cada método e exemplos coerentes com contexto de rede social. Valor: 1,0 ponto.'
+          }
+        ]
+      },
+
+      // ───────── SIMULADO 2 ─────────
+      {
+        id:1, title:'Simulado 2', subtitle:'Banco de Dados e SQL',
+        topics:'Aulas 3 e 4', icon:'🗄️',
+        questions:[
+          {
+            type:'mc',
+            visual:{icon:'🗃️',label:'Conceito de Banco de Dados',chips:[
+              {icon:'📋',val:'Organizado',cl:'Estruturado',cls:'blue'},
+              {icon:'💡',val:'Informações',cl:'Estruturadas',cls:'gold'},
+              {icon:'📊',val:'Decisões',cl:'Apoio gerencial',cls:'green'},
+            ],caption:'Fundamental para armazenar e consultar informações.'},
+            stem:'Um <strong>Banco de Dados</strong> pode ser definido corretamente como:',
+            opts:[
+              'Um arquivo de texto simples usado para guardar qualquer tipo de informação.',
+              'Uma coleção organizada de informações estruturadas, vital para o armazenamento em sistemas e tomada de decisões.',
+              'Um programa que cria interfaces visuais para o usuário.',
+              'Um servidor web que hospeda páginas HTML.'
+            ],
+            answer:1,
+            exp:'Banco de dados é uma coleção organizada e estruturada de informações que suporta a tomada de decisões e o funcionamento de sistemas.'
+          },
+          {
+            type:'mc',
+            visual:{icon:'🔑',label:'PK e FK',chips:[
+              {icon:'🏅',val:'PK',cl:'Identificador único',cls:'gold'},
+              {icon:'🔗',val:'FK',cl:'Cria relacionamento',cls:'blue'},
+            ],caption:'PK identifica cada registro; FK conecta tabelas.'},
+            stem:'Sobre <strong>chaves em bancos de dados relacionais</strong>, assinale a alternativa CORRETA:',
+            opts:[
+              'A Chave Estrangeira (FK) garante que um registro nunca possa ser alterado.',
+              'A Chave Primária (PK) identifica unicamente cada registro em uma tabela (ex: ID ou CPF).',
+              'O comando INSERT exige que todas as colunas sejam chaves primárias.',
+              'Tabelas não podem se relacionar em um banco de dados.'
+            ],
+            answer:1,
+            exp:'PK (Primary Key) identifica cada registro de forma única na tabela. FK (Foreign Key) cria o relacionamento lógico entre duas tabelas.'
+          },
+          {
+            type:'mc',
+            visual:{icon:'🏗️',label:'DDL — Criando a Estrutura',chips:[
+              {icon:'🗄️',val:'CREATE DATABASE',cl:'Cria o banco',cls:'blue'},
+              {icon:'📋',val:'CREATE TABLE',cl:'Cria a tabela',cls:'green'},
+            ],caption:'Primeiro o banco, depois as tabelas — nessa ordem!'},
+            stem:'Para criar a estrutura inicial de um banco de dados relacional, quais comandos SQL devem ser usados em <strong>sequência lógica</strong>?',
+            opts:[
+              'INSERT seguido de SELECT.',
+              'CREATE DATABASE seguido de CREATE TABLE.',
+              'ALTER TABLE seguido de UPDATE.',
+              'CREATE TABLE seguido de CREATE DATABASE.'
+            ],
+            answer:1,
+            exp:'Primeiro cria-se o banco (CREATE DATABASE) e depois as tabelas dentro dele (CREATE TABLE) — essa é a sequência correta.'
+          },
+          {
+            type:'mc',
+            visual:{icon:'🔍',label:'Comando SELECT',chips:[
+              {icon:'✱',val:'*',cl:'Todas as colunas',cls:'blue'},
+              {icon:'📋',val:'FROM',cl:'Indica a tabela',cls:'gold'},
+            ],caption:'O asterisco (*) retorna todos os campos da tabela.'},
+            stem:'Qual é o comando SQL utilizado para recuperar <strong>TODOS os registros</strong> (todas as colunas) de uma tabela chamada <code>Clientes</code>?',
+            opts:[
+              'GET ALL FROM Clientes;',
+              'SELECT FROM Clientes;',
+              'SELECT * FROM Clientes;',
+              'EXTRACT ALL Clientes;'
+            ],
+            answer:2,
+            exp:'SELECT * FROM Clientes; — o asterisco (*) retorna todas as colunas e FROM indica a tabela de origem.'
+          },
+          {
+            type:'mc',
+            visual:{icon:'⚠️',label:'DELETE e UPDATE sem WHERE',chips:[
+              {icon:'🗑️',val:'DELETE',cl:'Sem WHERE = tudo',cls:'red'},
+              {icon:'✏️',val:'UPDATE',cl:'Sem WHERE = tudo',cls:'red'},
+            ],caption:'Sem WHERE, a ação afeta TODOS os registros da tabela!'},
+            stem:'O que acontece ao executar <code>DELETE FROM Pedidos;</code> ou <code>UPDATE Produtos SET preco = 0;</code> <strong>sem a cláusula WHERE</strong>?',
+            opts:[
+              'Apenas o último registro adicionado será afetado.',
+              'O banco retornará um erro de sintaxe e nada será feito.',
+              'Todos os registros da tabela sofrerão a ação — todos os pedidos serão apagados ou todos os produtos ficarão com preço zero.',
+              'A tabela inteira será excluída, incluindo sua estrutura.'
+            ],
+            answer:2,
+            exp:'Sem WHERE, UPDATE e DELETE afetam TODOS os registros. Sempre use WHERE para especificar quais linhas devem ser afetadas!'
+          },
+          {
+            type:'mc',
+            visual:{icon:'➕',label:'Comando INSERT',chips:[
+              {icon:'📥',val:'INSERT INTO',cl:'Na tabela',cls:'green'},
+              {icon:'📝',val:'VALUES',cl:'Novos valores',cls:'blue'},
+            ],caption:'Adiciona novas linhas em uma tabela existente.'},
+            stem:'O comando SQL <strong>INSERT</strong> é utilizado para:',
+            opts:[
+              'Buscar e recuperar informações de uma tabela.',
+              'Remover registros específicos de uma tabela.',
+              'Modificar dados já existentes em um registro.',
+              'Adicionar novos registros (linhas) em uma tabela existente.'
+            ],
+            answer:3,
+            exp:'INSERT INTO tabela (colunas) VALUES (valores) — adiciona uma nova linha na tabela. Não confundir com UPDATE (modifica) ou SELECT (busca).'
+          },
+          {
+            type:'mc',
+            visual:{icon:'✏️',label:'Comando UPDATE com WHERE',chips:[
+              {icon:'📋',val:'SET coluna',cl:'Define o valor',cls:'gold'},
+              {icon:'🎯',val:'WHERE id=42',cl:'Quem alterar',cls:'blue'},
+            ],caption:'WHERE define exatamente qual registro será alterado.'},
+            stem:'Um professor quer alterar apenas a nota do aluno com <strong>ID = 42</strong>. Qual comando SQL deve ser usado?',
+            opts:[
+              'SELECT nota FROM Alunos WHERE id = 42;',
+              'INSERT INTO Alunos (nota) VALUES (8.5) WHERE id = 42;',
+              'UPDATE Alunos SET nota = 8.5 WHERE id = 42;',
+              'DELETE FROM Alunos WHERE id = 42;'
+            ],
+            answer:2,
+            exp:'UPDATE modifica dados existentes. SET define qual coluna alterar e WHERE garante que apenas o aluno com id = 42 seja modificado.'
+          },
+          {
+            type:'mc',
+            visual:{icon:'🧩',label:'CRUD × SQL',chips:[
+              {icon:'➕',val:'Create→INSERT',cl:'Cria',cls:'green'},
+              {icon:'🔍',val:'Read→SELECT',cl:'Lê',cls:'blue'},
+              {icon:'✏️',val:'Update→UPDATE',cl:'Atualiza',cls:'gold'},
+              {icon:'🗑️',val:'Delete→DELETE',cl:'Remove',cls:'red'},
+            ],caption:'As quatro operações básicas em qualquer banco de dados.'},
+            stem:'Qual alternativa apresenta a associação correta entre as operações <strong>CRUD</strong> e os comandos SQL?',
+            opts:[
+              'Create→SELECT / Read→INSERT / Update→DELETE / Delete→UPDATE',
+              'Create→INSERT / Read→SELECT / Update→UPDATE / Delete→DELETE',
+              'Create→CREATE / Read→GET / Update→PUT / Delete→REMOVE',
+              'Create→POST / Read→GET / Update→PUT / Delete→DELETE'
+            ],
+            answer:1,
+            exp:'CRUD em SQL: Create→INSERT, Read→SELECT, Update→UPDATE, Delete→DELETE.'
+          },
+          {
+            type:'essay',
+            stem:'Explique a diferença entre Chave Primária (PK) e Chave Estrangeira (FK). Por que elas são importantes para organizar os dados? Dê um exemplo com duas tabelas relacionadas.',
+            rubric:'Critérios: definição correta de PK (identificador único) e FK (cria relacionamento), com exemplo coerente de duas tabelas. Valor: 1,0 ponto.'
+          },
+          {
+            type:'essay',
+            stem:'Explique por que os comandos UPDATE e DELETE devem sempre ser usados com a cláusula WHERE. Dê um exemplo real de problema grave que poderia ocorrer em um sistema caso essa cláusula seja esquecida.',
+            rubric:'Critérios: compreensão do risco de omitir o WHERE e exemplo coerente de impacto em um sistema real. Valor: 1,0 ponto.'
+          }
+        ]
+      },
+
+      // ───────── SIMULADO 3 ─────────
+      {
+        id:2, title:'Simulado 3', subtitle:'Integração Geral — Backend Completo',
+        topics:'Aulas 1 a 4', icon:'🔗',
+        questions:[
+          {
+            type:'mc',
+            visual:{icon:'🛒',label:'Cenário: Loja Virtual',chips:[
+              {icon:'💻',val:'Cliente',cl:'Navegador',cls:'blue'},
+              {icon:'📤',val:'POST',cl:'Envia pedido',cls:'gold'},
+              {icon:'🗄️',val:'BD',cl:'Salva registro',cls:'green'},
+            ],caption:'Do clique no botão até o dado salvo no banco.'},
+            stem:'Um usuário clica em "Comprar" em uma loja virtual. Os dados do pedido são enviados do navegador ao servidor. Qual método HTTP e formato de dados são usados corretamente nessa operação?',
+            opts:[
+              'GET com dados na URL, no formato XML.',
+              'POST com dados no corpo da requisição, no formato JSON.',
+              'DELETE com dados no corpo da requisição, no formato HTML.',
+              'PUT com dados na URL, no formato SQL.'
+            ],
+            answer:1,
+            exp:'POST envia dados no corpo (não na URL), de forma segura. JSON é o formato padrão das APIs REST modernas para transitar os dados do pedido.'
+          },
+          {
+            type:'mc',
+            visual:{icon:'🔄',label:'Fluxo Completo',chips:[
+              {icon:'💻',val:'Frontend',cl:'Interface',cls:'blue'},
+              {icon:'⚙️',val:'Backend',cl:'Regras',cls:'gold'},
+              {icon:'🗄️',val:'Banco',cl:'Armazenamento',cls:'green'},
+            ],caption:'Cada camada tem uma responsabilidade específica.'},
+            stem:'Sobre o fluxo de uma aplicação web completa, qual afirmação está CORRETA?',
+            opts:[
+              'O Frontend acessa diretamente o banco de dados sem passar pelo Backend.',
+              'O Backend é responsável apenas pela aparência visual da aplicação.',
+              'O Frontend envia requisições ao Backend, que processa as regras de negócio e acessa o banco de dados, devolvendo uma resposta ao Frontend.',
+              'O banco de dados envia dados diretamente ao navegador do usuário.'
+            ],
+            answer:2,
+            exp:'O fluxo correto é: Frontend → requisição → Backend (regras de negócio) → Banco de Dados → resposta → Frontend.'
+          },
+          {
+            type:'mc',
+            visual:{icon:'📊',label:'SELECT com Filtro',chips:[
+              {icon:'🔍',val:'SELECT',cl:'Busca dados',cls:'blue'},
+              {icon:'🎯',val:'WHERE',cl:'Filtra resultado',cls:'gold'},
+            ],caption:'WHERE é a cláusula de filtro do SELECT.'},
+            stem:'Um sistema precisa buscar apenas os pedidos do cliente com <strong>ID = 10</strong>. Qual comando SQL está correto?',
+            opts:[
+              'SELECT * FROM Pedidos;',
+              'SELECT * FROM Pedidos WHERE cliente_id = 10;',
+              'GET * FROM Pedidos WHERE id = 10;',
+              'FIND Pedidos WHERE cliente_id = 10;'
+            ],
+            answer:1,
+            exp:'SELECT * FROM Pedidos WHERE cliente_id = 10; — o WHERE filtra apenas os pedidos do cliente específico, evitando retornar todos os registros.'
+          },
+          {
+            type:'mc',
+            visual:{icon:'🔢',label:'Códigos de Status HTTP',chips:[
+              {icon:'✅',val:'200',cl:'OK',cls:'green'},
+              {icon:'➕',val:'201',cl:'Created',cls:'blue'},
+              {icon:'🚫',val:'404',cl:'Not Found',cls:'red'},
+            ],caption:'O servidor sempre responde com um código de status.'},
+            stem:'Após executar um INSERT com sucesso no banco de dados, o backend deve devolver ao cliente uma Response com qual código HTTP?',
+            opts:[
+              '404 Not Found — pois o recurso ainda não existia.',
+              '200 OK — pois a operação foi concluída.',
+              '201 Created — pois um novo recurso foi criado com sucesso.',
+              '500 Internal Server Error — pois houve alteração no banco.'
+            ],
+            answer:2,
+            exp:'201 Created é o código correto para indicar que um novo recurso foi criado com sucesso no servidor após um POST/INSERT.'
+          },
+          {
+            type:'mc',
+            visual:{icon:'🏗️',label:'Criando BD do Zero',chips:[
+              {icon:'1️⃣',val:'CREATE DB',cl:'Cria o banco',cls:'blue'},
+              {icon:'2️⃣',val:'CREATE TABLE',cl:'Cria tabela',cls:'green'},
+              {icon:'3️⃣',val:'INSERT',cl:'Adiciona dados',cls:'gold'},
+            ],caption:'A ordem lógica de construção de um banco de dados.'},
+            stem:'Um desenvolvedor precisa criar do zero um banco de dados para uma escola. Qual é a <strong>ordem lógica correta</strong> dos comandos SQL?',
+            opts:[
+              'INSERT → CREATE TABLE → CREATE DATABASE',
+              'CREATE TABLE → INSERT → CREATE DATABASE',
+              'CREATE DATABASE → CREATE TABLE → INSERT',
+              'SELECT → CREATE DATABASE → CREATE TABLE'
+            ],
+            answer:2,
+            exp:'Primeiro cria o banco (CREATE DATABASE), depois as tabelas (CREATE TABLE) e por fim insere os dados (INSERT). Essa é a única ordem lógica possível.'
+          },
+          {
+            type:'mc',
+            visual:{icon:'🔁',label:'Método PUT',chips:[
+              {icon:'✏️',val:'PUT',cl:'Atualiza recurso',cls:'gold'},
+              {icon:'🔗',val:'UPDATE',cl:'SQL equivalente',cls:'blue'},
+            ],caption:'PUT substitui/atualiza um recurso já existente.'},
+            stem:'Um usuário alterou seu endereço de entrega em um e-commerce. O Frontend enviou os novos dados ao Backend. Qual método HTTP e comando SQL correspondem a essa operação?',
+            opts:[
+              'POST → INSERT, pois é uma nova informação.',
+              'GET → SELECT, pois precisa verificar o endereço atual.',
+              'PUT → UPDATE, pois está atualizando um recurso já existente.',
+              'DELETE → DELETE, pois o endereço antigo deve ser removido.'
+            ],
+            answer:2,
+            exp:'PUT é usado para atualizar um recurso existente no servidor. No banco de dados, essa operação corresponde ao comando UPDATE.'
+          },
+          {
+            type:'mc',
+            visual:{icon:'🔐',label:'Segurança: GET vs POST',chips:[
+              {icon:'👁️',val:'GET',cl:'Dados na URL',cls:'red'},
+              {icon:'🔒',val:'POST',cl:'Dados ocultos',cls:'green'},
+            ],caption:'GET expõe dados na URL; POST os oculta no corpo.'},
+            stem:'Por que o método GET <strong>não deve</strong> ser usado para enviar senhas ou dados sensíveis?',
+            opts:[
+              'Porque GET é mais lento que POST para processar dados.',
+              'Porque GET envia os dados na URL, tornando-os visíveis no histórico do navegador e em logs de servidor.',
+              'Porque GET não consegue se comunicar com o banco de dados.',
+              'Porque GET só funciona com o formato XML.'
+            ],
+            answer:1,
+            exp:'GET coloca os dados na URL — senhas ficariam visíveis no histórico, favoritos e logs de servidor. Por isso POST deve ser usado para dados sensíveis.'
+          },
+          {
+            type:'mc',
+            visual:{icon:'🗑️',label:'Removendo Registros',chips:[
+              {icon:'🎯',val:'WHERE',cl:'Especifica qual',cls:'blue'},
+              {icon:'🗑️',val:'DELETE',cl:'Remove a linha',cls:'red'},
+            ],caption:'Sem WHERE, você apaga TUDO. Com WHERE, apenas o alvo.'},
+            stem:'O administrador precisa remover do banco apenas o produto com <strong>ID = 55</strong> que foi descontinuado. Qual comando está correto?',
+            opts:[
+              'DELETE FROM Produtos;',
+              'REMOVE Produtos WHERE id = 55;',
+              'DELETE FROM Produtos WHERE id = 55;',
+              'DROP TABLE Produtos WHERE id = 55;'
+            ],
+            answer:2,
+            exp:'DELETE FROM Produtos WHERE id = 55; — o WHERE é obrigatório para remover apenas o registro específico, sem afetar os demais.'
+          },
+          {
+            type:'essay',
+            stem:'Imagine que um usuário entrou em uma loja virtual (Frontend), escolheu um tênis e clicou em "Comprar". Descreva o caminho que a informação percorre desde o clique até o produto ser salvo no carrinho. Use obrigatoriamente: Cliente, Servidor HTTP, POST, JSON, Backend, Banco de Dados, INSERT, Response.',
+            rubric:'Critérios: o aluno deve articular: Cliente → POST com JSON → Servidor HTTP → Backend processa regras → BD executa INSERT → Backend devolve Response (201 Created). Valor: 1,0 ponto.'
+          },
+          {
+            type:'essay',
+            stem:'Explique, com suas palavras, qual é o papel do Backend em uma aplicação web. Por que ele é necessário, já que o usuário só vê o Frontend? Cite ao menos dois exemplos de tarefas que apenas o Backend pode realizar.',
+            rubric:'Critérios: compreensão de que o Backend processa regras de negócio, acessa BD e protege dados; exemplos coerentes (autenticação, cálculo de preço, acesso ao BD etc.). Valor: 1,0 ponto.'
+          }
+        ]
+      }
+
+      ]; // fim SIMS
+
+      // ══════════════════════════════════
+      // STATE
+      // ══════════════════════════════════
+      let done = JSON.parse(localStorage.getItem('backend_sim_done')||'[]');
+      let ST = {simIdx:null,qIdx:0,answers:[],scores:{mc:0},answered:false,timerID:null,secs:45*60,finished:false};
+
+      // ══════════════════════════════════
+      // SELECTOR
+      // ══════════════════════════════════
+      function renderSelector(){
+        const grid=document.getElementById('sim-grid');
+        grid.innerHTML='';
+        let _sel=null;
+        SIMS.forEach((s,i)=>{
+          const isDone=done.includes(i);
+          const d=document.createElement('div');
+          d.className='sim-card'+(isDone?' done':'');
+          d.id='sc'+i;
+          d.innerHTML=`<div class="sc-num">${s.icon}</div><div class="sc-title">${s.title}</div><div class="sc-desc">${s.subtitle}</div><div style="font-size:.7rem;color:var(--gray-400);margin-top:3px;">${s.topics}</div>`;
+          if(!isDone) d.addEventListener('click', () => selSim(i));
+          grid.appendChild(d);
+        });
+        // auto select first available
+        const first=SIMS.findIndex((_,i)=>!done.includes(i));
+        if(first!==-1) selSim(first);
+      }
+
+      let _sel=null;
+      function selSim(i){
+        _sel=i;
+        document.querySelectorAll('.sim-card:not(.done)').forEach((c,j)=>{
+          // match by id
+          c.classList.toggle('selected',c.id==='sc'+i);
+        });
+        document.getElementById('sel-warn').style.display='none';
+      }
+
+      function startSim(){
+        if(_sel===null){showWarn('Selecione um simulado primeiro.');return;}
+        if(done.includes(_sel)){showWarn('Você já concluiu este simulado.');return;}
+        ST={simIdx:_sel,qIdx:0,answers:[],scores:{mc:0},answered:false,finished:false,secs:45*60};
+        go('s-exam');
+        document.getElementById('bbar').classList.add('on');
+        document.getElementById('timer-box').style.display='block';
+        startTimer();
+        renderQ();
+      }
+
+      function showWarn(m){const w=document.getElementById('sel-warn');w.textContent=m;w.style.display='block';}
+
+      // ══════════════════════════════════
+      // TIMER
+      // ══════════════════════════════════
+      function startTimer(){
+        clearInterval(ST.timerID);
+        ST.timerID=setInterval(()=>{
+          ST.secs--;
+          const m=Math.floor(ST.secs/60),s=ST.secs%60;
+          document.getElementById('tclock').textContent=String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+          const b=document.getElementById('timer-box');
+          if(ST.secs<=300)b.classList.add('warn');else b.classList.remove('warn');
+          if(ST.secs<=0){clearInterval(ST.timerID);finishExam();}
+        },1000);
+      }
+
+      // ══════════════════════════════════
+      // RENDER
+      // ══════════════════════════════════
+      function buildVis(v){
+        if(!v)return'';
+        const chips=(v.chips||[]).map(c=>`<div class="chip ${c.cls}"><span class="ci">${c.icon}</span><span class="cv">${c.val}</span><span class="cl">${c.cl||''}</span></div>`).join('');
+        const captionHtml = v.caption ? `<p style="font-size:.76rem;color:var(--gray-600);margin-top:7px;font-style:italic;">${v.caption}</p>` : '';
+        return `<div class="q-visual"><div class="qv-icon">${v.icon}</div><div class="qv-content"><div class="qv-label">${v.label}</div><div class="qv-chips">${chips}</div>${captionHtml}</div></div>`;
+      }
+
+      function renderQ(){
+        const sim=SIMS[ST.simIdx],q=sim.questions[ST.qIdx];
+        const total=sim.questions.length,pct=Math.round(ST.qIdx/total*100);
+        const isLast=ST.qIdx===total-1;
+        ST.answered=false;
+
+        // dots
+        const dots=document.getElementById('bb-dots');
+        dots.innerHTML='<span class="bb-label" style="margin-right:4px;">Q&nbsp;</span>';
+        sim.questions.forEach((_,i)=>{
+          const d=document.createElement('div');
+          d.className='bb-dot'+(i<ST.qIdx?' done':i===ST.qIdx?' active':'');
+          dots.appendChild(d);
+        });
+        document.getElementById('bb-label').textContent=`${ST.qIdx+1} / ${total}`;
+        document.getElementById('btn-finish').style.display=isLast?'inline-flex':'none';
+
+        const mcsDone=ST.answers.filter(a=>a.type==='mc').length;
+        const essaysDone=ST.answers.filter(a=>a.type==='essay').length;
+        const isMC=q.type==='mc';
+        const qLabel=isMC?`Questão ${mcsDone+1} de 8 — Múltipla Escolha`:`Questão Dissertativa ${essaysDone+1} de 2`;
+
+        let body='';
+        if(isMC){
+          const letters=['A','B','C','D'];
+          body=`${buildVis(q.visual)}<p class="q-stem">${q.stem}</p><div class="opts-list">${q.opts.map((o,i)=>`<button class="opt-btn" id="ob${i}"><span class="opt-letter">${letters[i]}</span><span>${o}</span></button>`).join('')}</div><div class="q-feedback" id="qfb"></div><div style="display:flex;justify-content:flex-end;margin-top:14px;"><button class="btn btn-primary" id="btn-next" disabled>${isLast?'🏁 Finalizar':'Próxima →'}</button></div>`;
+        } else {
+          body=`<div class="essay-rubric"><strong>Critérios:</strong> ${q.rubric}</div><p class="q-stem">${q.stem}</p><textarea class="essay-textarea" id="essay-inp" placeholder="Escreva sua resposta aqui..."></textarea><p class="essay-hint">Mínimo recomendado: 3 a 5 linhas.</p><div style="display:flex;justify-content:flex-end;margin-top:12px;"><button class="btn btn-primary" id="btn-next">${isLast?'🏁 Finalizar':'Próxima →'}</button></div>`;
+        }
+
+        document.getElementById('exam-card').innerHTML=`
+          <div class="inst-header" style="padding-bottom:12px;margin-bottom:12px;">
+            <div class="inst-logo" style="width:42px;height:42px;font-size:18px;">${sim.icon}</div>
+            <div style="flex:1;"><div class="inst-name" style="font-size:.88rem;">${sim.title} — ${sim.subtitle}</div><div class="inst-sub">${sim.topics}</div></div>
+          </div>
+          <div class="prog-wrap">
+            <div class="prog-info"><span>Progresso</span><span>${ST.qIdx}/${total}</span></div>
+            <div class="prog-track"><div class="prog-fill" style="width:${pct}%"></div></div>
+          </div>
+          <div class="q-block">
+            <div class="q-header"><span class="q-badge${isMC?'':' essay'}">Q${ST.qIdx+1}</span><span class="q-type-tag">${qLabel}</span></div>
+            <div class="q-body">${body}</div>
+          </div>`;
+        window.scrollTo(0,0);
+
+        if (isMC) {
+          q.opts.forEach((_, i) => {
+            document.getElementById(`ob${i}`).addEventListener('click', () => pickMC(i));
+          });
+        }
+        document.getElementById('btn-next').addEventListener('click', nextQ);
+      }
+
+      // ══════════════════════════════════
+      // ANSWER
+      // ══════════════════════════════════
+      function pickMC(idx){
+        if(ST.answered)return;
+        ST.answered=true;
+        const q=SIMS[ST.simIdx].questions[ST.qIdx];
+        const correct=idx===q.answer;
+        if(correct)ST.scores.mc++;
+        ST.answers.push({type:'mc',qIdx:ST.qIdx,chosen:idx,correct});
+        for(let i=0;i<4;i++){
+          const b=document.getElementById('ob'+i);
+          if(!b)continue;
+          b.classList.add('locked');
+          if(i===q.answer)b.classList.add('correct');
+          else if(i===idx&&!correct)b.classList.add('wrong');
+        }
+        const fb=document.getElementById('qfb');
+        fb.style.display='block';
+        fb.className='q-feedback '+(correct?'ok':'nok');
+        const L=['A','B','C','D'];
+        fb.innerHTML=(correct?'✔ Correto! ':'✘ Incorreto. A resposta correta é <strong>'+L[q.answer]+'</strong>. ')+q.exp;
+        document.getElementById('btn-next').disabled=false;
+      }
+
+      function nextQ(){
+        const q=SIMS[ST.simIdx].questions[ST.qIdx];
+        if(q.type==='essay'){
+          const essayInput=document.getElementById('essay-inp');
+          const val=((essayInput && essayInput.value) || '').trim();
+          ST.answers.push({type:'essay',qIdx:ST.qIdx,essay:val});
+        }
+        ST.qIdx++;
+        if(ST.qIdx>=SIMS[ST.simIdx].questions.length)finishExam();
+        else renderQ();
+      }
+
+      // ══════════════════════════════════
+      // FINISH
+      // ══════════════════════════════════
+      function finishExam(){
+        if(ST.finished)return;
+        ST.finished=true;
+        clearInterval(ST.timerID);
+        if(!done.includes(ST.simIdx)){done.push(ST.simIdx);localStorage.setItem('backend_sim_done',JSON.stringify(done));}
+        document.getElementById('bbar').classList.remove('on');
+        document.getElementById('timer-box').style.display='none';
+        buildResult();
+        go('s-result');
+        renderSelector();
+      }
+
+      // ══════════════════════════════════
+      // RESULT
+      // ══════════════════════════════════
+      function buildResult(){
+        const sim=SIMS[ST.simIdx];
+        const mc=ST.scores.mc,pct=mc/8;
+        const elapsed=45*60-ST.secs,em=Math.floor(elapsed/60),es=elapsed%60;
+
+        document.getElementById('r-simname').textContent=`${sim.title} — ${sim.subtitle}`;
+        document.getElementById('r-simtopics').textContent=sim.topics;
+
+        let bcls,btxt;
+        if(pct>=.7){bcls='approved';btxt='✔ Desempenho Satisfatório nas Questões Objetivas';}
+        else if(pct>=.5){bcls='recovery';btxt='⚠ Desempenho Intermediário — Revise o conteúdo';}
+        else{bcls='failed';btxt='✘ Desempenho Abaixo do Esperado — Atenção ao conteúdo';}
+        const banner=document.getElementById('r-banner');
+        banner.className='status-banner '+bcls;
+        banner.textContent=btxt;
+
+        const cls=pct>=.7?'hi':pct>=.5?'md':'lo';
+        document.getElementById('r-summary').innerHTML=`
+          <div class="res-box ${cls}"><div class="rb-val">${mc}/8</div><div class="rb-lbl">Acertos</div></div>
+          <div class="res-box ${cls}"><div class="rb-val">${(pct*100).toFixed(0)}%</div><div class="rb-lbl">Aproveitamento</div></div>
+          <div class="res-box neu"><div class="rb-val">2</div><div class="rb-lbl">Dissertativas (prof.)</div></div>
+          <div class="res-box neu"><div class="rb-val">${em}m${String(es).padStart(2,'0')}s</div><div class="rb-lbl">Tempo</div></div>`;
+
+        const L=['A','B','C','D'];
+        let bd='';
+        ST.answers.filter(a=>a.type==='mc').forEach((a,i)=>{
+          const q=sim.questions[a.qIdx];
+          bd+=`<div class="res-row"><div class="rr-left"><span style="font-size:1.1rem;">${a.correct?'✅':'❌'}</span><div><div class="rr-name">Q${i+1} — ${q.stem.replace(/<[^>]+>/g,'').substring(0,55)}...</div><div class="rr-detail">Sua resposta: <strong>${L[a.chosen]}</strong> · Correta: <strong>${L[q.answer]}</strong></div></div></div><span class="rr-grade ${a.correct?'hi':'lo'}">${a.correct?'1,0':'0,0'}</span></div>`;
+        });
+        document.getElementById('r-breakdown').innerHTML=bd;
+
+        let ess='';
+        ST.answers.filter(a=>a.type==='essay').forEach((a,i)=>{
+          const q=sim.questions[a.qIdx];
+          ess+=`<div class="q-block" style="margin-bottom:12px;"><div class="q-header"><span class="q-badge essay">Dissertativa ${i+1}</span><span class="q-type-tag">Aguardando correção do professor</span></div><div class="q-body"><p class="q-stem" style="margin-bottom:8px;">${q.stem}</p><div class="essay-review"><div class="essay-review-q">Sua resposta:</div><div class="essay-review-a ${!a.essay ? 'empty' : ''}">${a.essay || '(Não respondida)'}</div></div></div></div>`;
+        });
+        document.getElementById('r-essays').innerHTML=ess;
+      }
+
+      // ══════════════════════════════════
+      // CSV
+      // ══════════════════════════════════
+      function downloadCSV(){
+        const sim=SIMS[ST.simIdx];
+        const mc=ST.scores.mc,pct=(mc/8*100).toFixed(1);
+        const now=new Date();
+        const elapsed=45*60-ST.secs,em=Math.floor(elapsed/60),es=elapsed%60;
+        const L=['A','B','C','D'];
+        let csv='sep=;\nRELATÓRIO DE SIMULADO — FUNDAMENTOS BACKEND\n';
+        csv+=`Simulado;${sim.title} — ${sim.subtitle}\nTópicos;${sim.topics}\n`;
+        csv+=`Data;${now.toLocaleDateString('pt-BR')}\nHora;${now.toLocaleTimeString('pt-BR')}\nTempo;${em}min ${String(es).padStart(2,'0')}s\n\n`;
+        csv+=`OBJETIVAS\nAcertos;${mc}\nTotal;8\nAproveitamento;${pct}%\n\n`;
+        csv+=`Nº;Enunciado;Resposta Aluno;Resposta Correta;Resultado\n`;
+        ST.answers.filter(a=>a.type==='mc').forEach((a,i)=>{
+          const q=sim.questions[a.qIdx];
+          csv+=`Q${i+1};${q.stem.replace(/<[^>]+>/g,'').substring(0,70).replace(/;/g,',')}...;${L[a.chosen]};${L[q.answer]};${a.correct?'CORRETO':'INCORRETO'}\n`;
+        });
+        csv+=`\nDISSERTATIVAS (Correção pelo Professor)\n`;
+        ST.answers.filter(a=>a.type==='essay').forEach((a,i)=>{
+          const q=sim.questions[a.qIdx];
+          csv+=`\nDissertativa ${i+1}\nEnunciado;${q.stem.replace(/<[^>]+>/g,'').substring(0,80).replace(/;/g,',')}\nResposta;${(a.essay||'(Não respondida)').replace(/;/g,',').replace(/\n/g,' ')}\nCritérios;${q.rubric.replace(/;/g,',')}\n`;
+        });
+        const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'});
+        const url=URL.createObjectURL(blob);
+        const a=document.createElement('a');
+        a.href=url;a.download=`simulado${sim.id+1}_backend_${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}.csv`;
+        document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);
+      }
+
+      // ══════════════════════════════════
+      // UTILS
+      // ══════════════════════════════════
+      function go(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));document.getElementById(id).classList.add('on');window.scrollTo(0,0);}
+
+      function init() {
+        document.getElementById('btn-start').addEventListener('click', startSim);
+        document.getElementById('btn-finish').addEventListener('click', finishExam);
+        document.getElementById('btn-download').addEventListener('click', downloadCSV);
+        document.getElementById('btn-back-to-select').addEventListener('click', () => go('s-select'));
+        renderSelector();
+      }
+
+      init();
+    </script>
+  </body>
+</html>
