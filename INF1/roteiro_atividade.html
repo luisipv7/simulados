@@ -307,6 +307,35 @@
   .deliver-item .name { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 3px; }
   .deliver-item .detail { font-size: 11px; color: var(--text-dim); line-height: 1.4; }
 
+
+  /* ─── ANTI-COPY PARA TRECHOS DE CÓDIGO ─── */
+  pre.no-copy,
+  pre.no-copy * {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+  }
+
+  pre.no-copy {
+    position: relative;
+    cursor: default;
+  }
+
+  pre.no-copy::after {
+    content: 'CÓDIGO PROTEGIDO';
+    position: absolute;
+    top: 8px;
+    right: 10px;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    color: var(--text-dim);
+    opacity: 0.7;
+    pointer-events: none;
+  }
+
   @media (max-width: 540px) {
     .deliver-grid { grid-template-columns: 1fr; }
     .cmd-grid { grid-template-columns: 1fr; }
@@ -469,9 +498,9 @@
           e salve com a extensão <code>.bat</code> — não <code>.txt</code>!
         </div>
         <div class="pre-label">como abrir</div>
-        <pre><span class="prompt">Win+R  →  </span><span class="cmd">notepad</span>   <span class="cmt">← abre o Bloco de Notas</span></pre>
+        <pre class="no-copy" tabindex="0" aria-label="Trecho de código protegido contra cópia"><span class="prompt">Win+R  →  </span><span class="cmd">notepad</span>   <span class="cmt">← abre o Bloco de Notas</span></pre>
         <div class="pre-label">ao salvar (Ctrl+S)</div>
-        <pre><span class="cmt">Nome do arquivo:</span>  <span class="arg">projeto_meu_computador.bat</span>
+        <pre class="no-copy" tabindex="0" aria-label="Trecho de código protegido contra cópia"><span class="cmt">Nome do arquivo:</span>  <span class="arg">projeto_meu_computador.bat</span>
 <span class="cmt">Tipo:</span>             <span class="arg">Todos os Arquivos (*.*)</span>   <span class="cmt">← IMPORTANTE!</span></pre>
         <div class="tip">
           <span class="tip-icon">💡</span>
@@ -489,7 +518,7 @@
           variável com o caminho da pasta principal do projeto.
         </div>
         <div class="pre-label">código</div>
-        <pre><span class="cmd">@echo off</span>
+        <pre class="no-copy" tabindex="0" aria-label="Trecho de código protegido contra cópia"><span class="cmd">@echo off</span>
 <span class="cmt">REM Desliga a exibição de cada linha no terminal</span>
 
 <span class="cmd">title</span> <span class="arg">Projeto INF1</span>
@@ -516,7 +545,7 @@
           cada família de arquivo tem sua própria pasta!
         </div>
         <div class="pre-label">código</div>
-        <pre><span class="cmd">mkdir</span> <span class="arg">"%PROJETO%"</span>
+        <pre class="no-copy" tabindex="0" aria-label="Trecho de código protegido contra cópia"><span class="cmd">mkdir</span> <span class="arg">"%PROJETO%"</span>
 <span class="cmd">mkdir</span> <span class="arg">"%PROJETO%\Imagens"</span>
 <span class="cmd">mkdir</span> <span class="arg">"%PROJETO%\Documentos"</span>
 <span class="cmd">mkdir</span> <span class="arg">"%PROJETO%\Musicas"</span>
@@ -540,7 +569,7 @@
           <code>echo</code> com os operadores <code>&gt;</code> e <code>&gt;&gt;</code>.
         </div>
         <div class="pre-label">código</div>
-        <pre><span class="cmt">REM Cria o arquivo (> sobrescreve se já existir)</span>
+        <pre class="no-copy" tabindex="0" aria-label="Trecho de código protegido contra cópia"><span class="cmt">REM Cria o arquivo (> sobrescreve se já existir)</span>
 <span class="cmd">echo</span> <span class="arg">Meu primeiro documento via CMD!</span> <span class="cmt">&gt;</span> <span class="arg">"%PROJETO%\Documentos\bemvindo.txt"</span>
 <span class="cmd">echo</span> <span class="arg">Criado em: %DATE%</span>                <span class="cmt">&gt;&gt;</span> <span class="arg">"%PROJETO%\Documentos\bemvindo.txt"</span>
 <span class="cmd">echo</span> <span class="arg">Usuario: %USERNAME%</span>               <span class="cmt">&gt;&gt;</span> <span class="arg">"%PROJETO%\Documentos\bemvindo.txt"</span>
@@ -561,7 +590,7 @@
           esperar você terminar de desenhar. Quando fechar o Paint, o script continua!
         </div>
         <div class="pre-label">código</div>
-        <pre><span class="cmd">echo</span> O Paint vai abrir. Faca um desenho e salve em:
+        <pre class="no-copy" tabindex="0" aria-label="Trecho de código protegido contra cópia"><span class="cmd">echo</span> O Paint vai abrir. Faca um desenho e salve em:
 <span class="cmd">echo</span> <span class="arg">%PROJETO%\Imagens\meu_desenho.bmp</span>
 <span class="cmd">echo</span> Depois FECHE o Paint para continuar.
 <span class="cmd">pause</span>
@@ -593,7 +622,7 @@
           usando a variável especial <code>%~f0</code> — ela contém o caminho do próprio script.
         </div>
         <div class="pre-label">código</div>
-        <pre><span class="cmd">copy</span> <span class="arg">"%~f0"</span> <span class="arg">"%PROJETO%\Programas\meu_projeto.bat"</span> <span class="cmt">&gt;nul</span>
+        <pre class="no-copy" tabindex="0" aria-label="Trecho de código protegido contra cópia"><span class="cmd">copy</span> <span class="arg">"%~f0"</span> <span class="arg">"%PROJETO%\Programas\meu_projeto.bat"</span> <span class="cmt">&gt;nul</span>
 <span class="cmd">echo</span> Script copiado para Programas!
 
 <span class="cmt">REM %~f0 = caminho completo do arquivo .bat em execução</span></pre>
@@ -609,7 +638,7 @@
           depois abra o Explorador para confirmar visualmente o resultado.
         </div>
         <div class="pre-label">código</div>
-        <pre><span class="cmd">echo</span> ====================================
+        <pre class="no-copy" tabindex="0" aria-label="Trecho de código protegido contra cópia"><span class="cmd">echo</span> ====================================
 <span class="cmd">echo</span>  ESTRUTURA FINAL DO PROJETO:
 <span class="cmd">echo</span> ====================================
 <span class="cmd">tree</span> <span class="arg">"%PROJETO%"</span> <span class="arg">/f</span>
@@ -659,5 +688,60 @@
   </footer>
 
 </div>
+
+<script>
+  (function () {
+    const blocos = document.querySelectorAll('pre.no-copy');
+
+    function estaNoBlocoProtegido(alvo) {
+      return alvo && alvo.closest && alvo.closest('pre.no-copy');
+    }
+
+    blocos.forEach((bloco) => {
+      bloco.setAttribute('draggable', 'false');
+
+      bloco.addEventListener('copy', (e) => e.preventDefault());
+      bloco.addEventListener('cut', (e) => e.preventDefault());
+      bloco.addEventListener('contextmenu', (e) => e.preventDefault());
+      bloco.addEventListener('selectstart', (e) => e.preventDefault());
+      bloco.addEventListener('dragstart', (e) => e.preventDefault());
+      bloco.addEventListener('mousedown', (e) => {
+        if (e.detail > 1) e.preventDefault();
+      });
+    });
+
+    document.addEventListener('keydown', (e) => {
+      const alvo = document.activeElement || e.target;
+      const dentroDoBloco = estaNoBlocoProtegido(alvo) || estaNoBlocoProtegido(window.getSelection()?.anchorNode?.parentElement);
+
+      if (!dentroDoBloco) return;
+
+      const tecla = e.key.toLowerCase();
+      const atalhoSistema = e.ctrlKey || e.metaKey;
+
+      if (
+        (atalhoSistema && ['c', 'x', 'a', 's', 'u'].includes(tecla)) ||
+        tecla === 'insert'
+      ) {
+        e.preventDefault();
+      }
+
+      if (e.key === 'PrintScreen') {
+        e.preventDefault();
+      }
+    });
+
+    document.addEventListener('copy', (e) => {
+      const selecao = window.getSelection();
+      if (!selecao || selecao.rangeCount === 0) return;
+
+      const no = selecao.anchorNode;
+      if (no && estaNoBlocoProtegido(no.parentElement)) {
+        e.preventDefault();
+      }
+    });
+  })();
+</script>
+
 </body>
 </html>
