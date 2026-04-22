@@ -755,7 +755,7 @@ function showHint3(){ showFb(document.getElementById('fb3'),'ok','💡 '+HINTS[3
 // UTILS
 // ══════════════════════════════
 function unlockStep(n){
-  const els = [null, document.getElementById('step2-wrap'), document.getElementById('step3-wrap')];
+  const els = [null, null, document.getElementById('step2-wrap'), document.getElementById('step3-wrap')];
   if(els[n]){ els[n].style.opacity='1'; els[n].style.pointerEvents='auto'; els[n].scrollIntoView({behavior:'smooth',block:'start'}); }
 }
 
@@ -784,6 +784,7 @@ function showResult(){
 }
 
 function fullReset(){
+  step = 1;
   // reset inputs
   ['inp-receita','inp-despesa','inp-lucro'].forEach(id=>{
     const el=document.getElementById(id);
