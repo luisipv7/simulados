@@ -1,0 +1,1165 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>O Baú de Ouro da Guilda — Fluxo de Caixa</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #07080f;
+  --bg2: #0e1024;
+  --panel: #12142a;
+  --panel2: #191d3d;
+  --border: #232852;
+  --gold: #f5c842;
+  --gold2: #ffe082;
+  --green: #00e676;
+  --green2: #b9f6ca;
+  --red: #ff5252;
+  --red2: #ffd0d0;
+  --blue: #40c4ff;
+  --blue2: #b3e5fc;
+  --orange: #ffab40;
+  --purple: #ce93d8;
+  --white: #eef2ff;
+  --gray: #92a0d7;
+  --muted: #6570aa;
+  --ok-bg: rgba(0,230,118,.10);
+  --err-bg: rgba(255,82,82,.10);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Nunito', sans-serif;
+  background: var(--bg);
+  color: var(--white);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Fundo estrelado simples, inspirado nas trilhas anteriores */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    radial-gradient(1px 1px at 12% 18%, rgba(255,255,255,.70) 0%, transparent 100%),
+    radial-gradient(1px 1px at 84% 12%, rgba(255,255,255,.50) 0%, transparent 100%),
+    radial-gradient(1px 1px at 50% 82%, rgba(255,255,255,.65) 0%, transparent 100%),
+    radial-gradient(1px 1px at 28% 55%, rgba(255,255,255,.45) 0%, transparent 100%),
+    radial-gradient(1px 1px at 94% 62%, rgba(255,255,255,.55) 0%, transparent 100%),
+    radial-gradient(1px 1px at 68% 38%, rgba(255,255,255,.35) 0%, transparent 100%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+body::after {
+  content:'';
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,.035) 2px, rgba(0,0,0,.035) 4px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Modo foco/reduzido */
+body.focus-mode::before,
+body.focus-mode::after { display: none; }
+
+body.focus-mode {
+  background: #101321;
+}
+
+body.focus-mode .floating-coin,
+body.focus-mode .npc-av,
+body.focus-mode .chest-glow { animation: none !important; }
+
+body.big-text { font-size: 112%; }
+
+.scr {
+  display: none;
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px 16px 50px;
+}
+
+.scr.on { display: flex; }
+
+.panel {
+  background: linear-gradient(180deg, rgba(18,20,42,.98), rgba(13,15,32,.98));
+  border: 2px solid var(--border);
+  border-radius: 18px;
+  padding: 26px 30px;
+  max-width: 980px;
+  width: 100%;
+  box-shadow: 0 0 50px rgba(64,196,255,.07), 0 12px 45px rgba(0,0,0,.72);
+}
+
+.ptitle {
+  font-family: 'Press Start 2P', monospace;
+  font-size: clamp(.62rem, 2vw, .95rem);
+  color: var(--gold);
+  text-shadow: 2px 2px 0 #7a4a00, 0 0 22px rgba(245,200,66,.45);
+  line-height: 1.9;
+  text-align: center;
+}
+
+.psub {
+  font-family: 'Press Start 2P', monospace;
+  font-size: .43rem;
+  color: var(--gray);
+  letter-spacing: 1px;
+  text-align: center;
+  line-height: 1.8;
+}
+
+.sep {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(245,200,66,.45), transparent);
+  margin: 18px 0;
+}
+
+/* Barra de acessibilidade */
+.a11y {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin: 12px 0 18px;
+}
+
+.a11y button,
+.btn {
+  font-family: 'Press Start 2P', monospace;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: transform .2s, box-shadow .2s, background .2s;
+}
+
+.a11y button {
+  font-size: .42rem;
+  padding: 9px 12px;
+  color: var(--white);
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.16);
+}
+
+.a11y button:hover { background: rgba(255,255,255,.14); }
+
+/* NPC */
+.npc-wrap {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  background: rgba(18,20,42,.9);
+  border: 1.5px solid rgba(64,196,255,.25);
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 18px;
+}
+
+.npc-av {
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  border: 2px solid var(--gold);
+  background: linear-gradient(135deg,#2a1a0a,#4a2c17);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  flex-shrink: 0;
+  animation: floatNpc 3s ease-in-out infinite;
+}
+
+@keyframes floatNpc {
+  0%,100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+
+.npc-name {
+  font-family: 'Press Start 2P', monospace;
+  font-size: .48rem;
+  color: var(--gold);
+  margin-bottom: 7px;
+}
+
+.npc-text {
+  font-size: .95rem;
+  font-weight: 800;
+  color: #cdd9f0;
+  line-height: 1.75;
+}
+
+.npc-text strong { color: var(--gold2); }
+
+.code-tip {
+  display: inline-block;
+  margin-top: 7px;
+  padding: 5px 8px;
+  border-radius: 7px;
+  border: 1px solid rgba(0,230,118,.35);
+  background: rgba(0,230,118,.10);
+  color: var(--green);
+  font-family: 'Press Start 2P', monospace;
+  font-size: .42rem;
+  line-height: 1.7;
+}
+
+/* Botões */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: .52rem;
+  padding: 14px 22px;
+  color: #fff;
+  letter-spacing: .5px;
+  line-height: 1.5;
+  margin: 5px;
+}
+
+.btn-start {
+  background: linear-gradient(135deg,#1565c0,#40c4ff);
+  box-shadow: 0 4px 18px rgba(64,196,255,.35);
+}
+
+.btn-green {
+  background: linear-gradient(135deg,#1b5e20,#00c853);
+  box-shadow: 0 4px 16px rgba(0,230,118,.30);
+}
+
+.btn-red {
+  background: linear-gradient(135deg,#8e1b1b,#ff5252);
+  box-shadow: 0 4px 16px rgba(255,82,82,.28);
+}
+
+.btn-gold {
+  background: linear-gradient(135deg,#b8860b,#f5c842);
+  color: #1b1200;
+  box-shadow: 0 4px 18px rgba(245,200,66,.35);
+}
+
+.btn-ghost {
+  background: rgba(255,255,255,.07);
+  border: 1.5px solid rgba(255,255,255,.18);
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0,0,0,.35);
+}
+
+.btn:disabled {
+  opacity: .38;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Badge da missão */
+.quest-badge {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: linear-gradient(135deg,rgba(245,200,66,.12),rgba(64,196,255,.07));
+  border: 2px solid rgba(245,200,66,.35);
+  border-radius: 14px;
+  padding: 16px 18px;
+  margin-bottom: 18px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.qb-left { display: flex; align-items: center; gap: 14px; }
+.qb-icon { font-size: 2.8rem; }
+.qb-title {
+  font-family: 'Press Start 2P', monospace;
+  font-size: .58rem;
+  color: var(--gold);
+  line-height: 1.9;
+}
+.qb-sub { font-size: .82rem; color: var(--gray); font-weight: 900; }
+
+.rank-badge {
+  font-family: 'Press Start 2P', monospace;
+  font-size: .52rem;
+  background: linear-gradient(135deg,#4a148c,#ce93d8);
+  border: 2px solid #ce93d8;
+  border-radius: 9px;
+  padding: 9px 13px;
+  color: white;
+}
+
+/* Progress */
+.prog-wrap { margin: 16px 0 20px; }
+.prog-top {
+  display: flex;
+  justify-content: space-between;
+  font-family: 'Press Start 2P', monospace;
+  font-size: .44rem;
+  color: var(--gray);
+  margin-bottom: 6px;
+  gap: 8px;
+}
+.prog-track {
+  height: 13px;
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.prog-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg,var(--blue),var(--gold));
+  border-radius: 8px;
+  transition: width .45s ease;
+}
+
+/* Cards */
+.grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0,1fr));
+  gap: 16px;
+}
+
+@media(max-width:720px) { .grid-2 { grid-template-columns: 1fr; } }
+
+.info-card {
+  background: rgba(10,12,28,.65);
+  border: 1.5px solid var(--border);
+  border-radius: 14px;
+  padding: 18px;
+}
+
+.info-card h3 {
+  font-family: 'Press Start 2P', monospace;
+  font-size: .52rem;
+  color: var(--gold);
+  line-height: 1.8;
+  margin-bottom: 10px;
+}
+
+.info-card p, .info-card li {
+  color: #cdd9f0;
+  font-size: .92rem;
+  line-height: 1.65;
+  font-weight: 800;
+}
+
+.info-card ul { padding-left: 20px; }
+
+.green-card {
+  border-color: rgba(0,230,118,.35);
+  background: rgba(0,230,118,.07);
+}
+
+.red-card {
+  border-color: rgba(255,82,82,.32);
+  background: rgba(255,82,82,.07);
+}
+
+.blue-card {
+  border-color: rgba(64,196,255,.32);
+  background: rgba(64,196,255,.07);
+}
+
+/* Baú */
+.chest-wrap {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 160px;
+  margin: 12px 0;
+}
+
+.chest {
+  position: relative;
+  width: 170px;
+  height: 120px;
+  border-radius: 18px 18px 12px 12px;
+  background: linear-gradient(180deg,#8b551b,#4c2b0e);
+  border: 4px solid #2a1606;
+  box-shadow: 0 18px 40px rgba(0,0,0,.45);
+}
+
+.chest::before {
+  content:'';
+  position:absolute;
+  left:-4px; right:-4px; top:-26px;
+  height: 50px;
+  border-radius: 80px 80px 16px 16px;
+  background: linear-gradient(180deg,#b67624,#6e3d12);
+  border: 4px solid #2a1606;
+}
+
+.chest::after {
+  content:'🔒';
+  position:absolute;
+  left:50%;
+  top:48px;
+  transform: translateX(-50%);
+  width:42px;
+  height:42px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border-radius:8px;
+  background: var(--gold);
+  border:3px solid #8a6000;
+  font-size:20px;
+}
+
+.chest-glow {
+  position:absolute;
+  inset:-28px;
+  border-radius:50%;
+  background: radial-gradient(circle, rgba(245,200,66,.20), transparent 62%);
+  animation: glow 2.8s ease-in-out infinite;
+  z-index: -1;
+}
+
+@keyframes glow {
+  0%,100% { opacity:.45; transform:scale(.96); }
+  50% { opacity:.85; transform:scale(1.05); }
+}
+
+.floating-coin {
+  position:absolute;
+  font-size: 22px;
+  animation: coinFloat 2.5s ease-in-out infinite;
+}
+
+.c1 { left: -24px; top: -14px; animation-delay:0s; }
+.c2 { right: -24px; top: -5px; animation-delay:.5s; }
+.c3 { left: 70px; top: -42px; animation-delay:1s; }
+
+@keyframes coinFloat {
+  0%,100% { transform: translateY(0) rotate(0); opacity:.7; }
+  50% { transform: translateY(-9px) rotate(12deg); opacity:1; }
+}
+
+/* Classificação */
+.item-card {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 12px;
+  align-items: center;
+  background: rgba(18,20,42,.92);
+  border: 2px solid var(--border);
+  border-radius: 14px;
+  padding: 15px;
+  margin-bottom: 13px;
+  animation: itemIn .25s ease both;
+}
+
+@keyframes itemIn {
+  from { opacity:0; transform: translateY(8px); }
+  to { opacity:1; transform: translateY(0); }
+}
+
+.item-icon { font-size: 2rem; }
+.item-name { font-size: 1rem; color: var(--white); font-weight: 900; line-height:1.4; }
+.item-val {
+  margin-top: 4px;
+  color: var(--gold2);
+  font-family:'Press Start 2P', monospace;
+  font-size: .55rem;
+}
+
+.item-actions {
+  grid-column: 1 / -1;
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  justify-content:center;
+  margin-top: 6px;
+}
+
+.feedback {
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin: 12px 0;
+  font-size: .92rem;
+  font-weight: 900;
+  line-height: 1.6;
+  display:none;
+}
+
+.feedback.show { display:block; }
+.feedback.ok {
+  background: rgba(0,230,118,.12);
+  border: 1.5px solid rgba(0,230,118,.38);
+  color: var(--green2);
+}
+.feedback.err {
+  background: rgba(255,82,82,.12);
+  border: 1.5px solid rgba(255,82,82,.35);
+  color: var(--red2);
+}
+
+/* Livro */
+.ledger {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0,1fr));
+  gap: 14px;
+  margin-top: 14px;
+}
+
+@media(max-width:800px) { .ledger { grid-template-columns: 1fr; } }
+
+.ledger-col {
+  border-radius: 14px;
+  overflow: hidden;
+  border: 2px solid;
+  background: rgba(10,12,28,.55);
+}
+
+.ledger-title {
+  font-family:'Press Start 2P',monospace;
+  font-size:.52rem;
+  padding: 13px 14px;
+  line-height:1.7;
+}
+
+.ledger-title.green { background: rgba(0,230,118,.18); color: var(--green); border-bottom:1px solid rgba(0,230,118,.25); }
+.ledger-title.red { background: rgba(255,82,82,.15); color: var(--red); border-bottom:1px solid rgba(255,82,82,.25); }
+
+.ledger-col.green { border-color: rgba(0,230,118,.35); }
+.ledger-col.red { border-color: rgba(255,82,82,.35); }
+
+.ledger-row {
+  display:flex;
+  justify-content:space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border-bottom: 1px solid rgba(255,255,255,.08);
+  color:#dbe5ff;
+  font-weight:900;
+  line-height:1.4;
+}
+
+.ledger-row:last-child { border-bottom: none; }
+.ledger-row strong { color: var(--gold2); white-space:nowrap; }
+
+/* Calculadora */
+.calc-box {
+  background: rgba(10,12,28,.70);
+  border: 2px solid rgba(64,196,255,.28);
+  border-radius: 16px;
+  padding: 18px;
+}
+
+.formula {
+  font-family:'Press Start 2P', monospace;
+  color: var(--blue2);
+  background: rgba(64,196,255,.08);
+  border: 1.5px solid rgba(64,196,255,.28);
+  border-radius: 12px;
+  padding: 14px;
+  text-align:center;
+  font-size:.55rem;
+  line-height:2;
+  margin: 10px 0 16px;
+}
+
+.input-row {
+  display:grid;
+  grid-template-columns: 1fr 220px;
+  gap: 12px;
+  align-items:center;
+  margin: 12px 0;
+}
+
+@media(max-width:620px) { .input-row { grid-template-columns:1fr; } }
+
+.input-row label {
+  font-weight:900;
+  color:#dbe5ff;
+  line-height:1.5;
+}
+
+.input-row input {
+  width:100%;
+  background: rgba(255,255,255,.07);
+  color: var(--white);
+  border: 2px solid rgba(255,255,255,.16);
+  border-radius: 10px;
+  padding: 12px;
+  font-size: 1rem;
+  font-family:'Nunito', sans-serif;
+  font-weight:900;
+}
+
+.input-row input:focus {
+  outline:none;
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px rgba(64,196,255,.12);
+}
+
+.result-box {
+  margin-top: 14px;
+  padding: 16px;
+  border-radius:14px;
+  border:2px solid rgba(245,200,66,.36);
+  background: rgba(245,200,66,.09);
+  text-align:center;
+  display:none;
+}
+
+.result-box.show { display:block; }
+.result-box .big {
+  font-family:'Press Start 2P', monospace;
+  font-size:.68rem;
+  line-height:2;
+  color:var(--gold2);
+}
+
+/* Mestre */
+.teacher-box {
+  display:none;
+  margin-top: 18px;
+}
+
+.teacher-box.show { display:block; }
+
+/* Rodapé */
+.footer-actions {
+  display:flex;
+  justify-content:center;
+  gap: 8px;
+  flex-wrap:wrap;
+  margin-top:20px;
+}
+
+.small-note {
+  text-align:center;
+  color: var(--muted);
+  font-size:.82rem;
+  font-weight:800;
+  line-height:1.6;
+  margin-top: 12px;
+}
+
+@media print {
+  body { background: #fff; color:#000; }
+  body::before, body::after { display:none; }
+  .scr { display:block !important; min-height:auto; page-break-after: always; color:#000; }
+  .panel { box-shadow:none; border:1px solid #999; background:#fff; }
+  .btn, .a11y, .footer-actions { display:none !important; }
+  .npc-text, .info-card p, .info-card li, .ledger-row, .input-row label { color:#000; }
+}
+</style>
+</head>
+<body>
+
+<!-- TELA 1: ABERTURA -->
+<section id="s0" class="scr on">
+  <div class="panel">
+    <div class="ptitle">O BAÚ DE OURO DA GUILDA</div>
+    <div class="psub">AULA 8 · FLUXO DE CAIXA · TRILHA ADAPTADA</div>
+
+    <div class="a11y">
+      <button onclick="toggleFocus()">🧘 MODO FOCO</button>
+      <button onclick="toggleText()">🔎 TEXTO MAIOR</button>
+      <button onclick="speakCurrent()">🔊 LER INSTRUÇÃO</button>
+    </div>
+
+    <div class="sep"></div>
+
+    <div class="quest-badge">
+      <div class="qb-left">
+        <div class="qb-icon">🧰</div>
+        <div>
+          <div class="qb-title">MISSÃO: PROTEGER O BAÚ</div>
+          <div class="qb-sub">Controle o ouro real que entrou e saiu da guilda.</div>
+        </div>
+      </div>
+      <div class="rank-badge">RANK: GUIADO</div>
+    </div>
+
+    <div class="chest-wrap">
+      <div class="chest">
+        <div class="chest-glow"></div>
+        <span class="floating-coin c1">🪙</span>
+        <span class="floating-coin c2">🪙</span>
+        <span class="floating-coin c3">🪙</span>
+      </div>
+    </div>
+
+    <div class="npc-wrap">
+      <div class="npc-av">🧙‍♂️</div>
+      <div>
+        <div class="npc-name">MESTRE DO JOGO</div>
+        <div class="npc-text readable">
+          Herói, na última missão vimos a <strong>Tela de Resultados</strong> e descobrimos que a guilda teve lucro.
+          Mas atenção: <strong>lucro não significa ouro na mão</strong>.
+          O Fluxo de Caixa mostra apenas as moedas que realmente entraram e saíram do baú.
+          <br><span class="code-tip">REGRA: só conta o ouro que entrou ou saiu de verdade.</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="info-card green-card">
+        <h3>🟢 LOOT ADQUIRIDO</h3>
+        <p>É todo ouro que entrou no baú. Exemplo: dinheiro recebido por uma venda ou serviço.</p>
+      </div>
+      <div class="info-card red-card">
+        <h3>🔴 CUSTO DE SOBREVIVÊNCIA</h3>
+        <p>É todo ouro que saiu do baú. Exemplo: salários, internet, aluguel e equipamentos.</p>
+      </div>
+    </div>
+
+    <div class="footer-actions">
+      <button class="btn btn-start" onclick="go(1)">▶ COMEÇAR MISSÃO</button>
+      <button class="btn btn-ghost" onclick="toggleTeacher()">📜 ÁREA DO MESTRE</button>
+    </div>
+
+    <div id="teacher0" class="teacher-box">
+      <div class="info-card blue-card">
+        <h3>📜 APOIO AO PROFESSOR</h3>
+        <p>Esta trilha foi montada para reduzir carga cognitiva: uma ação por vez, cores fixas, repetição de regra, feedback imediato e ausência de cronômetro.</p>
+        <ul>
+          <li>Verde = entrada de caixa.</li>
+          <li>Vermelho = saída de caixa.</li>
+          <li>Azul/dourado = resultado e saldo final.</li>
+          <li>Permita uso de calculadora, papel de apoio, cartões ou mediação oral.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TELA 2: CONCEITO -->
+<section id="s1" class="scr">
+  <div class="panel">
+    <div class="ptitle">ETAPA 1 · ENTENDER A REGRA</div>
+    <div class="prog-wrap">
+      <div class="prog-top"><span>PROGRESSO</span><span>1 / 4</span></div>
+      <div class="prog-track"><div class="prog-fill" style="width:25%"></div></div>
+    </div>
+
+    <div class="npc-wrap">
+      <div class="npc-av">🧙‍♂️</div>
+      <div>
+        <div class="npc-name">MESTRE DO JOGO</div>
+        <div class="npc-text readable">
+          A <strong>DRE</strong> mostra se a guilda teve lucro. Já o <strong>Fluxo de Caixa</strong> mostra quanto ouro existe agora.
+          Se um rei prometeu pagar depois, isso ainda não entrou no baú.
+        </div>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="info-card blue-card">
+        <h3>📊 DRE</h3>
+        <p>É a tela de resultados. Mostra se a guilda ganhou ou perdeu riqueza no período.</p>
+      </div>
+      <div class="info-card blue-card">
+        <h3>🧰 FLUXO DE CAIXA</h3>
+        <p>É o livro do baú. Mostra apenas o dinheiro que realmente entrou ou saiu.</p>
+      </div>
+      <div class="info-card green-card">
+        <h3>💧 LIQUIDEZ</h3>
+        <p>É ter ouro disponível agora para pagar compromissos.</p>
+      </div>
+      <div class="info-card red-card">
+        <h3>☠ GAME OVER FINANCEIRO</h3>
+        <p>Acontece quando falta ouro no baú para pagar as contas, mesmo existindo lucro prometido.</p>
+      </div>
+    </div>
+
+    <div class="footer-actions">
+      <button class="btn btn-ghost" onclick="go(0)">⬅ VOLTAR</button>
+      <button class="btn btn-start" onclick="go(2)">IR PARA O LIVRO ▶</button>
+    </div>
+  </div>
+</section>
+
+<!-- TELA 3: LIVRO DE REGISTROS -->
+<section id="s2" class="scr">
+  <div class="panel">
+    <div class="ptitle">ETAPA 2 · LIVRO DE REGISTROS</div>
+    <div class="prog-wrap">
+      <div class="prog-top"><span>PROGRESSO</span><span>2 / 4</span></div>
+      <div class="prog-track"><div class="prog-fill" style="width:50%"></div></div>
+    </div>
+
+    <div class="npc-wrap">
+      <div class="npc-av">📚</div>
+      <div>
+        <div class="npc-name">LIVRO DO BAÚ</div>
+        <div class="npc-text readable">
+          Separe cada movimento em uma das duas colunas.
+          <strong>Verde</strong> é ouro que entrou. <strong>Vermelho</strong> é ouro que saiu.
+        </div>
+      </div>
+    </div>
+
+    <div class="ledger">
+      <div class="ledger-col green">
+        <div class="ledger-title green">🟢 LOOT ADQUIRIDO · ENTRADAS</div>
+        <div class="ledger-row"><span>Venda de Software Mágico</span><strong>R$ 12.000</strong></div>
+        <div class="ledger-row"><span>Manutenção do Castelo</span><strong>R$ 4.500</strong></div>
+        <div class="ledger-row"><span>Suporte Técnico ao Reino</span><strong>R$ 1.800</strong></div>
+        <div class="ledger-row"><span>Pagamento atrasado do Rei B</span><strong>R$ 2.200</strong></div>
+      </div>
+      <div class="ledger-col red">
+        <div class="ledger-title red">🔴 CUSTO DE SOBREVIVÊNCIA · SAÍDAS</div>
+        <div class="ledger-row"><span>Salários dos Magos</span><strong>R$ 7.500</strong></div>
+        <div class="ledger-row"><span>Poção de Conexão</span><strong>R$ 350</strong></div>
+        <div class="ledger-row"><span>Aluguel da Base</span><strong>R$ 2.000</strong></div>
+        <div class="ledger-row"><span>Cristal SSD</span><strong>R$ 480</strong></div>
+        <div class="ledger-row"><span>Hospedagem em Nuvem</span><strong>R$ 220</strong></div>
+        <div class="ledger-row"><span>Contador Real</span><strong>R$ 600</strong></div>
+      </div>
+    </div>
+
+    <div class="footer-actions">
+      <button class="btn btn-ghost" onclick="go(1)">⬅ VOLTAR</button>
+      <button class="btn btn-start" onclick="startClassification()">TREINAR CLASSIFICAÇÃO ▶</button>
+    </div>
+  </div>
+</section>
+
+<!-- TELA 4: CLASSIFICAÇÃO -->
+<section id="s3" class="scr">
+  <div class="panel">
+    <div class="ptitle">ETAPA 3 · CLASSIFICAR MOVIMENTOS</div>
+    <div class="prog-wrap">
+      <div class="prog-top"><span id="classLabel">ITEM 1 / 10</span><span>SEM CRONÔMETRO</span></div>
+      <div class="prog-track"><div id="classProg" class="prog-fill"></div></div>
+    </div>
+
+    <div class="npc-wrap">
+      <div class="npc-av">🧭</div>
+      <div>
+        <div class="npc-name">GUIA DA MISSÃO</div>
+        <div class="npc-text readable">
+          Leia o cartão. Depois escolha: o ouro <strong>entrou</strong> no baú ou <strong>saiu</strong> do baú?
+        </div>
+      </div>
+    </div>
+
+    <div id="cardArea"></div>
+    <div id="feedback" class="feedback"></div>
+
+    <div class="footer-actions">
+      <button class="btn btn-ghost" onclick="go(2)">⬅ VOLTAR</button>
+      <button id="nextCardBtn" class="btn btn-start" onclick="nextCard()" disabled>PRÓXIMO ▶</button>
+    </div>
+  </div>
+</section>
+
+<!-- TELA 5: CÁLCULO -->
+<section id="s4" class="scr">
+  <div class="panel">
+    <div class="ptitle">ETAPA 4 · QUEST FINAL</div>
+    <div class="prog-wrap">
+      <div class="prog-top"><span>PROGRESSO</span><span>4 / 4</span></div>
+      <div class="prog-track"><div class="prog-fill" style="width:100%"></div></div>
+    </div>
+
+    <div class="npc-wrap">
+      <div class="npc-av">🧮</div>
+      <div>
+        <div class="npc-name">MATEMÁTICA DO SERVIDOR</div>
+        <div class="npc-text readable">
+          Agora vamos calcular o Fluxo de Caixa Mensal.
+          Some as entradas, some as saídas e descubra o saldo final do baú.
+        </div>
+      </div>
+    </div>
+
+    <div class="calc-box">
+      <div class="formula">SALDO FINAL = SALDO INICIAL + ENTRADAS − SAÍDAS</div>
+
+      <div class="input-row">
+        <label>1) Total de Entradas 🟢</label>
+        <input id="inEntradas" inputmode="numeric" placeholder="Ex.: 20500">
+      </div>
+
+      <div class="input-row">
+        <label>2) Total de Saídas 🔴</label>
+        <input id="inSaidas" inputmode="numeric" placeholder="Ex.: 11150">
+      </div>
+
+      <div class="input-row">
+        <label>3) Saldo Final do Baú 🧰</label>
+        <input id="inSaldo" inputmode="numeric" placeholder="Ex.: 10850">
+      </div>
+
+      <div class="footer-actions">
+        <button class="btn btn-gold" onclick="checkCalc()">VALIDAR RESPOSTA</button>
+        <button class="btn btn-ghost" onclick="fillHint()">MOSTRAR DICA</button>
+      </div>
+
+      <div id="calcFeedback" class="feedback"></div>
+
+      <div id="finalResult" class="result-box">
+        <div class="big">🏆 BAÚ POSITIVO!</div>
+        <p class="small-note">
+          A guilda terminou o mês com <strong>R$ 10.850,00</strong> no baú.
+          Isso significa que houve liquidez para pagar os compromissos.
+        </p>
+      </div>
+    </div>
+
+    <div class="footer-actions">
+      <button class="btn btn-ghost" onclick="go(3)">⬅ VOLTAR</button>
+      <button class="btn btn-start" onclick="go(5)">VER RESUMO ▶</button>
+    </div>
+  </div>
+</section>
+
+<!-- TELA 6: RESUMO -->
+<section id="s5" class="scr">
+  <div class="panel">
+    <div class="ptitle">MISSÃO CONCLUÍDA</div>
+    <div class="psub">O BAÚ DE OURO FOI CONTROLADO</div>
+
+    <div class="chest-wrap">
+      <div class="chest">
+        <div class="chest-glow"></div>
+        <span class="floating-coin c1">🪙</span>
+        <span class="floating-coin c2">🪙</span>
+        <span class="floating-coin c3">🪙</span>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="info-card green-card">
+        <h3>🟢 TOTAL DE ENTRADAS</h3>
+        <p>R$ 20.500,00</p>
+      </div>
+      <div class="info-card red-card">
+        <h3>🔴 TOTAL DE SAÍDAS</h3>
+        <p>R$ 11.150,00</p>
+      </div>
+      <div class="info-card blue-card">
+        <h3>🧰 SALDO INICIAL</h3>
+        <p>R$ 1.500,00</p>
+      </div>
+      <div class="info-card blue-card">
+        <h3>🏆 SALDO FINAL</h3>
+        <p>R$ 10.850,00</p>
+      </div>
+    </div>
+
+    <div class="npc-wrap">
+      <div class="npc-av">🧙‍♂️</div>
+      <div>
+        <div class="npc-name">MESTRE DO JOGO</div>
+        <div class="npc-text readable">
+          Parabéns, herói! Você aprendeu que <strong>Fluxo de Caixa</strong> é o controle do dinheiro que realmente entrou e saiu.
+          O baú terminou positivo, então a guilda manteve liquidez.
+        </div>
+      </div>
+    </div>
+
+    <div class="footer-actions">
+      <button class="btn btn-start" onclick="go(0)">↻ REINICIAR</button>
+      <button class="btn btn-ghost" onclick="window.print()">🖨 IMPRIMIR</button>
+      <button class="btn btn-ghost" onclick="toggleTeacherFinal()">📜 GABARITO</button>
+    </div>
+
+    <div id="teacherFinal" class="teacher-box">
+      <div class="info-card blue-card">
+        <h3>📜 GABARITO E MEDIAÇÃO</h3>
+        <p><strong>Entradas:</strong> 12.000 + 4.500 + 1.800 + 2.200 = R$ 20.500,00.</p>
+        <p><strong>Saídas:</strong> 7.500 + 350 + 2.000 + 480 + 220 + 600 = R$ 11.150,00.</p>
+        <p><strong>Saldo Final:</strong> 1.500 + 20.500 − 11.150 = R$ 10.850,00.</p>
+        <p><strong>Resposta esperada:</strong> o baú terminou cheio/positivo. A guilda gerou caixa e tem liquidez.</p>
+        <br>
+        <p><strong>Frases de apoio:</strong></p>
+        <ul>
+          <li>“Vamos olhar só para a cor verde primeiro.”</li>
+          <li>“Agora vamos somar apenas o que entrou.”</li>
+          <li>“Muito bem. Agora vamos para a cor vermelha.”</li>
+          <li>“No final, vamos descobrir quanto sobrou no baú.”</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+const items = [
+  { icon:'🧙‍💻', name:'Venda de um Software Mágico', val:12000, type:'entrada' },
+  { icon:'🏰', name:'Manutenção dos Sistemas do Castelo', val:4500, type:'entrada' },
+  { icon:'🛠', name:'Suporte Técnico ao Reino Vizinho', val:1800, type:'entrada' },
+  { icon:'👑', name:'Pagamento atrasado do Rei B', val:2200, type:'entrada' },
+  { icon:'🧙‍♂️', name:'Salários dos Magos Programadores', val:7500, type:'saida' },
+  { icon:'🧪', name:'Poção de Conexão (Internet)', val:350, type:'saida' },
+  { icon:'🏚', name:'Aluguel da Base da Guilda', val:2000, type:'saida' },
+  { icon:'💎', name:'Compra de Equipamento (Cristal SSD)', val:480, type:'saida' },
+  { icon:'☁️', name:'Hospedagem em Nuvem do Reino', val:220, type:'saida' },
+  { icon:'📜', name:'Contador Real', val:600, type:'saida' }
+];
+
+let currentScreen = 0;
+let currentItem = 0;
+let answered = false;
+let score = 0;
+
+function go(n) {
+  document.querySelectorAll('.scr').forEach(s => s.classList.remove('on'));
+  document.getElementById('s' + n).classList.add('on');
+  currentScreen = n;
+  window.scrollTo(0,0);
+}
+
+function toggleFocus() {
+  document.body.classList.toggle('focus-mode');
+}
+
+function toggleText() {
+  document.body.classList.toggle('big-text');
+}
+
+function speakCurrent() {
+  const screen = document.querySelector('.scr.on');
+  const readable = screen.querySelector('.readable');
+  if (!readable || !('speechSynthesis' in window)) return;
+  window.speechSynthesis.cancel();
+  const utter = new SpeechSynthesisUtterance(readable.innerText);
+  utter.lang = 'pt-BR';
+  utter.rate = 0.92;
+  window.speechSynthesis.speak(utter);
+}
+
+function toggleTeacher() {
+  document.getElementById('teacher0').classList.toggle('show');
+}
+
+function toggleTeacherFinal() {
+  document.getElementById('teacherFinal').classList.toggle('show');
+}
+
+function brl(v) {
+  return v.toLocaleString('pt-BR', { style:'currency', currency:'BRL' });
+}
+
+function startClassification() {
+  currentItem = 0;
+  score = 0;
+  answered = false;
+  go(3);
+  renderCard();
+}
+
+function renderCard() {
+  const item = items[currentItem];
+  answered = false;
+  document.getElementById('nextCardBtn').disabled = true;
+  const pct = (currentItem / items.length) * 100;
+  document.getElementById('classProg').style.width = pct + '%';
+  document.getElementById('classLabel').innerText = `ITEM ${currentItem + 1} / ${items.length}`;
+  const area = document.getElementById('cardArea');
+  area.innerHTML = `
+    <div class="item-card">
+      <div class="item-icon">${item.icon}</div>
+      <div>
+        <div class="item-name">${item.name}</div>
+        <div class="item-val">${brl(item.val)}</div>
+      </div>
+      <div class="item-actions">
+        <button class="btn btn-green" onclick="answerType('entrada')">🟢 ENTROU NO BAÚ</button>
+        <button class="btn btn-red" onclick="answerType('saida')">🔴 SAIU DO BAÚ</button>
+      </div>
+    </div>
+  `;
+  const fb = document.getElementById('feedback');
+  fb.className = 'feedback';
+  fb.innerHTML = '';
+}
+
+function answerType(type) {
+  if (answered) return;
+  answered = true;
+  const item = items[currentItem];
+  const fb = document.getElementById('feedback');
+  const ok = type === item.type;
+
+  if (ok) {
+    score++;
+    fb.className = 'feedback show ok';
+    fb.innerHTML = item.type === 'entrada'
+      ? '✅ Correto! Esse ouro entrou no baú. É uma entrada de caixa.'
+      : '✅ Correto! Esse ouro saiu do baú. É uma saída de caixa.';
+  } else {
+    fb.className = 'feedback show err';
+    fb.innerHTML = item.type === 'entrada'
+      ? '⚠ Quase! Esse item é uma entrada, pois o ouro entrou no baú.'
+      : '⚠ Quase! Esse item é uma saída, pois o ouro saiu do baú.';
+  }
+
+  document.getElementById('nextCardBtn').disabled = false;
+}
+
+function nextCard() {
+  currentItem++;
+  if (currentItem >= items.length) {
+    document.getElementById('classProg').style.width = '100%';
+    go(4);
+    return;
+  }
+  renderCard();
+}
+
+function parseMoney(raw) {
+  if (!raw) return NaN;
+  return Number(String(raw)
+    .replace(/\./g, '')
+    .replace(',', '.')
+    .replace(/[^\d.-]/g, '')
+  );
+}
+
+function checkCalc() {
+  const entradas = parseMoney(document.getElementById('inEntradas').value);
+  const saidas = parseMoney(document.getElementById('inSaidas').value);
+  const saldo = parseMoney(document.getElementById('inSaldo').value);
+  const fb = document.getElementById('calcFeedback');
+  const okEntradas = entradas === 20500;
+  const okSaidas = saidas === 11150;
+  const okSaldo = saldo === 10850;
+
+  if (okEntradas && okSaidas && okSaldo) {
+    fb.className = 'feedback show ok';
+    fb.innerHTML = '✅ Excelente! Você calculou corretamente: Entradas R$ 20.500, Saídas R$ 11.150 e Saldo Final R$ 10.850.';
+    document.getElementById('finalResult').classList.add('show');
+  } else {
+    fb.className = 'feedback show err';
+    let tips = [];
+    if (!okEntradas) tips.push('revise a soma das entradas verdes');
+    if (!okSaidas) tips.push('revise a soma das saídas vermelhas');
+    if (!okSaldo) tips.push('revise a fórmula: 1.500 + entradas − saídas');
+    fb.innerHTML = '⚠ Ainda precisamos ajustar: ' + tips.join(', ') + '.';
+    document.getElementById('finalResult').classList.remove('show');
+  }
+}
+
+function fillHint() {
+  const fb = document.getElementById('calcFeedback');
+  fb.className = 'feedback show ok';
+  fb.innerHTML = '💡 Dica: Entradas = 12.000 + 4.500 + 1.800 + 2.200. Saídas = 7.500 + 350 + 2.000 + 480 + 220 + 600.';
+}
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'ArrowRight' && currentScreen < 5) go(currentScreen + 1);
+  if (e.key === 'ArrowLeft' && currentScreen > 0) go(currentScreen - 1);
+});
+</script>
+</body>
+</html>
