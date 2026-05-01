@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CAI - Home do Modulo</title>
+    <style>
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      body {
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background: #f5f4f0;
+        color: #1a1a18;
+        min-height: 100vh;
+        padding: 32px 16px;
+      }
+      main { max-width: 980px; margin: 0 auto; }
+      header {
+        background: #ffffff;
+        border: 1px solid rgba(0, 0, 0, 0.14);
+        border-radius: 8px;
+        padding: 28px;
+        margin-bottom: 20px;
+      }
+      .label {
+        color: #6f6d66;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        margin-bottom: 8px;
+      }
+      h1 { font-size: clamp(1.8rem, 4vw, 3rem); line-height: 1.1; margin-bottom: 10px; }
+      p { color: #55524b; line-height: 1.6; max-width: 720px; }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 12px;
+      }
+      a.card {
+        display: block;
+        min-height: 120px;
+        background: #ffffff;
+        color: inherit;
+        text-decoration: none;
+        border: 1px solid rgba(0, 0, 0, 0.14);
+        border-radius: 8px;
+        padding: 18px;
+        transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+      }
+      a.card:hover {
+        transform: translateY(-2px);
+        border-color: rgba(0, 0, 0, 0.35);
+        box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08);
+      }
+      .type {
+        color: #8a661f;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        margin-bottom: 10px;
+      }
+      h2 { font-size: 1rem; line-height: 1.35; margin-bottom: 8px; }
+      .file { color: #6f6d66; font-size: 12px; word-break: break-word; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <div class="label">CAI</div>
+        <h1>Contabilidade Aplicada a Informatica</h1>
+        <p>Home do modulo com acesso rapido aos simulados, provas e atividades interativas.</p>
+      </header>
+
+      <section class="grid" aria-label="Materiais do modulo CAI">
+        <a class="card" href="simulado_cai_interativo.html">
+          <div class="type">Simulado</div>
+          <h2>Simulado - Contabilidade Aplicada a Informatica</h2>
+          <div class="file">simulado_cai_interativo.html</div>
+        </a>
+        <a class="card" href="simulado2_cai.html">
+          <div class="type">Simulado</div>
+          <h2>Simulado 2 - Contabilidade Aplicada a Informatica</h2>
+          <div class="file">simulado2_cai.html</div>
+        </a>
+        <a class="card" href="simulado3_cai.html">
+          <div class="type">Simulado</div>
+          <h2>Simulado 3 - Contabilidade Aplicada a Informatica</h2>
+          <div class="file">simulado3_cai.html</div>
+        </a>
+        <a class="card" href="prova-visual-contabilidade.html">
+          <div class="type">Prova</div>
+          <h2>Prova da Guilda da Contabilidade</h2>
+          <div class="file">prova-visual-contabilidade.html</div>
+        </a>
+        <a class="card" href="cronicas-da-contabilidade.html">
+          <div class="type">Atividade</div>
+          <h2>Cronicas da Contabilidade</h2>
+          <div class="file">cronicas-da-contabilidade.html</div>
+        </a>
+        <a class="card" href="arvore-habilidades-plano-contas.html">
+          <div class="type">Atividade</div>
+          <h2>Arvore de Habilidades - Plano de Contas</h2>
+          <div class="file">arvore-habilidades-plano-contas.html</div>
+        </a>
+        <a class="card" href="bau_ouro_guilda_fluxo_caixa.html">
+          <div class="type">Atividade</div>
+          <h2>Bau de Ouro da Guilda - Fluxo de Caixa</h2>
+          <div class="file">bau_ouro_guilda_fluxo_caixa.html</div>
+        </a>
+        <a class="card" href="dre-tela-resultados-missao.html">
+          <div class="type">Atividade</div>
+          <h2>Tela de Resultados da Missao - DRE</h2>
+          <div class="file">dre-tela-resultados-missao.html</div>
+        </a>
+        <a class="card" href="quest-arrumador-inventarios.html">
+          <div class="type">Atividade</div>
+          <h2>O Arrumador de Inventarios</h2>
+          <div class="file">quest-arrumador-inventarios.html</div>
+        </a>
+      </section>
+    </main>
+  </body>
+</html>

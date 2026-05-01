@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>INF8 - Home do Modulo</title>
+    <style>
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      body {
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background: #f8f9fa;
+        color: #212529;
+        min-height: 100vh;
+        padding: 32px 16px;
+      }
+      main { max-width: 980px; margin: 0 auto; }
+      header {
+        background: #ffffff;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        padding: 28px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+      }
+      .label {
+        color: #2557a7;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        margin-bottom: 8px;
+      }
+      h1 { color: #1a3a5c; font-size: clamp(1.8rem, 4vw, 3rem); line-height: 1.1; margin-bottom: 10px; }
+      p { color: #495057; line-height: 1.6; max-width: 720px; }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 12px;
+      }
+      a.card {
+        display: block;
+        min-height: 120px;
+        background: #ffffff;
+        color: inherit;
+        text-decoration: none;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        padding: 18px;
+        transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+      }
+      a.card:hover {
+        transform: translateY(-2px);
+        border-color: #2557a7;
+        box-shadow: 0 10px 24px rgba(0, 0, 0, 0.1);
+      }
+      .type {
+        color: #2557a7;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        margin-bottom: 10px;
+      }
+      h2 { color: #212529; font-size: 1rem; line-height: 1.35; margin-bottom: 8px; }
+      .file { color: #6c757d; font-size: 12px; word-break: break-word; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <div class="label">INF8</div>
+        <h1>Backend com Python</h1>
+        <p>Home do modulo com acesso rapido aos simulados e avaliacoes de backend.</p>
+      </header>
+
+      <section class="grid" aria-label="Materiais do modulo INF8">
+        <a class="card" href="simulados-backend.html">
+          <div class="type">Simulado</div>
+          <h2>Simulados - Fundamentos Backend</h2>
+          <div class="file">simulados-backend.html</div>
+        </a>
+        <a class="card" href="avaliacao-backend-acessivel.html">
+          <div class="type">Avaliacao</div>
+          <h2>Avaliacao - Programacao Modulo 1</h2>
+          <div class="file">avaliacao-backend-acessivel.html</div>
+        </a>
+      </section>
+    </main>
+  </body>
+</html>

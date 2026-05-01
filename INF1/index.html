@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>INF1 - Home do Modulo</title>
+    <style>
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      body {
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background: #0a0f0a;
+        color: #c8e6c9;
+        min-height: 100vh;
+        padding: 32px 16px;
+      }
+      main { max-width: 980px; margin: 0 auto; }
+      header {
+        background: #0f1a10;
+        border: 1px solid #1e3320;
+        border-radius: 8px;
+        padding: 28px;
+        margin-bottom: 20px;
+      }
+      .label {
+        color: #00ff87;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        margin-bottom: 8px;
+      }
+      h1 { color: #ffffff; font-size: clamp(1.8rem, 4vw, 3rem); line-height: 1.1; margin-bottom: 10px; }
+      p { color: #8abf90; line-height: 1.6; max-width: 720px; }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 12px;
+      }
+      a.card {
+        display: block;
+        min-height: 120px;
+        background: #0f1a10;
+        color: inherit;
+        text-decoration: none;
+        border: 1px solid #1e3320;
+        border-radius: 8px;
+        padding: 18px;
+        transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+      }
+      a.card:hover {
+        transform: translateY(-2px);
+        border-color: #00cc6a;
+        box-shadow: 0 10px 24px rgba(0, 255, 135, 0.08);
+      }
+      .type {
+        color: #00ff87;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        margin-bottom: 10px;
+      }
+      h2 { color: #ffffff; font-size: 1rem; line-height: 1.35; margin-bottom: 8px; }
+      .file { color: #6a9b72; font-size: 12px; word-break: break-word; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <div class="label">INF1</div>
+        <h1>Introducao a Informatica Basica</h1>
+        <p>Home do modulo com acesso rapido aos projetos, roteiros e materiais de consulta.</p>
+      </header>
+
+      <section class="grid" aria-label="Materiais do modulo INF1">
+        <a class="card" href="roteiro_atividade.html">
+          <div class="type">Roteiro</div>
+          <h2>Projeto: Meu Computador Organizado</h2>
+          <div class="file">roteiro_atividade.html</div>
+        </a>
+        <a class="card" href="projeto_meu_computador_protegido.html">
+          <div class="type">Projeto</div>
+          <h2>Meu Computador Protegido</h2>
+          <div class="file">projeto_meu_computador_protegido.html</div>
+        </a>
+        <a class="card" href="atalhos_windows_tabela.html">
+          <div class="type">Consulta</div>
+          <h2>Tabela de Atalhos do Windows</h2>
+          <div class="file">atalhos_windows_tabela.html</div>
+        </a>
+      </section>
+    </main>
+  </body>
+</html>
