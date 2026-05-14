@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>HUD da Guilda — Gráficos Financeiros</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Nunito:wght@700;800;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:      #07080f;
+  --panel:   #0e1024;
+  --border:  #1c2050;
+  --gold:    #f5c842;
+  --gold2:   #ffe082;
+  --green:   #00e676;
+  --green2:  #b9f6ca;
+  --red:     #ff5252;
+  --red2:    #ffd0d0;
+  --blue:    #40c4ff;
+  --blue2:   #b3e5fc;
+  --purple:  #ce93d8;
+  --orange:  #ffab40;
+  --cyan:    #18ffff;
+  --white:   #eef2ff;
+  --gray:    #7986cb;
+
+  --bar1: #00e676;
+  --bar2: #40c4ff;
+  --bar3: #f5c842;
+
+  --pie1: #ff5252;
+  --pie2: #ffab40;
+  --pie3: #40c4ff;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--white);min-height:100vh;overflow-x:hidden;}
+
+/* scanlines */
+body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,.04) 3px,rgba(0,0,0,.04) 4px);pointer-events:none;z-index:0;}
+
+/* stars */
+body::before{content:'';position:fixed;inset:0;
+  background-image:
+    radial-gradient(1px 1px at 8% 18%,rgba(255,255,255,.8) 0%,transparent 100%),
+    radial-gradient(1px 1px at 88% 12%,rgba(255,255,255,.6) 0%,transparent 100%),
+    radial-gradient(1px 1px at 52% 88%,rgba(255,255,255,.7) 0%,transparent 100%),
+    radial-gradient(1px 1px at 23% 60%,rgba(255,255,255,.5) 0%,transparent 100%),
+    radial-gradient(1px 1px at 74% 42%,rgba(255,255,255,.6) 0%,transparent 100%),
+    radial-gradient(1px 1px at 95% 75%,rgba(255,255,255,.4) 0%,transparent 100%),
+    radial-gradient(1px 1px at 38% 6%,rgba(255,255,255,.6) 0%,transparent 100%);
+  pointer-events:none;z-index:0;}
+
+.scr{display:none;position:relative;z-index:1;min-height:100vh;flex-direction:column;align-items:center;padding:18px 14px 50px;}
+.scr.on{display:flex;}
+
+.panel{background:var(--panel);border:2px solid var(--border);border-radius:14px;padding:24px 28px;max-width:1020px;width:100%;box-shadow:0 0 50px rgba(64,196,255,.06),0 14px 50px rgba(0,0,0,.8);}
+
+.ptitle{font-family:'Press Start 2P',monospace;font-size:clamp(.5rem,1.6vw,.82rem);color:var(--gold);text-shadow:2px 2px 0 #7a4a00,0 0 20px rgba(245,200,66,.4);line-height:2;text-align:center;}
+.psub{font-family:'Press Start 2P',monospace;font-size:.38rem;color:var(--gray);letter-spacing:1px;text-align:center;}
+
+/* NPC */
+.npc-wrap{display:flex;gap:12px;align-items:flex-start;background:rgba(14,16,36,.9);border:1.5px solid rgba(64,196,255,.2);border-radius:12px;padding:14px 15px;margin-bottom:16px;}
+.npc-av{width:50px;height:50px;border-radius:50%;border:2px solid var(--gold);background:linear-gradient(135deg,#2a1a0a,#4a2c17);display:flex;align-items:center;justify-content:center;font-size:23px;flex-shrink:0;animation:fl 3s ease-in-out infinite;}
+@keyframes fl{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+.npc-name{font-family:'Press Start 2P',monospace;font-size:.42rem;color:var(--gold);margin-bottom:5px;}
+.npc-txt{font-size:.87rem;font-weight:700;color:#cdd9f0;line-height:1.7;}
+.npc-txt strong{color:var(--gold2);}
+.code-tip{font-family:'Press Start 2P',monospace;font-size:.4rem;color:var(--green);background:rgba(0,230,118,.1);border:1px solid rgba(0,230,118,.3);border-radius:6px;padding:4px 8px;display:inline-block;margin-top:5px;line-height:1.7;}
+
+/* BTN */
+.btn{display:inline-flex;align-items:center;gap:7px;font-family:'Press Start 2P',monospace;font-size:.48rem;border:none;border-radius:9px;padding:11px 20px;cursor:pointer;transition:all .2s;color:white;letter-spacing:.4px;}
+.btn-blue{background:linear-gradient(135deg,#0d47a1,#40c4ff);box-shadow:0 4px 14px rgba(64,196,255,.3);}
+.btn-blue:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(64,196,255,.5);}
+.btn-green{background:linear-gradient(135deg,#1b5e20,#00e676);box-shadow:0 4px 14px rgba(0,230,118,.3);}
+.btn-green:hover{transform:translateY(-2px);}
+.btn-purple{background:linear-gradient(135deg,#4a148c,#ce93d8);box-shadow:0 4px 14px rgba(206,147,216,.3);}
+.btn-purple:hover{transform:translateY(-2px);}
+.btn-gold{background:linear-gradient(135deg,#7a4a00,#f5c842);color:#1a0e00;box-shadow:0 4px 14px rgba(245,200,66,.3);}
+.btn-gold:hover{transform:translateY(-2px);}
+.btn-ghost{background:rgba(255,255,255,.07);border:1.5px solid rgba(255,255,255,.18);font-size:.4rem;}
+.btn-ghost:hover{background:rgba(255,255,255,.14);}
+
+/* ════ HUD LAYOUT ════ */
+.hud-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:14px 0;}
+@media(max-width:660px){.hud-grid{grid-template-columns:1fr;}}
+
+/* HUD PANEL */
+.hud-panel{
+  background:rgba(0,0,0,.4);
+  border:2px solid var(--border);
+  border-radius:12px;
+  padding:16px;
+  position:relative;
+  overflow:hidden;
+}
+.hud-panel::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent,var(--blue),transparent);
+  animation:scanLine 3s ease-in-out infinite;
+}
+@keyframes scanLine{0%,100%{opacity:.3}50%{opacity:1}}
+
+.hud-title{
+  font-family:'Press Start 2P',monospace;font-size:.48rem;
+  margin-bottom:12px;display:flex;align-items:center;gap:8px;
+}
+
+/* STAT BARS (HP/XP style) */
+.stat-row{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.stat-label{font-family:'Press Start 2P',monospace;font-size:.38rem;color:var(--gray);width:80px;flex-shrink:0;line-height:1.4;}
+.stat-track{flex:1;height:18px;background:rgba(255,255,255,.06);border-radius:3px;border:1px solid rgba(255,255,255,.1);overflow:hidden;position:relative;}
+.stat-fill{height:100%;border-radius:3px;transition:width 1.2s cubic-bezier(.22,1,.36,1);position:relative;}
+.stat-fill::after{content:'';position:absolute;top:0;left:0;right:0;height:45%;background:rgba(255,255,255,.2);border-radius:3px 3px 0 0;}
+.stat-val{font-family:'Press Start 2P',monospace;font-size:.42rem;color:var(--white);width:68px;text-align:right;flex-shrink:0;white-space:nowrap;}
+
+/* COLUMN CHART (XP bars) */
+.bar-chart-wrap{display:flex;align-items:flex-end;justify-content:space-around;height:160px;padding:0 8px;gap:8px;margin:8px 0;}
+.bar-col{display:flex;flex-direction:column;align-items:center;gap:5px;flex:1;}
+.bar-track{width:100%;background:rgba(255,255,255,.05);border-radius:4px 4px 0 0;position:relative;display:flex;align-items:flex-end;overflow:hidden;max-height:130px;min-height:8px;}
+.bar-fill-inner{width:100%;border-radius:4px 4px 0 0;transition:height 1.4s cubic-bezier(.22,1,.36,1);position:relative;}
+.bar-fill-inner::after{content:'';position:absolute;top:0;left:0;right:0;height:30%;background:rgba(255,255,255,.18);border-radius:4px 4px 0 0;}
+.bar-label{font-family:'Press Start 2P',monospace;font-size:.32rem;color:var(--gray);text-align:center;line-height:1.5;margin-top:4px;}
+.bar-val{font-family:'Press Start 2P',monospace;font-size:.36rem;color:var(--white);margin-top:2px;}
+
+/* X axis */
+.bar-axis{height:2px;background:linear-gradient(90deg,var(--border),rgba(64,196,255,.3),var(--border));margin:0 8px 4px;}
+
+/* PIE CHART */
+.pie-wrap{display:flex;align-items:center;gap:16px;flex-wrap:wrap;justify-content:center;}
+.pie-canvas-wrap{position:relative;width:140px;height:140px;flex-shrink:0;}
+#pie-canvas{width:140px;height:140px;}
+.pie-center-text{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  text-align:center;pointer-events:none;
+}
+.pie-center-text .pct{font-family:'Press Start 2P',monospace;font-size:.55rem;color:var(--white);display:block;}
+.pie-center-text .pct-lbl{font-family:'Press Start 2P',monospace;font-size:.3rem;color:var(--gray);display:block;margin-top:3px;}
+
+.pie-legend{display:flex;flex-direction:column;gap:8px;}
+.pie-leg-item{display:flex;align-items:center;gap:8px;}
+.pie-leg-dot{width:12px;height:12px;border-radius:3px;flex-shrink:0;}
+.pie-leg-label{font-size:.78rem;font-weight:700;color:#cdd9f0;line-height:1.3;}
+.pie-leg-val{font-family:'Press Start 2P',monospace;font-size:.4rem;color:var(--gray);}
+
+/* SALDO DISPLAY */
+.saldo-display{
+  background:rgba(0,0,0,.5);
+  border:2px solid;border-radius:10px;
+  padding:16px;text-align:center;margin-top:6px;
+  transition:all .6s ease;
+}
+.saldo-display.lucro{border-color:var(--green);box-shadow:0 0 20px rgba(0,230,118,.2);}
+.saldo-display.prejuizo{border-color:var(--red);box-shadow:0 0 20px rgba(255,82,82,.2);}
+.saldo-num{font-family:'Press Start 2P',monospace;font-size:clamp(.9rem,2.5vw,1.3rem);font-weight:900;line-height:1;margin-bottom:6px;}
+.saldo-display.lucro .saldo-num{color:var(--green);text-shadow:0 0 14px rgba(0,230,118,.5);}
+.saldo-display.prejuizo .saldo-num{color:var(--red);}
+.saldo-tag{font-family:'Press Start 2P',monospace;font-size:.44rem;}
+
+/* EDIT PANEL */
+.edit-panel{background:rgba(0,0,0,.4);border:2px solid var(--border);border-radius:12px;padding:16px;margin:14px 0;}
+.edit-title{font-family:'Press Start 2P',monospace;font-size:.48rem;color:var(--blue);margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+.edit-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+@media(max-width:520px){.edit-grid{grid-template-columns:1fr;}}
+
+.edit-item{background:rgba(255,255,255,.03);border:1.5px solid var(--border);border-radius:8px;padding:10px 12px;display:flex;flex-direction:column;gap:6px;}
+.edit-item-label{font-size:.78rem;font-weight:800;color:#cdd9f0;display:flex;align-items:center;gap:6px;}
+.edit-item-label .ei-icon{font-size:1.1rem;}
+.edit-item-type{font-family:'Press Start 2P',monospace;font-size:.34rem;margin-left:auto;}
+.edit-item-type.rec{color:var(--green);}
+.edit-item-type.desp{color:var(--red);}
+.edit-input{
+  background:rgba(0,0,0,.5);border:1.5px solid var(--border);
+  border-radius:6px;padding:7px 10px;
+  font-family:'Share Tech Mono',monospace;font-size:.9rem;
+  color:var(--gold);outline:none;
+  transition:border-color .2s,box-shadow .2s;
+  text-align:right;width:100%;
+}
+.edit-input:focus{border-color:var(--blue);box-shadow:0 0 10px rgba(64,196,255,.2);}
+.edit-input.changed{border-color:var(--green);box-shadow:0 0 10px rgba(0,230,118,.25);animation:inputPulse .4s ease;}
+@keyframes inputPulse{0%{transform:scale(1)}50%{transform:scale(1.03)}100%{transform:scale(1)}}
+
+/* GRAPH TYPE TOGGLE */
+.graph-toggle{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;}
+.gt-btn{
+  font-family:'Press Start 2P',monospace;font-size:.42rem;
+  padding:7px 12px;border-radius:7px;border:1.5px solid;cursor:pointer;
+  transition:all .2s;background:transparent;color:var(--gray);
+  border-color:var(--border);
+}
+.gt-btn.active{background:rgba(64,196,255,.12);border-color:var(--blue);color:var(--blue);}
+.gt-btn:hover:not(.active){border-color:var(--gray);}
+
+/* ALERT FLASH */
+.update-flash{
+  position:fixed;top:16px;left:50%;transform:translateX(-50%);
+  font-family:'Press Start 2P',monospace;font-size:.44rem;
+  background:rgba(0,230,118,.15);border:1.5px solid var(--green);
+  border-radius:8px;padding:8px 16px;color:var(--green);
+  z-index:300;white-space:nowrap;
+  animation:flashIn .3s ease,flashOut .3s ease 1.8s both;
+  pointer-events:none;
+}
+@keyframes flashIn{from{opacity:0;transform:translateX(-50%) translateY(-10px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+@keyframes flashOut{to{opacity:0}}
+
+/* TABS */
+.tabs-nav{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap;}
+.tab-btn{font-family:'Press Start 2P',monospace;font-size:.42rem;padding:8px 14px;border-radius:8px 8px 0 0;border:1.5px solid var(--border);background:rgba(0,0,0,.4);color:var(--gray);cursor:pointer;transition:all .2s;border-bottom-color:transparent;}
+.tab-btn.active{background:var(--panel);border-color:var(--blue);border-bottom-color:var(--panel);color:var(--blue);}
+
+/* CONF */
+.conf{position:fixed;inset:0;pointer-events:none;z-index:400;}
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:500;display:none;align-items:center;justify-content:center;flex-direction:column;}
+.ov.on{display:flex;}
+.ov-t{font-family:'Press Start 2P',monospace;font-size:clamp(.7rem,3vw,1.3rem);text-align:center;animation:bigP .5s ease;}
+@keyframes bigP{0%{transform:scale(.3);opacity:0}70%{transform:scale(1.1)}100%{transform:scale(1);opacity:1}}
+.ov-s{font-size:.9rem;font-weight:800;color:var(--white);text-align:center;margin-top:10px;max-width:360px;line-height:1.7;padding:0 16px;}
+
+/* RESULT */
+.result-frame{background:linear-gradient(135deg,rgba(245,200,66,.06),rgba(0,230,118,.04));border:3px solid var(--gold);border-radius:14px;padding:22px;margin:12px 0;animation:gf 2.5s ease-in-out infinite;}
+@keyframes gf{0%,100%{box-shadow:0 0 24px rgba(245,200,66,.14)}50%{box-shadow:0 0 46px rgba(245,200,66,.3)}}
+
+@media(max-width:500px){.panel{padding:16px 10px;}.edit-grid{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+
+<div class="conf" id="conf"></div>
+
+<!-- ════ INTRO ════ -->
+<div class="scr on" id="s-intro">
+  <div class="panel" style="max-width:680px;margin-top:16px;">
+    <div style="text-align:center;margin-bottom:14px;">
+      <div style="font-size:3.2rem;animation:fl 2.5s ease-in-out infinite;margin-bottom:6px;">🎮</div>
+      <p class="ptitle">O HUD DA GUILDA</p>
+      <p class="ptitle" style="color:var(--blue);font-size:clamp(.38rem,1.2vw,.55rem);">GRÁFICOS FINANCEIROS</p>
+      <p class="psub" style="margin-top:5px;">VISUALIZAÇÃO DO STATUS DA GUILDA</p>
+    </div>
+
+    <div class="npc-wrap">
+      <div class="npc-av">🧙</div>
+      <div>
+        <p class="npc-name">MESTRE CONTADOR</p>
+        <p class="npc-txt">
+          Herói! O Rei não tem tempo para ler linha por linha do Pergaminho Mágico!<br><br>
+          Pensa num jogo de batalha: você não fica lendo os números exatos do seu HP e Mana — você <strong>olha para a barra colorida</strong> e decide na hora! Na contabilidade, fazemos a mesma coisa com <strong>Gráficos Financeiros</strong>!
+          <span class="code-tip">📊 Dado → Gráfico → Decisão rápida!</span>
+        </p>
+      </div>
+    </div>
+
+    <!-- TIPOS DE GRÁFICO -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px;">
+      <div style="border:1.5px solid rgba(0,230,118,.3);border-radius:10px;padding:14px;background:rgba(0,230,118,.06);">
+        <p style="font-family:'Press Start 2P',monospace;font-size:.44rem;color:var(--green);margin-bottom:8px;">📊 GRÁFICO DE COLUNAS</p>
+        <p style="font-size:.8rem;font-weight:700;color:#cdd9f0;line-height:1.6;">= A <strong style="color:var(--green);">Barra de XP</strong><br>Quanto mais alta, maior a receita da missão. Mostra o <strong style="color:var(--green);">progresso</strong> ao longo do tempo.</p>
+      </div>
+      <div style="border:1.5px solid rgba(255,171,64,.3);border-radius:10px;padding:14px;background:rgba(255,171,64,.06);">
+        <p style="font-family:'Press Start 2P',monospace;font-size:.44rem;color:var(--orange);margin-bottom:8px;">🥧 GRÁFICO DE PIZZA</p>
+        <p style="font-size:.8rem;font-weight:700;color:#cdd9f0;line-height:1.6;">= O <strong style="color:var(--orange);">Escudo de Dano</strong><br>Fatiado como um escudo. A fatia maior mostra qual despesa causou mais <strong style="color:var(--orange);">dano</strong> ao baú.</p>
+      </div>
+    </div>
+
+    <div style="background:rgba(64,196,255,.07);border:1.5px solid rgba(64,196,255,.25);border-radius:10px;padding:14px;margin-bottom:18px;">
+      <p style="font-family:'Press Start 2P',monospace;font-size:.46rem;color:var(--blue);margin-bottom:9px;">⚡ PODER DOS GRÁFICOS</p>
+      <div style="display:flex;flex-direction:column;gap:7px;">
+        <div style="display:flex;gap:10px;font-size:.85rem;font-weight:700;color:#cdd9f0;line-height:1.5;"><span>🔄</span><span>Se você <strong style="color:var(--blue);">alterar um valor</strong> na planilha, o gráfico <strong style="color:var(--blue);">atualiza sozinho</strong> em tempo real!</span></div>
+        <div style="display:flex;gap:10px;font-size:.85rem;font-weight:700;color:#cdd9f0;line-height:1.5;"><span>👑</span><span>O Rei vê a <strong style="color:var(--gold);">situação da guilda em segundos</strong>, sem ler uma linha de número.</span></div>
+        <div style="display:flex;gap:10px;font-size:.85rem;font-weight:700;color:#cdd9f0;line-height:1.5;"><span>🎯</span><span>Nesta missão: <strong style="color:var(--green);">edite os valores</strong> e veja as barras e o escudo atualizarem na hora!</span></div>
+      </div>
+    </div>
+
+    <div style="text-align:center;">
+      <button class="btn btn-blue" style="font-size:.52rem;" onclick="go('s-hud')">🎮 ABRIR O HUD DA GUILDA</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════ HUD PRINCIPAL ════ -->
+<div class="scr" id="s-hud">
+  <div class="panel" style="max-width:1020px;margin-top:14px;">
+
+    <!-- header -->
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px;">
+      <div>
+        <p class="ptitle" style="font-size:.5rem;text-align:left;">🎮 HUD — GUILDA TECHSOLUTIONS</p>
+        <p class="psub" style="text-align:left;margin-top:2px;">STATUS FINANCEIRO · MISSÃO DO MÊS</p>
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;">
+        <button class="btn btn-ghost" onclick="go('s-intro')">← INTRO</button>
+        <button class="btn btn-ghost" onclick="resetValues()">↺ RESETAR</button>
+        <button class="btn btn-gold" style="font-size:.42rem;" onclick="go('s-result')">🏆 VER RESULTADO</button>
+      </div>
+    </div>
+
+    <!-- NPC -->
+    <div class="npc-wrap" style="margin-bottom:12px;">
+      <div class="npc-av">🧙</div>
+      <div>
+        <p class="npc-name">MESTRE CONTADOR</p>
+        <p class="npc-txt" id="npc-hud">Este é o <strong>HUD da Guilda</strong>! Veja os gráficos abaixo — eles mostram o estado financeiro da missão. <strong>Altere os valores</strong> no painel de edição e veja tudo atualizar em tempo real!</p>
+      </div>
+    </div>
+
+    <!-- TABS -->
+    <div class="tabs-nav">
+      <button class="tab-btn active" id="tab-xp"   onclick="switchTab('xp')">📊 BARRA DE XP</button>
+      <button class="tab-btn"        id="tab-pie"  onclick="switchTab('pie')">🥧 ESCUDO DE DANO</button>
+      <button class="tab-btn"        id="tab-hud"  onclick="switchTab('hud')">🎮 HUD COMPLETO</button>
+    </div>
+
+    <!-- ═ TAB: XP BAR CHART ═ -->
+    <div id="view-xp">
+      <div class="hud-panel">
+        <p class="hud-title" style="color:var(--green);">📊 BARRA DE XP — RECEITAS DA MISSÃO</p>
+        <p style="font-size:.8rem;font-weight:700;color:var(--gray);margin-bottom:10px;line-height:1.5;">Quanto mais alta a barra, maior foi a recompensa da missão. É como sua barra de XP: mostra o progresso da guilda!</p>
+        <div class="bar-chart-wrap" id="bar-chart">
+          <!-- built by JS -->
+        </div>
+        <div class="bar-axis"></div>
+        <div style="display:flex;justify-content:center;gap:16px;flex-wrap:wrap;margin-top:8px;" id="bar-legend"></div>
+      </div>
+    </div>
+
+    <!-- ═ TAB: PIE SHIELD ═ -->
+    <div id="view-pie" style="display:none;">
+      <div class="hud-panel">
+        <p class="hud-title" style="color:var(--orange);">🥧 ESCUDO DE DANO — DESPESAS DA MISSÃO</p>
+        <p style="font-size:.8rem;font-weight:700;color:var(--gray);margin-bottom:12px;line-height:1.5;">Cada fatia é um tipo de gasto. A fatia maior causou o maior "dano" ao baú de moedas da guilda!</p>
+        <div class="pie-wrap" id="pie-wrap">
+          <div class="pie-canvas-wrap">
+            <canvas id="pie-canvas" width="140" height="140"></canvas>
+            <div class="pie-center-text">
+              <span class="pct" id="pie-center-pct">—</span>
+              <span class="pct-lbl">DANO</span>
+            </div>
+          </div>
+          <div class="pie-legend" id="pie-legend"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═ TAB: FULL HUD ═ -->
+    <div id="view-hud" style="display:none;">
+      <div class="hud-grid">
+        <!-- HP bar receitas -->
+        <div class="hud-panel">
+          <p class="hud-title" style="color:var(--green);">📈 OURO GANHO (RECEITAS)</p>
+          <div id="stat-bars-rec"></div>
+          <div style="margin-top:10px;background:rgba(0,230,118,.08);border:1px solid rgba(0,230,118,.2);border-radius:7px;padding:8px;text-align:center;">
+            <span style="font-family:'Press Start 2P',monospace;font-size:.44rem;color:var(--gray);">TOTAL XP</span><br>
+            <span style="font-family:'Press Start 2P',monospace;font-size:.9rem;color:var(--green);" id="hud-total-rec">0 G</span>
+          </div>
+        </div>
+        <!-- HP bar despesas -->
+        <div class="hud-panel">
+          <p class="hud-title" style="color:var(--red);">📉 DANO SOFRIDO (DESPESAS)</p>
+          <div id="stat-bars-desp"></div>
+          <div style="margin-top:10px;background:rgba(255,82,82,.08);border:1px solid rgba(255,82,82,.2);border-radius:7px;padding:8px;text-align:center;">
+            <span style="font-family:'Press Start 2P',monospace;font-size:.44rem;color:var(--gray);">TOTAL DANO</span><br>
+            <span style="font-family:'Press Start 2P',monospace;font-size:.9rem;color:var(--red);" id="hud-total-desp">0 G</span>
+          </div>
+        </div>
+      </div>
+      <!-- SALDO -->
+      <div class="saldo-display lucro" id="saldo-display">
+        <div style="font-family:'Press Start 2P',monospace;font-size:.44rem;color:var(--gray);margin-bottom:8px;">⚡ SALDO FINAL (HP DO PERGAMINHO)</div>
+        <div class="saldo-num" id="saldo-num">+ 16.700 G</div>
+        <div class="saldo-tag" id="saldo-tag" style="color:var(--green);">✅ LUCRO — MISSÃO CONCLUÍDA!</div>
+      </div>
+    </div>
+
+    <!-- EDIT PANEL -->
+    <div class="edit-panel">
+      <p class="edit-title">✏️ EDITAR VALORES — VEJA O HUD ATUALIZAR!</p>
+      <p style="font-size:.82rem;font-weight:700;color:#cdd9f0;margin-bottom:12px;line-height:1.5;">
+        Altere qualquer valor abaixo e veja os gráficos atualizarem <strong style="color:var(--gold);">em tempo real!</strong><br>
+        <span style="color:var(--gray);font-size:.78rem;">É assim que funciona uma planilha real: muda o dado, o gráfico atualiza sozinho!</span>
+      </p>
+      <div class="edit-grid" id="edit-grid">
+        <!-- built by JS -->
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ════ RESULTADO ════ -->
+<div class="scr" id="s-result">
+  <div class="panel" style="max-width:720px;margin-top:16px;">
+    <div style="text-align:center;margin-bottom:12px;">
+      <div style="font-size:3rem;animation:fl 2.5s ease-in-out infinite;">🏆</div>
+      <p class="ptitle">HUD DOMINADO!</p>
+      <p class="psub" style="margin-top:4px;margin-bottom:14px;">VISUALIZAÇÃO FINANCEIRA COMPLETA</p>
+    </div>
+
+    <div class="result-frame">
+      <p style="font-family:'Press Start 2P',monospace;font-size:.52rem;color:var(--gold);text-align:center;margin-bottom:14px;">📊 RELATÓRIO VISUAL DA GUILDA</p>
+
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px;">
+        <div style="border:1.5px solid var(--green);border-radius:9px;padding:12px;text-align:center;background:rgba(0,230,118,.08);">
+          <div style="font-family:'Press Start 2P',monospace;font-size:.85rem;color:var(--green);" id="r-total-rec">—</div>
+          <div style="font-size:.68rem;font-weight:700;color:var(--gray);margin-top:3px;">RECEITAS (XP)</div>
+        </div>
+        <div style="border:1.5px solid var(--red);border-radius:9px;padding:12px;text-align:center;background:rgba(255,82,82,.07);">
+          <div style="font-family:'Press Start 2P',monospace;font-size:.85rem;color:var(--red);" id="r-total-desp">—</div>
+          <div style="font-size:.68rem;font-weight:700;color:var(--gray);margin-top:3px;">DESPESAS (DANO)</div>
+        </div>
+        <div style="border:2px solid var(--gold);border-radius:9px;padding:12px;text-align:center;background:rgba(245,200,66,.08);box-shadow:0 0 12px rgba(245,200,66,.18);">
+          <div style="font-family:'Press Start 2P',monospace;font-size:.85rem;color:var(--gold);" id="r-saldo">—</div>
+          <div style="font-size:.68rem;font-weight:800;color:var(--gold2);margin-top:3px;">SALDO FINAL</div>
+        </div>
+      </div>
+
+      <!-- mini bar chart no resultado -->
+      <div style="margin-bottom:12px;">
+        <p style="font-family:'Press Start 2P',monospace;font-size:.42rem;color:var(--gray);margin-bottom:8px;">📊 BARRAS DE XP</p>
+        <div id="result-bars"></div>
+      </div>
+
+      <!-- maior despesa -->
+      <div style="background:rgba(255,171,64,.08);border:1.5px solid rgba(255,171,64,.3);border-radius:8px;padding:11px;text-align:center;">
+        <p style="font-family:'Press Start 2P',monospace;font-size:.4rem;color:var(--orange);margin-bottom:5px;">🥧 MAIOR DANO NO ESCUDO</p>
+        <p style="font-size:.88rem;font-weight:800;color:var(--orange2);" id="r-maior-desp">—</p>
+      </div>
+    </div>
+
+    <div class="npc-wrap">
+      <div class="npc-av">🧙</div>
+      <div>
+        <p class="npc-name">MESTRE CONTADOR</p>
+        <p class="npc-txt">
+          <strong>Parabéns! Você dominou o HUD da Guilda!</strong><br><br>
+          Agora o Rei pode ver a situação financeira em segundos. E o melhor: se uma missão mudar de valor, você edita um número e <strong>todos os gráficos atualizam sozinhos</strong>!
+          <span class="code-tip">🔄 DADO muda → GRÁFICO atualiza = AUTOMAÇÃO!</span>
+        </p>
+      </div>
+    </div>
+
+    <!-- O QUE APRENDEU -->
+    <div style="background:rgba(206,147,216,.07);border:1.5px solid rgba(206,147,216,.25);border-radius:10px;padding:14px;margin:12px 0;">
+      <p style="font-family:'Press Start 2P',monospace;font-size:.44rem;color:var(--purple);margin-bottom:9px;">📚 APRENDIZADOS DESBLOQUEADOS</p>
+      <div style="display:flex;flex-direction:column;gap:7px;">
+        <div style="display:flex;gap:9px;font-size:.84rem;font-weight:700;color:#cdd9f0;line-height:1.5;"><span>📊</span><span><strong style="color:var(--green);">Gráfico de Colunas</strong> = Barra de XP = compara grandezas ao longo do tempo</span></div>
+        <div style="display:flex;gap:9px;font-size:.84rem;font-weight:700;color:#cdd9f0;line-height:1.5;"><span>🥧</span><span><strong style="color:var(--orange);">Gráfico de Pizza</strong> = Escudo de Dano = mostra a proporção de cada gasto</span></div>
+        <div style="display:flex;gap:9px;font-size:.84rem;font-weight:700;color:#cdd9f0;line-height:1.5;"><span>🔄</span><span>Gráfico é <strong style="color:var(--blue);">dinâmico</strong>: muda o dado → gráfico atualiza sozinho</span></div>
+        <div style="display:flex;gap:9px;font-size:.84rem;font-weight:700;color:#cdd9f0;line-height:1.5;"><span>👑</span><span>O objetivo é transformar <strong style="color:var(--gold);">números difíceis</strong> em <strong style="color:var(--gold);">decisões rápidas</strong></span></div>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;">
+      <button class="btn btn-gold" onclick="downloadCSV()">⬇ BAIXAR HUD (CSV)</button>
+      <button class="btn btn-blue" onclick="go('s-hud')">← VOLTAR AO HUD</button>
+    </div>
+  </div>
+</div>
+
+<!-- OV -->
+<div class="ov" id="ov-update">
+  <div class="ov-t" style="color:var(--green);">🔄 HUD ATUALIZADO!</div>
+  <div class="ov-s" id="ov-upd-msg">Os gráficos foram recalculados!</div>
+</div>
+
+<script>
+// ══════════════════════════════════
+// DATA
+// ══════════════════════════════════
+let DATA = {
+  receitas: [
+    { id:'r1', icon:'⚔️', label:'Missão de Software (Rei)', val:20000, color:'#00e676' },
+    { id:'r2', icon:'📖', label:'Missão de Consultoria', val:5000,  color:'#40c4ff' },
+    { id:'r3', icon:'🛠️', label:'Suporte Técnico', val:3000,  color:'#f5c842' },
+  ],
+  despesas: [
+    { id:'d1', icon:'🧙', label:'Salários dos Magos', val:10000, color:'#ff5252' },
+    { id:'d2', icon:'💎', label:'Cristais de Energia', val:800,   color:'#ffab40' },
+    { id:'d3', icon:'📡', label:'Poção de Conexão', val:500,   color:'#40c4ff' },
+  ]
+};
+
+const DEFAULT_DATA = JSON.parse(JSON.stringify(DATA));
+
+let currentTab = 'xp';
+let animTimeout = null;
+
+// ══════════════════════════════════
+// COMPUTED
+// ══════════════════════════════════
+function totalRec(){ return DATA.receitas.reduce((s,r)=>s+r.val,0); }
+function totalDesp(){ return DATA.despesas.reduce((s,d)=>s+d.val,0); }
+function saldo(){ return totalRec()-totalDesp(); }
+function fmt(n){ return n.toLocaleString('pt-BR'); }
+
+// ══════════════════════════════════
+// BUILD EDIT PANEL
+// ══════════════════════════════════
+function buildEditPanel(){
+  const grid=document.getElementById('edit-grid');
+  grid.innerHTML='';
+  [...DATA.receitas,...DATA.despesas].forEach(item=>{
+    const isRec=DATA.receitas.includes(item);
+    const div=document.createElement('div');
+    div.className='edit-item';
+    div.innerHTML=`
+      <div class="edit-item-label">
+        <span class="ei-icon">${item.icon}</span>
+        <span>${item.label}</span>
+        <span class="edit-item-type ${isRec?'rec':'desp'}">${isRec?'📈 RECEITA':'📉 DESPESA'}</span>
+      </div>
+      <input type="number" class="edit-input" id="inp-${item.id}" value="${item.val}" min="0" step="100">`;
+    grid.appendChild(div);
+    document.getElementById('inp-'+item.id).addEventListener('input', e=>{
+      const v=parseInt(e.target.value)||0;
+      item.val=v;
+      e.target.classList.add('changed');
+      setTimeout(()=>e.target.classList.remove('changed'),500);
+      refreshAll();
+      showUpdateFlash();
+    });
+  });
+}
+
+// ══════════════════════════════════
+// BAR CHART (XP bars)
+// ══════════════════════════════════
+function buildBarChart(){
+  const wrap=document.getElementById('bar-chart');
+  wrap.innerHTML='';
+  const maxVal=Math.max(...DATA.receitas.map(r=>r.val),1);
+  const MAX_H=120;
+
+  DATA.receitas.forEach((r,i)=>{
+    const h=Math.max(Math.round((r.val/maxVal)*MAX_H),4);
+    const col=document.createElement('div');
+    col.className='bar-col';
+
+    const track=document.createElement('div');
+    track.className='bar-track';
+    track.style.height=MAX_H+'px';
+
+    const fill=document.createElement('div');
+    fill.className='bar-fill-inner';
+    fill.style.background=r.color;
+    fill.style.height='0px';
+    fill.style.boxShadow=`0 0 12px ${r.color}55`;
+    track.appendChild(fill);
+
+    const lbl=document.createElement('div');
+    lbl.className='bar-label';
+    lbl.innerHTML=r.label.split(' ').slice(0,2).join('<br>');
+
+    const val=document.createElement('div');
+    val.className='bar-val';
+    val.style.color=r.color;
+    val.textContent=fmt(r.val)+' G';
+
+    col.appendChild(track);
+    col.appendChild(lbl);
+    col.appendChild(val);
+    wrap.appendChild(col);
+
+    // animate
+    setTimeout(()=>{ fill.style.height=h+'px'; },50+i*150);
+  });
+
+  // legend
+  const leg=document.getElementById('bar-legend');
+  leg.innerHTML='';
+  DATA.receitas.forEach(r=>{
+    leg.innerHTML+=`<span style="display:inline-flex;align-items:center;gap:5px;font-family:'Press Start 2P',monospace;font-size:.35rem;color:${r.color};"><span style="width:10px;height:10px;border-radius:2px;background:${r.color};display:inline-block;"></span>${r.icon} ${r.label.split(' ')[0]}</span>`;
+  });
+}
+
+// ══════════════════════════════════
+// PIE CHART (pizza escudo)
+// ══════════════════════════════════
+function buildPieChart(){
+  const canvas=document.getElementById('pie-canvas');
+  const ctx=canvas.getContext('2d');
+  const cx=70,cy=70,R=60,INNER=30;
+  const total=totalDesp()||1;
+  ctx.clearRect(0,0,140,140);
+
+  let angle=-Math.PI/2;
+  DATA.despesas.forEach(d=>{
+    const slice=(d.val/total)*(Math.PI*2);
+    ctx.beginPath();
+    ctx.moveTo(cx,cy);
+    ctx.arc(cx,cy,R,angle,angle+slice);
+    ctx.closePath();
+    ctx.fillStyle=d.color;
+    ctx.shadowColor=d.color;
+    ctx.shadowBlur=8;
+    ctx.fill();
+
+    // inner border
+    ctx.beginPath();
+    ctx.moveTo(cx,cy);
+    ctx.arc(cx,cy,R,angle,angle+slice);
+    ctx.closePath();
+    ctx.strokeStyle='rgba(0,0,0,.4)';
+    ctx.lineWidth=2;
+    ctx.shadowBlur=0;
+    ctx.stroke();
+
+    angle+=slice;
+  });
+
+  // donut hole
+  ctx.beginPath();
+  ctx.arc(cx,cy,INNER,0,Math.PI*2);
+  ctx.fillStyle='#0e1024';
+  ctx.shadowBlur=0;
+  ctx.fill();
+
+  // center circle border
+  ctx.beginPath();
+  ctx.arc(cx,cy,INNER,0,Math.PI*2);
+  ctx.strokeStyle='rgba(255,255,255,.1)';
+  ctx.lineWidth=1;
+  ctx.stroke();
+
+  // center % = largest slice
+  const biggest=DATA.despesas.reduce((a,b)=>a.val>b.val?a:b);
+  const pct=Math.round(biggest.val/total*100);
+  document.getElementById('pie-center-pct').textContent=pct+'%';
+  document.getElementById('pie-center-pct').style.color=biggest.color;
+
+  // legend
+  const leg=document.getElementById('pie-legend');
+  leg.innerHTML='';
+  DATA.despesas.forEach(d=>{
+    const p=Math.round(d.val/total*100);
+    leg.innerHTML+=`<div class="pie-leg-item">
+      <div class="pie-leg-dot" style="background:${d.color};box-shadow:0 0 6px ${d.color}55;"></div>
+      <div>
+        <div class="pie-leg-label">${d.icon} ${d.label}</div>
+        <div class="pie-leg-val">${fmt(d.val)} G · <span style="color:${d.color};">${p}%</span></div>
+      </div>
+    </div>`;
+  });
+}
+
+// ══════════════════════════════════
+// HUD BARS (full tab)
+// ══════════════════════════════════
+function buildHUDBars(){
+  const recWrap=document.getElementById('stat-bars-rec');
+  const despWrap=document.getElementById('stat-bars-desp');
+  recWrap.innerHTML=''; despWrap.innerHTML='';
+
+  const maxR=Math.max(...DATA.receitas.map(r=>r.val),1);
+  const maxD=Math.max(...DATA.despesas.map(d=>d.val),1);
+
+  DATA.receitas.forEach(r=>{
+    const pct=Math.min(Math.round(r.val/maxR*100),100);
+    recWrap.innerHTML+=`<div class="stat-row">
+      <div class="stat-label">${r.icon}<br>${r.label.split(' ')[0]}</div>
+      <div class="stat-track">
+        <div class="stat-fill" style="width:0%;background:linear-gradient(90deg,${r.color}88,${r.color});box-shadow:0 0 8px ${r.color}44;" data-target="${pct}" data-color="${r.color}"></div>
+      </div>
+      <div class="stat-val" style="color:${r.color};">${fmt(r.val)}</div>
+    </div>`;
+  });
+
+  DATA.despesas.forEach(d=>{
+    const pct=Math.min(Math.round(d.val/maxD*100),100);
+    despWrap.innerHTML+=`<div class="stat-row">
+      <div class="stat-label">${d.icon}<br>${d.label.split(' ')[0]}</div>
+      <div class="stat-track">
+        <div class="stat-fill" style="width:0%;background:linear-gradient(90deg,${d.color}88,${d.color});box-shadow:0 0 8px ${d.color}44;" data-target="${pct}"></div>
+      </div>
+      <div class="stat-val" style="color:${d.color};">${fmt(d.val)}</div>
+    </div>`;
+  });
+
+  // animate bars
+  setTimeout(()=>{
+    document.querySelectorAll('.stat-fill').forEach(f=>{
+      f.style.width=f.getAttribute('data-target')+'%';
+    });
+  },80);
+
+  document.getElementById('hud-total-rec').textContent=fmt(totalRec())+' G';
+  document.getElementById('hud-total-desp').textContent=fmt(totalDesp())+' G';
+
+  // saldo
+  const s=saldo();
+  const sDisp=document.getElementById('saldo-display');
+  const sNum=document.getElementById('saldo-num');
+  const sTag=document.getElementById('saldo-tag');
+  sNum.textContent=(s>=0?'+':'')+fmt(s)+' G';
+  sDisp.className='saldo-display '+(s>=0?'lucro':'prejuizo');
+  sTag.style.color=s>=0?'var(--green)':'var(--red)';
+  sTag.textContent=s>=0?'✅ LUCRO — MISSÃO CONCLUÍDA!':'💀 PREJUÍZO — GAME OVER FINANCEIRO!';
+}
+
+// ══════════════════════════════════
+// REFRESH ALL
+// ══════════════════════════════════
+function refreshAll(){
+  if(currentTab==='xp')  buildBarChart();
+  if(currentTab==='pie') buildPieChart();
+  if(currentTab==='hud') buildHUDBars();
+}
+
+function buildResultScreen(){
+  document.getElementById('r-total-rec').textContent=fmt(totalRec())+' G';
+  document.getElementById('r-total-desp').textContent=fmt(totalDesp())+' G';
+  const s=saldo();
+  document.getElementById('r-saldo').textContent=(s>=0?'+':'')+fmt(s)+' G';
+  document.getElementById('r-saldo').style.color=s>=0?'var(--green)':'var(--red)';
+
+  const biggest=DATA.despesas.reduce((a,b)=>a.val>b.val?a:b);
+  const pct=Math.round(biggest.val/totalDesp()*100);
+  document.getElementById('r-maior-desp').textContent=`${biggest.icon} ${biggest.label}: ${fmt(biggest.val)} G (${pct}% do total de dano)`;
+
+  // mini bars
+  const rb=document.getElementById('result-bars');
+  rb.innerHTML='';
+  const maxR=Math.max(...DATA.receitas.map(r=>r.val),1);
+  DATA.receitas.forEach(r=>{
+    const pct=Math.min(Math.round(r.val/maxR*100),100);
+    rb.innerHTML+=`<div style="display:flex;align-items:center;gap:8px;margin-bottom:7px;">
+      <span style="font-size:.85rem;flex-shrink:0;">${r.icon}</span>
+      <div style="flex:1;height:14px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden;">
+        <div style="height:100%;width:${pct}%;background:${r.color};border-radius:3px;"></div>
+      </div>
+      <span style="font-family:'Press Start 2P',monospace;font-size:.38rem;color:${r.color};flex-shrink:0;">${fmt(r.val)}</span>
+    </div>`;
+  });
+}
+
+// ══════════════════════════════════
+// TABS
+// ══════════════════════════════════
+function switchTab(tab){
+  currentTab=tab;
+  document.getElementById('view-xp').style.display=tab==='xp'?'block':'none';
+  document.getElementById('view-pie').style.display=tab==='pie'?'block':'none';
+  document.getElementById('view-hud').style.display=tab==='hud'?'block':'none';
+  ['xp','pie','hud'].forEach(t=>{
+    document.getElementById('tab-'+t).classList.toggle('active',t===tab);
+  });
+  refreshAll();
+  if(tab==='xp') document.getElementById('npc-hud').innerHTML='Este é o <strong>Gráfico de Colunas</strong> — a Barra de XP da guilda! Quanto mais alta a coluna, mais ouro entrou naquela missão!';
+  if(tab==='pie') document.getElementById('npc-hud').innerHTML='Este é o <strong>Gráfico de Pizza</strong> — o Escudo de Dano! A fatia maior causou mais dano ao baú. Veja qual despesa consome mais ouro!';
+  if(tab==='hud') document.getElementById('npc-hud').innerHTML='Este é o <strong>HUD completo</strong>! Barras de XP (receitas) e dano (despesas) ao mesmo tempo. O Saldo Final aparece no rodapé!';
+}
+
+// ══════════════════════════════════
+// FLASH
+// ══════════════════════════════════
+function showUpdateFlash(){
+  const existing=document.querySelector('.update-flash');
+  if(existing) existing.remove();
+  const div=document.createElement('div');
+  div.className='update-flash';
+  div.textContent='⚡ HUD ATUALIZADO!';
+  document.body.appendChild(div);
+  setTimeout(()=>div.remove(),2200);
+}
+
+// ══════════════════════════════════
+// RESET
+// ══════════════════════════════════
+function resetValues(){
+  DATA=JSON.parse(JSON.stringify(DEFAULT_DATA));
+  buildEditPanel();
+  refreshAll();
+}
+
+// ══════════════════════════════════
+// CSV
+// ══════════════════════════════════
+function downloadCSV(){
+  const now=new Date();
+  let csv='sep=;\nHUD DA GUILDA — GRÁFICOS FINANCEIROS\nGUILDA TECHSOLUTIONS\n\n';
+  csv+=`Data;${now.toLocaleDateString('pt-BR')}\nHora;${now.toLocaleTimeString('pt-BR')}\n\n`;
+  csv+='RECEITAS (BARRAS DE XP);VALOR\n';
+  DATA.receitas.forEach(r=>csv+=`${r.icon} ${r.label};${r.val}\n`);
+  csv+=`TOTAL RECEITAS;${totalRec()}\n\n`;
+  csv+='DESPESAS (ESCUDO DE DANO);VALOR;% DO TOTAL\n';
+  const td=totalDesp()||1;
+  DATA.despesas.forEach(d=>csv+=`${d.icon} ${d.label};${d.val};${(d.val/td*100).toFixed(1)}%\n`);
+  csv+=`TOTAL DESPESAS;${totalDesp()}\n\n`;
+  const s=saldo();
+  csv+=`SALDO FINAL;${s>=0?'+':''}${s}\n`;
+  csv+=`RESULTADO;${s>=0?'LUCRO':'PREJUÍZO'}\n\n`;
+  const biggest=DATA.despesas.reduce((a,b)=>a.val>b.val?a:b);
+  csv+=`MAIOR DANO (DESPESA);${biggest.icon} ${biggest.label};${biggest.val};${Math.round(biggest.val/td*100)}%\n`;
+  const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url; a.download=`hud_guilda_${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}.csv`;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+}
+
+// ══════════════════════════════════
+// NAV
+// ══════════════════════════════════
+function go(id){
+  document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on'));
+  document.getElementById(id).classList.add('on');
+  window.scrollTo(0,0);
+  if(id==='s-result'){ buildResultScreen(); spawnConf('conf'); }
+}
+
+function spawnConf(cid){
+  const c=document.getElementById(cid);
+  const cols=['#f5c842','#ffe082','#00e676','#40c4ff','#ff5252','#ce93d8','#ffab40'];
+  for(let i=0;i<80;i++){
+    const el=document.createElement('div');
+    const sz=4+Math.random()*8;
+    el.style.cssText=`position:absolute;width:${sz}px;height:${sz}px;background:${cols[Math.floor(Math.random()*cols.length)]};left:${Math.random()*100}%;top:-10px;border-radius:${Math.random()>.5?'50%':'2px'};animation:cf ${1.5+Math.random()*2}s ease ${Math.random()*.5}s both;`;
+    c.appendChild(el);
+  }
+  setTimeout(()=>c.innerHTML='',5500);
+}
+(()=>{const s=document.createElement('style');s.textContent='@keyframes cf{from{transform:translateY(0) rotate(0deg);opacity:1}to{transform:translateY(100vh) rotate(720deg);opacity:0}}';document.head.appendChild(s);})();
+
+// INIT
+buildEditPanel();
+switchTab('xp');
+</script>
+</body>
+</html>
