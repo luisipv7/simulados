@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Mega Servidor 2 — Missão de Reabastecimento</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Exo+2:wght@400;600;700;800;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:      #060b0e;
+  --panel:   #0b1520;
+  --panel2:  #101e2e;
+  --border:  #1a3050;
+  --border2: #2a4870;
+  --gold:    #f5c842;
+  --gold2:   #ffe082;
+  --green:   #00e676;
+  --green2:  #b9f6ca;
+  --red:     #ff5252;
+  --red2:    #ffd0d0;
+  --blue:    #40c4ff;
+  --blue2:   #b3e5fc;
+  --teal:    #1de9b6;
+  --teal2:   #a7ffeb;
+  --orange:  #ff9800;
+  --orange2: #ffe0b2;
+  --purple:  #ce93d8;
+  --cyan:    #18ffff;
+  --white:   #e4eeff;
+  --gray:    #5a7090;
+  --gray2:   #3a5070;
+
+  /* module accent colors */
+  --m-compras:  #ff9800;
+  --m-estoque:  #1de9b6;
+  --m-fornec:   #ce93d8;
+  --m-financ:   #f5c842;
+  --m-caixa:    #40c4ff;
+  --m-ap:       #ff5252;
+  --m-vendas:   #00e676;
+  --m-relat:    #ff5252;
+}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{font-family:'Exo 2',sans-serif;background:var(--bg);color:var(--white);min-height:100vh;overflow-x:hidden;}
+
+/* HEX GRID OVERLAY */
+body::before{
+  content:'';position:fixed;inset:0;
+  background-image:
+    radial-gradient(circle at 20% 30%,rgba(29,233,182,.04) 0%,transparent 50%),
+    radial-gradient(circle at 80% 70%,rgba(64,196,255,.04) 0%,transparent 50%),
+    linear-gradient(rgba(29,233,182,.02) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(29,233,182,.02) 1px,transparent 1px);
+  background-size:100% 100%,100% 100%,50px 50px,50px 50px;
+  pointer-events:none;z-index:0;
+}
+
+/* STARS */
+body::after{
+  content:'';position:fixed;inset:0;
+  background-image:
+    radial-gradient(1px 1px at 7%  18%,rgba(255,255,255,.9) 0%,transparent 100%),
+    radial-gradient(1px 1px at 88% 10%,rgba(255,255,255,.7) 0%,transparent 100%),
+    radial-gradient(1px 1px at 45% 90%,rgba(255,255,255,.8) 0%,transparent 100%),
+    radial-gradient(1px 1px at 22% 60%,rgba(255,255,255,.6) 0%,transparent 100%),
+    radial-gradient(1px 1px at 72% 40%,rgba(255,255,255,.7) 0%,transparent 100%),
+    radial-gradient(1px 1px at 95% 82%,rgba(255,255,255,.5) 0%,transparent 100%),
+    radial-gradient(1px 1px at 35% 5%, rgba(255,255,255,.7) 0%,transparent 100%),
+    radial-gradient(1px 1px at 58% 55%,rgba(255,255,255,.4) 0%,transparent 100%);
+  pointer-events:none;z-index:0;
+}
+
+.scr{display:none;position:relative;z-index:1;min-height:100vh;flex-direction:column;align-items:center;padding:18px 14px 50px;}
+.scr.on{display:flex;}
+
+.panel{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:22px 26px;max-width:1060px;width:100%;box-shadow:0 0 60px rgba(29,233,182,.04),0 20px 60px rgba(0,0,0,.9),inset 0 1px 0 rgba(255,255,255,.03);}
+
+.ptitle{font-family:'Press Start 2P',monospace;font-size:clamp(.48rem,1.5vw,.78rem);color:var(--teal);text-shadow:2px 2px 0 rgba(0,0,0,.8),0 0 22px rgba(29,233,182,.5);line-height:2.1;text-align:center;}
+.psub{font-family:'Press Start 2P',monospace;font-size:.35rem;color:var(--gray);letter-spacing:2px;text-align:center;}
+.mono{font-family:'Share Tech Mono',monospace;}
+
+/* NPC */
+.npc-wrap{display:flex;gap:12px;align-items:flex-start;background:rgba(6,11,14,.95);border:1px solid rgba(29,233,182,.2);border-radius:10px;padding:13px 15px;margin-bottom:14px;position:relative;}
+.npc-wrap::before{content:'';position:absolute;left:58px;top:-1px;width:80px;height:1px;background:linear-gradient(90deg,var(--teal),transparent);}
+.npc-av{width:48px;height:48px;border-radius:8px;border:1px solid var(--teal);background:linear-gradient(135deg,#021410,#063028);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;animation:fl 3s ease-in-out infinite;box-shadow:0 0 12px rgba(29,233,182,.2);}
+@keyframes fl{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+.npc-name{font-family:'Press Start 2P',monospace;font-size:.38rem;color:var(--teal);margin-bottom:5px;}
+.npc-txt{font-size:.87rem;font-weight:600;color:#b8ccdc;line-height:1.75;}
+.npc-txt strong{color:var(--teal2);}
+.code-tip{font-family:'Share Tech Mono',monospace;font-size:.76rem;color:var(--teal);background:rgba(29,233,182,.08);border:1px solid rgba(29,233,182,.25);border-radius:5px;padding:3px 8px;display:inline-block;margin-top:5px;}
+
+/* BTN */
+.btn{display:inline-flex;align-items:center;gap:7px;font-family:'Press Start 2P',monospace;font-size:.45rem;border:1px solid transparent;border-radius:7px;padding:10px 18px;cursor:pointer;transition:all .2s;color:white;letter-spacing:.3px;position:relative;overflow:hidden;}
+.btn-teal {background:linear-gradient(135deg,#023028,#047058);border-color:rgba(29,233,182,.4);box-shadow:0 4px 14px rgba(29,233,182,.2);}
+.btn-teal:hover {transform:translateY(-1px);box-shadow:0 6px 18px rgba(29,233,182,.35);}
+.btn-orange{background:linear-gradient(135deg,#3d1e00,#7a3c00);border-color:rgba(255,152,0,.4);box-shadow:0 4px 14px rgba(255,152,0,.2);}
+.btn-orange:hover{transform:translateY(-1px);}
+.btn-gold  {background:linear-gradient(135deg,#4a2e00,#9a6000);border-color:rgba(245,200,66,.4);color:#fef3c7;box-shadow:0 4px 14px rgba(245,200,66,.2);}
+.btn-gold:hover  {transform:translateY(-1px);}
+.btn-ghost {background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.13);font-size:.38rem;}
+.btn-ghost:hover {background:rgba(255,255,255,.1);}
+
+/* ════ ERP INTERFACE ════ */
+.erp-topbar{display:flex;align-items:center;justify-content:space-between;background:rgba(6,11,14,.95);border:1px solid var(--border);border-radius:8px 8px 0 0;padding:8px 16px;flex-wrap:wrap;gap:8px;}
+.erp-logo{font-family:'Press Start 2P',monospace;font-size:.5rem;color:var(--teal);display:flex;align-items:center;gap:8px;}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--teal);box-shadow:0 0 6px var(--teal);animation:blink 2s infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.35}}
+.erp-status-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.status-chip{font-family:'Share Tech Mono',monospace;font-size:.68rem;padding:3px 9px;border-radius:20px;border:1px solid;display:flex;align-items:center;gap:4px;}
+.sc-online{border-color:rgba(29,233,182,.4);background:rgba(29,233,182,.07);color:var(--teal);}
+.sc-warn  {border-color:rgba(255,152,0,.4);background:rgba(255,152,0,.07);color:var(--orange);}
+.sc-crit  {border-color:rgba(255,82,82,.4);background:rgba(255,82,82,.07);color:var(--red);animation:blink 1s infinite;}
+
+/* QUEST PROGRESS */
+.quest-bar{display:flex;align-items:center;gap:12px;background:rgba(6,11,14,.9);border:1px solid var(--border);border-top:none;padding:10px 16px;flex-wrap:wrap;gap:8px;}
+.qp-label{font-family:'Press Start 2P',monospace;font-size:.36rem;color:var(--gray);}
+.qp-steps{display:flex;gap:7px;align-items:center;}
+.qp-step{display:flex;align-items:center;gap:4px;font-family:'Press Start 2P',monospace;font-size:.32rem;padding:4px 9px;border-radius:5px;border:1px solid;transition:all .3s;}
+.qp-step.locked {border-color:var(--border);   color:rgba(255,255,255,.18);}
+.qp-step.active {border-color:var(--teal);     color:var(--teal);background:rgba(29,233,182,.08);}
+.qp-step.done   {border-color:var(--green);    color:var(--green);background:rgba(0,230,118,.06);}
+.hint-btn{font-family:'Share Tech Mono',monospace;font-size:.72rem;color:var(--blue2);background:rgba(64,196,255,.07);border:1px solid rgba(64,196,255,.2);border-radius:20px;padding:4px 12px;cursor:pointer;transition:all .2s;}
+.hint-btn:hover{background:rgba(64,196,255,.15);}
+
+/* ERP LAYOUT */
+.erp-layout{display:grid;grid-template-columns:210px 1fr;border:1px solid var(--border);border-top:none;border-radius:0 0 8px 8px;overflow:hidden;min-height:520px;background:var(--bg);}
+@media(max-width:640px){.erp-layout{grid-template-columns:1fr;}}
+
+/* SIDEBAR */
+.erp-sidebar{background:rgba(4,8,12,.98);border-right:1px solid var(--border);padding:10px 0;}
+.sec-label{font-family:'Press Start 2P',monospace;font-size:.3rem;color:var(--gray2);padding:8px 14px 4px;letter-spacing:2px;}
+.si{display:flex;align-items:center;gap:9px;padding:9px 14px;font-size:.82rem;font-weight:600;color:var(--gray);cursor:pointer;transition:all .2s;border-left:2px solid transparent;position:relative;}
+.si .si-icon{font-size:.95rem;flex-shrink:0;width:18px;text-align:center;}
+.si:hover:not(.locked){color:var(--white);background:rgba(29,233,182,.05);border-left-color:rgba(29,233,182,.4);}
+.si.active{color:var(--teal);background:rgba(29,233,182,.08);border-left-color:var(--teal);}
+.si.locked{opacity:.28;cursor:not-allowed;}
+.si .q-badge{margin-left:auto;font-family:'Press Start 2P',monospace;font-size:.28rem;padding:2px 5px;border-radius:3px;background:rgba(255,152,0,.15);border:1px solid rgba(255,152,0,.4);color:var(--orange);animation:qBlink 1.4s ease-in-out infinite;}
+@keyframes qBlink{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* ALERT BANNER in sidebar */
+.sidebar-alert{background:rgba(255,82,82,.08);border:1px solid rgba(255,82,82,.25);margin:8px 10px;border-radius:7px;padding:9px 10px;}
+.sa-title{font-family:'Press Start 2P',monospace;font-size:.3rem;color:var(--red);margin-bottom:4px;}
+.sa-txt{font-size:.75rem;font-weight:700;color:#f0b0b0;line-height:1.5;}
+
+/* MAIN */
+.erp-main{padding:0;position:relative;overflow:hidden;background:linear-gradient(160deg,rgba(10,18,28,.95),rgba(6,11,14,.98));}
+.erp-view{display:none;padding:18px 20px;animation:slideIn .3s ease;}
+.erp-view.active{display:block;}
+@keyframes slideIn{from{opacity:0;transform:translateX(10px)}to{opacity:1;transform:translateX(0)}}
+
+/* BREADCRUMB */
+.bc{font-family:'Share Tech Mono',monospace;font-size:.7rem;color:var(--gray);margin-bottom:12px;display:flex;align-items:center;gap:5px;}
+.bc span{color:var(--teal);}
+.bc-sep{color:var(--border2);}
+.view-title{font-family:'Press Start 2P',monospace;font-size:.56rem;margin-bottom:4px;}
+.view-sub{font-size:.8rem;font-weight:600;color:var(--gray);margin-bottom:14px;}
+
+/* ALERT CARD */
+.alert-card{border:1.5px solid;border-radius:8px;padding:13px 15px;margin-bottom:13px;display:flex;gap:12px;align-items:flex-start;}
+.ac-red   {border-color:rgba(255,82,82,.4); background:rgba(255,82,82,.07);}
+.ac-orange{border-color:rgba(255,152,0,.4); background:rgba(255,152,0,.07);}
+.ac-teal  {border-color:rgba(29,233,182,.3);background:rgba(29,233,182,.06);}
+.ac-icon{font-size:1.5rem;flex-shrink:0;}
+.ac-body .ac-t{font-family:'Press Start 2P',monospace;font-size:.38rem;margin-bottom:5px;}
+.ac-red .ac-body .ac-t{color:var(--red);}
+.ac-orange .ac-body .ac-t{color:var(--orange);}
+.ac-teal .ac-body .ac-t{color:var(--teal);}
+.ac-body .ac-d{font-size:.82rem;font-weight:600;color:#b8ccdc;line-height:1.55;}
+
+/* KPI GRID */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:9px;margin-bottom:14px;}
+.kpi{background:rgba(0,0,0,.45);border:1px solid var(--border);border-radius:8px;padding:12px;text-align:center;transition:border-color .2s,transform .2s;cursor:default;}
+.kpi:hover{transform:translateY(-2px);}
+.kpi .kv{font-family:'Share Tech Mono',monospace;font-size:1rem;font-weight:700;line-height:1;margin-bottom:5px;}
+.kpi .kl{font-family:'Press Start 2P',monospace;font-size:.28rem;color:var(--gray);letter-spacing:1px;}
+
+/* TABLE */
+.dtbl{width:100%;border-collapse:collapse;font-size:.82rem;}
+.dtbl th{font-family:'Press Start 2P',monospace;font-size:.3rem;padding:8px 11px;text-align:left;letter-spacing:1px;background:rgba(0,0,0,.5);border-bottom:1px solid var(--border2);color:var(--gray);}
+.dtbl td{padding:9px 11px;border-bottom:1px solid rgba(26,48,80,.4);color:#a0b8cc;font-weight:600;}
+.dtbl tr:hover td{background:rgba(29,233,182,.03);}
+.dtbl tr.hl td{background:rgba(255,152,0,.04);}
+.tag{display:inline-block;padding:2px 7px;border-radius:4px;font-size:.7rem;font-weight:700;}
+.tg{background:rgba(0,230,118,.14);border:1px solid rgba(0,230,118,.3);color:var(--green);}
+.tb{background:rgba(64,196,255,.14);border:1px solid rgba(64,196,255,.3);color:var(--blue);}
+.ty{background:rgba(245,200,66,.13);border:1px solid rgba(245,200,66,.3);color:var(--gold2);}
+.tr{background:rgba(255,82,82,.12);border:1px solid rgba(255,82,82,.3);color:var(--red2);}
+.to{background:rgba(255,152,0,.12);border:1px solid rgba(255,152,0,.3);color:var(--orange2);}
+.tt{background:rgba(29,233,182,.12);border:1px solid rgba(29,233,182,.3);color:var(--teal2);}
+
+/* FLOW NODES */
+.flow{display:flex;align-items:center;justify-content:center;gap:0;flex-wrap:wrap;margin:12px 0;}
+.fn{border-radius:8px;padding:9px 13px;text-align:center;border:1.5px solid;cursor:pointer;transition:all .22s;min-width:82px;}
+.fn:hover{transform:scale(1.07);z-index:2;}
+.fn .fi{font-size:1.4rem;display:block;margin-bottom:5px;}
+.fn .fl{font-family:'Press Start 2P',monospace;font-size:.3rem;line-height:1.5;}
+.farr{font-size:1.1rem;color:var(--border2);margin:0 2px;animation:arrP 2s infinite;flex-shrink:0;}
+@keyframes arrP{0%,100%{color:var(--border2)}50%{color:var(--teal)}}
+
+/* POPUP */
+.popup{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.9);z-index:600;display:none;align-items:center;justify-content:center;flex-direction:column;}
+.popup.show{display:flex;}
+.pp-box{background:var(--panel2);border:2px solid;border-radius:14px;padding:26px 30px;max-width:540px;width:90%;animation:popIn .4s cubic-bezier(.34,1.56,.64,1);text-align:center;}
+@keyframes popIn{from{transform:scale(.5) translateY(28px);opacity:0}to{transform:scale(1) translateY(0);opacity:1}}
+.pp-box.correct{border-color:var(--teal);  box-shadow:0 0 40px rgba(29,233,182,.22);}
+.pp-box.wrong  {border-color:var(--red);   box-shadow:0 0 28px rgba(255,82,82,.18);}
+.pp-box.quest  {border-color:var(--orange);box-shadow:0 0 36px rgba(255,152,0,.18);}
+.pp-icon{font-size:3rem;display:block;margin-bottom:10px;}
+.pp-title{font-family:'Press Start 2P',monospace;font-size:.66rem;margin-bottom:8px;}
+.pp-text{font-size:.88rem;font-weight:600;color:#b8ccdc;line-height:1.75;margin-bottom:16px;}
+.pp-text strong{color:var(--teal2);}
+
+/* RESULT */
+.res-frame{background:linear-gradient(135deg,rgba(29,233,182,.05),rgba(245,200,66,.04));border:2px solid var(--teal);border-radius:12px;padding:20px;margin:12px 0;animation:gf 2.5s ease-in-out infinite;}
+@keyframes gf{0%,100%{box-shadow:0 0 22px rgba(29,233,182,.1)}50%{box-shadow:0 0 42px rgba(29,233,182,.26)}}
+
+/* CONF */
+.conf{position:fixed;inset:0;pointer-events:none;z-index:500;}
+
+@media(max-width:500px){.panel{padding:13px 9px;}.pp-box{padding:18px 14px;}.erp-sidebar{display:none;}}
+</style>
+</head>
+<body>
+
+<div class="conf" id="conf"></div>
+
+<!-- POPUP -->
+<div class="popup" id="popup">
+  <div class="pp-box" id="pp-box">
+    <span class="pp-icon" id="pp-icon">❓</span>
+    <p class="pp-title" id="pp-title">—</p>
+    <p class="pp-text"  id="pp-text">—</p>
+    <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;">
+      <button class="btn btn-teal" id="pp-btn" onclick="closePopup()">CONTINUAR</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════ INTRO ════ -->
+<div class="scr on" id="s-intro">
+  <div class="panel" style="max-width:680px;margin-top:16px;">
+    <div style="text-align:center;margin-bottom:14px;">
+      <div style="font-size:3rem;animation:fl 2.5s ease-in-out infinite;margin-bottom:8px;">🚨</div>
+      <p class="ptitle">MISSÃO DE<br>REABASTECIMENTO</p>
+      <p class="ptitle" style="color:var(--orange);font-size:clamp(.35rem,1.1vw,.5rem);">SERVIDOR ERP v3.0</p>
+      <p class="psub" style="margin-top:5px;">ALERTA CRÍTICO · GUILDA TECHSOLUTIONS</p>
+    </div>
+
+    <div class="npc-wrap">
+      <div class="npc-av">🧙</div>
+      <div>
+        <p class="npc-name">MESTRE CONTADOR</p>
+        <p class="npc-txt">
+          Herói, o servidor disparou <strong>3 alertas críticos</strong> ao mesmo tempo!<br><br>
+          Os cristais de energia estão acabando, a guilda tem contas a pagar e o Rei está esperando para pagar uma quest. O servidor precisa que você <strong>navegue pelos módulos certos</strong> para resolver cada alerta!
+          <span class="code-tip">ALERTA = módulo precisando de ação do operador!</span>
+        </p>
+      </div>
+    </div>
+
+    <!-- FLOW -->
+    <div style="background:rgba(0,0,0,.45);border:1px solid var(--border);border-radius:10px;padding:15px;margin-bottom:15px;">
+      <p style="font-family:'Press Start 2P',monospace;font-size:.42rem;color:var(--orange);margin-bottom:10px;">⚠️ FLUXO DO SERVIDOR — HOJE</p>
+      <div class="flow">
+        <div class="fn" style="border-color:var(--m-compras);background:rgba(255,152,0,.07);" title="Compras"><span class="fi">🛒</span><span class="fl" style="color:var(--m-compras);">COMPRAS</span></div>
+        <span class="farr">→</span>
+        <div class="fn" style="border-color:var(--m-estoque);background:rgba(29,233,182,.07);" title="Estoque"><span class="fi">📦</span><span class="fl" style="color:var(--m-estoque);">ESTOQUE</span></div>
+        <span class="farr">→</span>
+        <div class="fn" style="border-color:var(--m-financ);background:rgba(245,200,66,.07);" title="Financeiro"><span class="fi">💳</span><span class="fl" style="color:var(--m-financ);">FINANCEIRO</span></div>
+        <span class="farr">→</span>
+        <div class="fn" style="border-color:var(--m-ap);background:rgba(255,82,82,.07);" title="A Pagar"><span class="fi">📜</span><span class="fl" style="color:var(--m-ap);">A PAGAR</span></div>
+      </div>
+    </div>
+
+    <!-- 3 QUESTS -->
+    <div style="background:rgba(255,152,0,.05);border:1px solid rgba(255,152,0,.2);border-radius:10px;padding:14px;margin-bottom:18px;">
+      <p style="font-family:'Press Start 2P',monospace;font-size:.42rem;color:var(--orange);margin-bottom:10px;">🗡️ 3 ALERTAS PARA RESOLVER</p>
+      <div style="display:flex;flex-direction:column;gap:9px;">
+        <div style="display:flex;gap:10px;font-size:.86rem;font-weight:700;color:#b8ccdc;line-height:1.5;">
+          <span style="color:var(--red);flex-shrink:0;">🔴</span>
+          <span><strong style="color:var(--orange2);">Alerta 1 — Estoque Crítico:</strong> Os Cristais de Energia estão acabando. Ache a tela de <strong>Controle de Estoque</strong>.</span>
+        </div>
+        <div style="display:flex;gap:10px;font-size:.86rem;font-weight:700;color:#b8ccdc;line-height:1.5;">
+          <span style="color:var(--orange);flex-shrink:0;">🟠</span>
+          <span><strong style="color:var(--orange2);">Alerta 2 — Dívida Pendente:</strong> O Mercador das Trevas quer receber. Ache a tela de <strong>Contas a Pagar</strong>.</span>
+        </div>
+        <div style="display:flex;gap:10px;font-size:.86rem;font-weight:700;color:#b8ccdc;line-height:1.5;">
+          <span style="color:var(--green);flex-shrink:0;">🟢</span>
+          <span><strong style="color:var(--orange2);">Alerta 3 — Ouro Chegando:</strong> O Rei aprovou o pagamento. Ache a tela de <strong>Contas a Receber</strong>.</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="text-align:center;">
+      <button class="btn btn-teal" style="font-size:.5rem;" onclick="go('s-erp');startQuests()">🚨 RESPONDER AOS ALERTAS</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════ ERP ════ -->
+<div class="scr" id="s-erp">
+  <div class="panel" style="max-width:1060px;margin-top:14px;padding:0;">
+
+    <!-- TOP BAR -->
+    <div class="erp-topbar">
+      <div class="erp-logo"><div class="dot"></div> ERP GUILDA v3.0</div>
+      <div class="erp-status-bar">
+        <div class="status-chip sc-online">🟢 Online</div>
+        <div class="status-chip sc-crit">🚨 3 Alertas</div>
+        <div class="status-chip sc-warn" id="alert-counter">⚠️ 3 pendentes</div>
+        <button class="btn btn-ghost" onclick="go('s-intro')">← SAIR</button>
+        <button class="btn btn-gold" style="font-size:.35rem;" onclick="go('s-result')">🏆 RESULTADO</button>
+      </div>
+    </div>
+
+    <!-- QUEST BAR -->
+    <div class="quest-bar" id="quest-bar">
+      <span class="qp-label">🚨 ALERTAS:</span>
+      <div class="qp-steps">
+        <div class="qp-step active" id="qs0">🔴 ALERTA 1</div>
+        <span style="color:var(--border2);font-size:.75rem;">›</span>
+        <div class="qp-step locked" id="qs1">🟠 ALERTA 2</div>
+        <span style="color:var(--border2);font-size:.75rem;">›</span>
+        <div class="qp-step locked" id="qs2">🟢 ALERTA 3</div>
+      </div>
+      <div style="margin-left:auto;"><span class="hint-btn" onclick="showHint()">💡 DICA</span></div>
+    </div>
+
+    <!-- LAYOUT -->
+    <div class="erp-layout">
+
+      <!-- SIDEBAR -->
+      <nav class="erp-sidebar">
+
+        <!-- ALERT PANEL -->
+        <div class="sidebar-alert">
+          <p class="sa-title">🚨 ALERTAS ATIVOS</p>
+          <p class="sa-txt" id="sidebar-alert-txt">3 módulos precisam de atenção!</p>
+        </div>
+
+        <div class="sec-label" style="margin-top:6px;">SUPRIMENTOS</div>
+        <div class="si" id="si-fornecedores" onclick="handleClick('fornecedores')">
+          <span class="si-icon">🏭</span> Fornecedores
+        </div>
+        <div class="si" id="si-compras" onclick="handleClick('compras')">
+          <span class="si-icon">🛒</span> Ordem de Compra
+        </div>
+        <div class="si" id="si-estoque" onclick="handleClick('estoque')">
+          <span class="si-icon">📦</span> Estoque
+          <span class="q-badge" id="badge-estoque" style="display:none;">!</span>
+        </div>
+
+        <div class="sec-label" style="margin-top:6px;">FINANCEIRO</div>
+        <div class="si" id="si-apagar" onclick="handleClick('apagar')">
+          <span class="si-icon">📜</span> Contas a Pagar
+          <span class="q-badge" id="badge-apagar" style="display:none;">!</span>
+        </div>
+        <div class="si" id="si-areceber" onclick="handleClick('areceber')">
+          <span class="si-icon">💰</span> Contas a Receber
+          <span class="q-badge" id="badge-areceber" style="display:none;">!</span>
+        </div>
+        <div class="si" id="si-caixa" onclick="handleClick('caixa')">
+          <span class="si-icon">🏦</span> Caixa e Bancos
+        </div>
+        <div class="si" id="si-dre" onclick="handleClick('dre')">
+          <span class="si-icon">📊</span> DRE
+        </div>
+
+        <div class="sec-label" style="margin-top:6px;">OPERAÇÕES</div>
+        <div class="si" id="si-rh" onclick="handleClick('rh')">
+          <span class="si-icon">🧙</span> RH / Magos
+        </div>
+        <div class="si" id="si-vendas" onclick="handleClick('vendas')">
+          <span class="si-icon">💎</span> Vendas
+        </div>
+        <div class="si" id="si-dashboard" onclick="openView('dashboard')">
+          <span class="si-icon">🏠</span> Dashboard
+        </div>
+      </nav>
+
+      <!-- VIEWS -->
+      <main class="erp-main">
+
+        <!-- DASHBOARD -->
+        <div class="erp-view active" id="view-dashboard">
+          <div class="bc">🏠 <span>Dashboard</span></div>
+          <p class="view-title" style="color:var(--teal);">🏠 CENTRAL DE ALERTAS</p>
+          <p class="view-sub">Painel de operações · Missão de Reabastecimento</p>
+
+          <div class="alert-card ac-red">
+            <div class="ac-icon">🔴</div>
+            <div class="ac-body">
+              <p class="ac-t">ALERTA 1 — ESTOQUE CRÍTICO</p>
+              <p class="ac-d">Cristais de Energia: <strong>apenas 1 unidade restante</strong>. Risco de paralisação da guilda. Acesse o módulo de <strong>Estoque</strong>.</p>
+            </div>
+          </div>
+          <div class="alert-card ac-orange">
+            <div class="ac-icon">🟠</div>
+            <div class="ac-body">
+              <p class="ac-t">ALERTA 2 — DÍVIDA VENCENDO</p>
+              <p class="ac-d">Fatura do Mercador das Trevas vence em <strong>2 dias</strong>. Verifique <strong>Contas a Pagar</strong> antes que a dívida gere multa.</p>
+            </div>
+          </div>
+          <div class="alert-card ac-teal">
+            <div class="ac-icon">🟢</div>
+            <div class="ac-body">
+              <p class="ac-t">ALERTA 3 — PAGAMENTO PENDENTE</p>
+              <p class="ac-d">O Rei aprovou a fatura da Quest #2401. <strong>20.000 G aguardando confirmação</strong> em Contas a Receber.</p>
+            </div>
+          </div>
+
+          <div style="margin-top:12px;background:rgba(255,152,0,.05);border:1px solid rgba(255,152,0,.18);border-radius:8px;padding:10px;">
+            <p style="font-size:.82rem;font-weight:700;color:#e8c070;line-height:1.6;" id="dash-hint-txt">Clique nos módulos do menu lateral para resolver os alertas!</p>
+          </div>
+        </div>
+
+        <!-- ESTOQUE -->
+        <div class="erp-view" id="view-estoque">
+          <div class="bc">📦 <span>Suprimentos</span> <span class="bc-sep">/</span> <span>Controle de Estoque</span></div>
+          <p class="view-title" style="color:var(--teal);">📦 ARMEIRO DA BASE — CONTROLE DE ESTOQUE</p>
+          <p class="view-sub">Itens e materiais disponíveis na guilda</p>
+
+          <div class="kpis">
+            <div class="kpi" style="border-color:rgba(29,233,182,.3);"><div class="kv" style="color:var(--teal);">48</div><div class="kl">ITENS</div></div>
+            <div class="kpi" style="border-color:rgba(255,82,82,.4);"><div class="kv" style="color:var(--red);">3</div><div class="kl">CRÍTICOS</div></div>
+            <div class="kpi" style="border-color:rgba(245,200,66,.3);"><div class="kv" style="color:var(--gold);">R$ 42k</div><div class="kl">VALOR</div></div>
+          </div>
+
+          <table class="dtbl">
+            <thead><tr><th>ITEM</th><th>CATEGORIA</th><th>QTD</th><th>MÍNIMO</th><th>STATUS</th></tr></thead>
+            <tbody>
+              <tr class="hl"><td>💎 Cristais de Energia</td><td>Consumível</td><td class="mono" style="color:var(--red);">1 unid</td><td class="mono">10</td><td><span class="tag tr">⚠️ CRÍTICO</span></td></tr>
+              <tr><td>💻 Computadores</td><td>Equipamento</td><td class="mono">5</td><td class="mono">3</td><td><span class="tag tg">✓ OK</span></td></tr>
+              <tr><td>📡 Antenas Mágicas</td><td>Infraestrutura</td><td class="mono">2</td><td class="mono">2</td><td><span class="tag ty">Atenção</span></td></tr>
+              <tr><td>📜 Pergaminhos de Código</td><td>Software</td><td class="mono">∞</td><td class="mono">—</td><td><span class="tag tb">Digital</span></td></tr>
+              <tr><td>🧪 Poções de Internet</td><td>Serviço</td><td class="mono">3</td><td class="mono">2</td><td><span class="tag tg">✓ OK</span></td></tr>
+            </tbody>
+          </table>
+          <div style="margin-top:12px;background:rgba(29,233,182,.06);border:1px solid rgba(29,233,182,.2);border-radius:8px;padding:10px;">
+            <p style="font-size:.82rem;font-weight:700;color:var(--teal2);line-height:1.65;">
+              📌 <strong>Módulo de Estoque</strong> = o Armeiro da base! Quando um item cai abaixo do mínimo, o servidor dispara o alerta vermelho. Uma compra feita aqui <strong>avisa automaticamente o módulo Financeiro</strong> para pagar o fornecedor!
+            </p>
+          </div>
+        </div>
+
+        <!-- CONTAS A PAGAR -->
+        <div class="erp-view" id="view-apagar">
+          <div class="bc">💳 <span>Financeiro</span> <span class="bc-sep">/</span> <span>Contas a Pagar</span></div>
+          <p class="view-title" style="color:var(--red);">📜 DÍVIDAS DA GUILDA — CONTAS A PAGAR</p>
+          <p class="view-sub">Obrigações e faturas pendentes de pagamento</p>
+
+          <div class="kpis">
+            <div class="kpi" style="border-color:rgba(255,82,82,.35);"><div class="kv" style="color:var(--red);">R$ 11.300</div><div class="kl">TOTAL</div></div>
+            <div class="kpi" style="border-color:rgba(255,152,0,.3);"><div class="kv" style="color:var(--orange);">2</div><div class="kl">VENCENDO</div></div>
+            <div class="kpi" style="border-color:rgba(255,82,82,.3);"><div class="kv" style="color:var(--red);">1</div><div class="kl">ATRASADO</div></div>
+          </div>
+
+          <table class="dtbl">
+            <thead><tr><th>FATURA</th><th>CREDOR</th><th>VALOR</th><th>VENCIMENTO</th><th>STATUS</th></tr></thead>
+            <tbody>
+              <tr class="hl"><td>💀 Fatura #F-0042</td><td>Mercador das Trevas</td><td class="mono" style="color:var(--red);">R$ 500</td><td class="mono" style="color:var(--red);">HOJE</td><td><span class="tag tr">🚨 Urgente</span></td></tr>
+              <tr><td>🧙 Folha Magos - Jan</td><td>Equipe da Guilda</td><td class="mono" style="color:var(--red);">R$ 10.000</td><td class="mono">5/02</td><td><span class="tag to">Vence em 3d</span></td></tr>
+              <tr><td>💎 Fornecedor Cristais</td><td>Mina de Ironforge</td><td class="mono" style="color:var(--red);">R$ 800</td><td class="mono">10/02</td><td><span class="tag tb">Normal</span></td></tr>
+            </tbody>
+          </table>
+          <div style="margin-top:12px;background:rgba(255,82,82,.05);border:1px solid rgba(255,82,82,.2);border-radius:8px;padding:10px;">
+            <p style="font-size:.82rem;font-weight:700;color:var(--red2);line-height:1.65;">
+              📌 <strong>Contas a Pagar</strong> = o Passivo em ação! Todo fornecedor, salário ou serviço contratado gera uma entrada aqui. Quando o pagamento é feito, o Módulo Contábil registra a saída de caixa automaticamente!
+            </p>
+          </div>
+        </div>
+
+        <!-- CONTAS A RECEBER -->
+        <div class="erp-view" id="view-areceber">
+          <div class="bc">💰 <span>Financeiro</span> <span class="bc-sep">/</span> <span>Contas a Receber</span></div>
+          <p class="view-title" style="color:var(--green);">💰 OURO A CAMINHO — CONTAS A RECEBER</p>
+          <p class="view-sub">Valores pendentes de clientes que já receberam o serviço</p>
+
+          <div class="kpis">
+            <div class="kpi" style="border-color:rgba(0,230,118,.35);"><div class="kv" style="color:var(--green);">R$ 25.000</div><div class="kl">TOTAL</div></div>
+            <div class="kpi" style="border-color:rgba(29,233,182,.3);"><div class="kv" style="color:var(--teal);">3</div><div class="kl">FATURAS</div></div>
+            <div class="kpi" style="border-color:rgba(245,200,66,.3);"><div class="kv" style="color:var(--gold);">1</div><div class="kl">APROVADO</div></div>
+          </div>
+
+          <table class="dtbl">
+            <thead><tr><th>FATURA</th><th>CLIENTE</th><th>VALOR</th><th>VENCIMENTO</th><th>STATUS</th></tr></thead>
+            <tbody>
+              <tr class="hl"><td>👑 Fatura #V-2401</td><td>Rei Artur</td><td class="mono" style="color:var(--green);">R$ 20.000</td><td class="mono">APROVADO</td><td><span class="tag tg">💰 Confirmar</span></td></tr>
+              <tr><td>🧝 Fatura #V-2402</td><td>Elfos</td><td class="mono" style="color:var(--green);">R$ 5.000</td><td class="mono">15/02</td><td><span class="tag tb">Aguardando</span></td></tr>
+              <tr><td>🐲 Fatura #V-2404</td><td>Guarda dos Dragões</td><td class="mono" style="color:var(--green);">R$ 12.000</td><td class="mono">28/02</td><td><span class="tag ty">Em andamento</span></td></tr>
+            </tbody>
+          </table>
+          <div style="margin-top:12px;background:rgba(0,230,118,.05);border:1px solid rgba(0,230,118,.2);border-radius:8px;padding:10px;">
+            <p style="font-size:.82rem;font-weight:700;color:var(--green2);line-height:1.65;">
+              📌 <strong>Contas a Receber</strong> = o Ativo em ação! São os Direitos da guilda — o ouro que já foi ganho mas ainda não entrou no caixa. Quando confirmado, o ERP lança automaticamente no DRE como Receita!
+            </p>
+          </div>
+        </div>
+
+        <!-- FORNECEDORES -->
+        <div class="erp-view" id="view-fornecedores">
+          <div class="bc">🏭 <span>Suprimentos</span> <span class="bc-sep">/</span> <span>Fornecedores</span></div>
+          <p class="view-title" style="color:var(--purple);">🏭 MERCADORES ALIADOS — FORNECEDORES</p>
+          <p class="view-sub">Parceiros de suprimento da guilda</p>
+          <table class="dtbl">
+            <thead><tr><th>FORNECEDOR</th><th>PRODUTO</th><th>STATUS</th></tr></thead>
+            <tbody>
+              <tr><td>🏔️ Mina de Ironforge</td><td>Cristais de Energia</td><td><span class="tag tg">Ativo</span></td></tr>
+              <tr><td>💀 Mercador das Trevas</td><td>Fibra Óptica Mágica</td><td><span class="tag tr">Contrato Vencendo</span></td></tr>
+              <tr><td>☁️ CloudMage LTDA</td><td>Servidores em Nuvem</td><td><span class="tag tg">Ativo</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- ORDEM DE COMPRA -->
+        <div class="erp-view" id="view-compras">
+          <div class="bc">🛒 <span>Suprimentos</span> <span class="bc-sep">/</span> <span>Ordem de Compra</span></div>
+          <p class="view-title" style="color:var(--orange);">🛒 FERREIRO — ORDENS DE COMPRA</p>
+          <p class="view-sub">Pedidos de reposição de suprimentos</p>
+          <table class="dtbl">
+            <thead><tr><th>OC</th><th>ITEM</th><th>QTDE</th><th>STATUS</th></tr></thead>
+            <tbody>
+              <tr><td class="mono">#OC-031</td><td>💎 Cristais de Energia x20</td><td class="mono">20 unid</td><td><span class="tag ty">Rascunho</span></td></tr>
+              <tr><td class="mono">#OC-030</td><td>📡 Antena Mágica x2</td><td class="mono">2 unid</td><td><span class="tag tg">Entregue</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- CAIXA -->
+        <div class="erp-view" id="view-caixa">
+          <div class="bc">🏦 <span>Financeiro</span> <span class="bc-sep">/</span> <span>Caixa e Bancos</span></div>
+          <p class="view-title" style="color:var(--blue);">🏦 BAÚ CENTRAL — CAIXA E BANCOS</p>
+          <p class="view-sub">Saldo disponível da guilda</p>
+          <div class="kpis">
+            <div class="kpi" style="border-color:rgba(64,196,255,.3);"><div class="kv" style="color:var(--blue);">R$ 38.400</div><div class="kl">CAIXA TOTAL</div></div>
+            <div class="kpi" style="border-color:rgba(0,230,118,.3);"><div class="kv" style="color:var(--green);">R$ 35.000</div><div class="kl">BANCO ITAÚ</div></div>
+            <div class="kpi" style="border-color:rgba(245,200,66,.3);"><div class="kv" style="color:var(--gold);">R$ 3.400</div><div class="kl">CAIXA FÍSICO</div></div>
+          </div>
+        </div>
+
+        <!-- DRE -->
+        <div class="erp-view" id="view-dre">
+          <div class="bc">📊 <span>Financeiro</span> <span class="bc-sep">/</span> <span>DRE</span></div>
+          <p class="view-title" style="color:var(--gold);">📊 TELA DE RESULTADO — DRE</p>
+          <p class="view-sub">Demonstração do Resultado do Exercício</p>
+          <div class="kpis">
+            <div class="kpi" style="border-color:rgba(0,230,118,.3);"><div class="kv" style="color:var(--green);">28.000</div><div class="kl">RECEITAS</div></div>
+            <div class="kpi" style="border-color:rgba(255,82,82,.3);"><div class="kv" style="color:var(--red);">11.300</div><div class="kl">DESPESAS</div></div>
+            <div class="kpi" style="border-color:rgba(245,200,66,.4);"><div class="kv" style="color:var(--gold);">16.700</div><div class="kl">LUCRO</div></div>
+          </div>
+        </div>
+
+        <!-- RH -->
+        <div class="erp-view" id="view-rh">
+          <div class="bc">🧙 <span>Operações</span> <span class="bc-sep">/</span> <span>RH / Magos</span></div>
+          <p class="view-title" style="color:var(--purple);">🧙 GUILDA DOS MAGOS — RH</p>
+          <p class="view-sub">Equipe e folha de pagamento</p>
+          <table class="dtbl">
+            <thead><tr><th>MAGO</th><th>CARGO</th><th>SALÁRIO</th><th>STATUS</th></tr></thead>
+            <tbody>
+              <tr><td>🧙 Aldric</td><td>Dev Sênior</td><td class="mono" style="color:var(--red);">R$ 3.500</td><td><span class="tag tg">Ativo</span></td></tr>
+              <tr><td>🧝 Lyra</td><td>Designer</td><td class="mono" style="color:var(--red);">R$ 3.000</td><td><span class="tag tg">Ativo</span></td></tr>
+              <tr><td>⚔️ Gareth</td><td>Segurança</td><td class="mono" style="color:var(--red);">R$ 3.500</td><td><span class="tag tg">Ativo</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- VENDAS -->
+        <div class="erp-view" id="view-vendas">
+          <div class="bc">💎 <span>Operações</span> <span class="bc-sep">/</span> <span>Vendas</span></div>
+          <p class="view-title" style="color:var(--green);">💎 QUESTS CONCLUÍDAS — VENDAS</p>
+          <p class="view-sub">Registro de missões e receitas geradas</p>
+          <table class="dtbl">
+            <thead><tr><th>QUEST</th><th>CLIENTE</th><th>VALOR</th><th>STATUS</th></tr></thead>
+            <tbody>
+              <tr><td>⚔️ Sistema de Defesa</td><td>Rei Artur</td><td class="mono" style="color:var(--green);">+R$ 20.000</td><td><span class="tag ty">A Receber</span></td></tr>
+              <tr><td>📖 Consultoria</td><td>Elfos</td><td class="mono" style="color:var(--green);">+R$ 5.000</td><td><span class="tag tg">Pago</span></td></tr>
+              <tr><td>🛠️ Suporte</td><td>Forja</td><td class="mono" style="color:var(--green);">+R$ 3.000</td><td><span class="tag tb">Agendado</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+      </main>
+    </div>
+
+    <!-- NPC bottom -->
+    <div class="npc-wrap" style="border-radius:0 0 10px 10px;margin:0;border-top:1px solid var(--border);">
+      <div class="npc-av">🧙</div>
+      <div>
+        <p class="npc-name">MESTRE CONTADOR</p>
+        <p class="npc-txt" id="npc-bottom">Navegue pelo menu e resolva os 3 alertas! Cada módulo que você encontrar vai explicar como o ERP conecta tudo automaticamente.</p>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ════ RESULTADO ════ -->
+<div class="scr" id="s-result">
+  <div class="panel" style="max-width:700px;margin-top:16px;">
+    <div style="text-align:center;margin-bottom:12px;">
+      <div style="font-size:3rem;animation:fl 2.5s ease-in-out infinite;">🛡️</div>
+      <p class="ptitle" style="color:var(--teal);">ALERTAS<br>RESOLVIDOS!</p>
+      <p class="psub" style="margin-top:4px;margin-bottom:14px;">SERVIDOR ESTABILIZADO</p>
+    </div>
+
+    <div class="res-frame">
+      <p style="font-family:'Press Start 2P',monospace;font-size:.48rem;color:var(--teal);text-align:center;margin-bottom:14px;">🗡️ RELATÓRIO DE MISSÃO</p>
+      <div id="result-quests"></div>
+    </div>
+
+    <!-- CONCEPT MAP -->
+    <div style="margin:14px 0;background:rgba(0,0,0,.45);border:1px solid var(--border);border-radius:10px;padding:15px;">
+      <p style="font-family:'Press Start 2P',monospace;font-size:.42rem;color:var(--teal);margin-bottom:11px;">🧠 O QUE CADA MÓDULO FAZ</p>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <div style="display:flex;gap:10px;font-size:.84rem;font-weight:700;color:#b8ccdc;line-height:1.55;"><span>📦</span><span><strong style="color:var(--teal);">Estoque</strong> — monitora recursos. Avisa quando está acabando e aciona o módulo de Compras.</span></div>
+        <div style="display:flex;gap:10px;font-size:.84rem;font-weight:700;color:#b8ccdc;line-height:1.55;"><span>📜</span><span><strong style="color:var(--red);">Contas a Pagar</strong> — controla o Passivo. Toda dívida fica aqui até ser quitada.</span></div>
+        <div style="display:flex;gap:10px;font-size:.84rem;font-weight:700;color:#b8ccdc;line-height:1.55;"><span>💰</span><span><strong style="color:var(--green);">Contas a Receber</strong> — controla o Ativo. Todo ouro a chegar fica aqui até entrar no caixa.</span></div>
+        <div style="display:flex;gap:10px;font-size:.84rem;font-weight:700;color:#b8ccdc;line-height:1.55;"><span>⚙️</span><span><strong style="color:var(--gold);">ERP</strong> — quando Estoque avisa, Compras age. Quando Compras age, Financeiro registra. <strong style="color:var(--blue);">Tudo automático!</strong></span></div>
+      </div>
+    </div>
+
+    <div class="npc-wrap">
+      <div class="npc-av">🧙</div>
+      <div>
+        <p class="npc-name">MESTRE CONTADOR</p>
+        <p class="npc-txt">
+          <strong>Parabéns! Servidor estabilizado!</strong><br><br>
+          Você aprendeu que o ERP não é só um lugar para guardar dados — ele é um <strong>sistema de alertas automáticos</strong> que conecta Estoque, Financeiro, Compras e Contábil. Uma ação em qualquer ponto <strong>dispara reações no sistema todo</strong>!
+          <span class="code-tip">ERP = O servidor que nunca dorme!</span>
+        </p>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;">
+      <button class="btn btn-teal" onclick="go('s-erp')">← VOLTAR AO SERVIDOR</button>
+      <button class="btn btn-ghost" onclick="fullReset()">↺ RECOMEÇAR</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════
+// QUEST DATA
+// ══════════════════════
+const QUESTS = [
+  {
+    id:0,
+    name:'🔴 Alerta 1 — Estoque Crítico',
+    target:'estoque',
+    badge:'badge-estoque',
+    hint:'Os Cristais de Energia estão acabando! O módulo que controla o que temos na base é o ESTOQUE. Olha em SUPRIMENTOS no menu!',
+    npcMsg:'Herói! <strong>Alerta 1:</strong> Cristais de Energia críticos! Qual módulo mostra o inventário da base?',
+    okMsg:'Encontrou! O <strong>módulo de Estoque</strong> monitora tudo que a guilda possui fisicamente. Quando um item cai abaixo do mínimo, o ERP dispara o alerta vermelho automaticamente!',
+    wrongMsg:'Este módulo não controla o estoque físico. Procura em SUPRIMENTOS — o módulo que guarda o inventário!'
+  },
+  {
+    id:1,
+    name:'🟠 Alerta 2 — Dívida Pendente',
+    target:'apagar',
+    badge:'badge-apagar',
+    hint:'A guilda deve ouro ao Mercador das Trevas! Dívidas ficam no módulo de CONTAS A PAGAR, dentro do bloco FINANCEIRO.',
+    npcMsg:'Herói! <strong>Alerta 2:</strong> O Mercador quer receber! Onde ficam registradas as dívidas da guilda?',
+    okMsg:'Correto! <strong>Contas a Pagar</strong> = o Passivo em ação! Toda dívida, salário e fatura a pagar entra aqui. Quando quitada, o ERP registra automaticamente a saída de caixa!',
+    wrongMsg:'Não é aqui! As DÍVIDAS ficam em Contas a Pagar, no bloco FINANCEIRO do menu.'
+  },
+  {
+    id:2,
+    name:'🟢 Alerta 3 — Ouro Chegando',
+    target:'areceber',
+    badge:'badge-areceber',
+    hint:'O Rei aprovou o pagamento! Ouro que ainda vai chegar fica no módulo de CONTAS A RECEBER, em FINANCEIRO.',
+    npcMsg:'Herói! <strong>Alerta 3:</strong> O Rei aprovou 20.000 G! Onde o ERP registra o ouro que ainda não entrou no caixa?',
+    okMsg:'Perfeito! <strong>Contas a Receber</strong> = o Ativo em ação! São os Direitos da guilda — ouro já ganho que ainda não chegou. Quando confirmado, o ERP lança como Receita no DRE automaticamente!',
+    wrongMsg:'Não é este módulo! O ouro a receber fica em Contas a Receber, no bloco FINANCEIRO.'
+  }
+];
+
+const NEUTRAL = ['fornecedores','compras','caixa','dre','rh','vendas','dashboard'];
+let cur = 0, done = [], questMode = false, _onClose = null;
+
+// ══════════════════════
+// INIT
+// ══════════════════════
+function startQuests(){
+  questMode=true; cur=0; done=[];
+  updateBadges(); updateSteps();
+  setNpc(QUESTS[0].npcMsg);
+  openView('dashboard');
+}
+
+function updateBadges(){
+  QUESTS.forEach((q,i)=>{
+    const b=document.getElementById(q.badge);
+    if(b) b.style.display=(i===cur&&!done.includes(i))?'inline':'none';
+  });
+}
+
+function updateSteps(){
+  for(let i=0;i<3;i++){
+    const el=document.getElementById('qs'+i);
+    if(!el) return;
+    el.className='qp-step '+(done.includes(i)?'done':i===cur?'active':'locked');
+  }
+  const pending=3-done.length;
+  const ac=document.getElementById('alert-counter');
+  if(ac) ac.textContent=`⚠️ ${pending} pendente${pending!==1?'s':''}`;
+  const sat=document.getElementById('sidebar-alert-txt');
+  if(sat) sat.textContent=pending>0?`${pending} módulo${pending!==1?'s':''} precisam de atenção!`:'✅ Todos os alertas resolvidos!';
+}
+
+function setNpc(html){
+  const el=document.getElementById('npc-bottom');
+  if(el) el.innerHTML=html;
+}
+
+// ══════════════════════
+// CLICK HANDLER
+// ══════════════════════
+function handleClick(view){
+  openView(view);
+  if(!questMode||cur>=QUESTS.length) return;
+  const q=QUESTS[cur];
+  const isNeutral=NEUTRAL.includes(view);
+
+  if(view===q.target){
+    done.push(cur); cur++;
+    updateBadges(); updateSteps();
+    const finished=cur>=QUESTS.length;
+    showPopup({
+      type:'correct',
+      icon:finished?'🏆':'✅',
+      title:finished?'TODOS OS ALERTAS RESOLVIDOS!':'ALERTA RESOLVIDO!',
+      text:q.okMsg+(finished?'<br><br><strong>Servidor estabilizado! Missão concluída!</strong>':''),
+      btn:finished?'VER RESULTADO':'PRÓXIMO ALERTA',
+      onClose:finished?()=>{closePopup();buildResult();go('s-result');spawnConf('conf');}:null
+    });
+    if(!finished) setNpc(QUESTS[cur].npcMsg);
+
+  } else if(!isNeutral){
+    const isOther=QUESTS.some(qq=>qq.target===view&&qq.id!==cur);
+    if(isOther){
+      showPopup({type:'wrong',icon:'⚠️',title:'MÓDULO ERRADO!',text:q.wrongMsg+'<br><br><span style="color:var(--gray);">Use a Dica 💡 se precisar!</span>',btn:'TENTAR DE NOVO'});
+    }
+  }
+}
+
+// ══════════════════════
+// POPUP
+// ══════════════════════
+function showPopup({type,icon,title,text,btn,onClose}){
+  document.getElementById('popup').classList.add('show');
+  document.getElementById('pp-box').className='pp-box '+type;
+  document.getElementById('pp-icon').textContent=icon;
+  document.getElementById('pp-title').textContent=title;
+  document.getElementById('pp-text').innerHTML=text;
+  document.getElementById('pp-btn').textContent=btn||'CONTINUAR';
+  _onClose=onClose||null;
+  if(type==='correct') spawnConf('conf');
+}
+function closePopup(){
+  document.getElementById('popup').classList.remove('show');
+  if(_onClose){_onClose();_onClose=null;}
+}
+
+function showHint(){
+  if(cur>=QUESTS.length) return;
+  showPopup({type:'quest',icon:'💡',title:'DICA DO ALERTA',text:QUESTS[cur].hint,btn:'ENTENDIDO!'});
+}
+
+// ══════════════════════
+// VIEW
+// ══════════════════════
+function openView(id){
+  document.querySelectorAll('.erp-view').forEach(v=>v.classList.remove('active'));
+  const v=document.getElementById('view-'+id);
+  if(v) v.classList.add('active');
+  document.querySelectorAll('.si').forEach(s=>s.classList.remove('active'));
+  const s=document.getElementById('si-'+id);
+  if(s) s.classList.add('active');
+}
+
+// ══════════════════════
+// RESULT
+// ══════════════════════
+function buildResult(){
+  const c=document.getElementById('result-quests');
+  c.innerHTML='';
+  QUESTS.forEach((q,i)=>{
+    const ok=done.includes(i);
+    c.innerHTML+=`<div style="display:flex;align-items:center;gap:11px;padding:11px 13px;border-radius:8px;border:1px solid ${ok?'rgba(29,233,182,.25)':'rgba(255,82,82,.2)'};background:${ok?'rgba(29,233,182,.05)':'rgba(255,82,82,.05)'};margin-bottom:7px;">
+      <span style="font-size:1.4rem;">${ok?'✅':'❌'}</span>
+      <div style="flex:1;">
+        <div style="font-family:'Press Start 2P',monospace;font-size:.4rem;color:${ok?'var(--teal)':'var(--red)'};margin-bottom:4px;">${q.name}</div>
+        <div style="font-size:.8rem;font-weight:600;color:#a0b8cc;">Módulo: <strong style="color:${ok?'var(--teal)':'var(--gray)'};">${q.target.charAt(0).toUpperCase()+q.target.slice(1)}</strong></div>
+      </div>
+      <span style="font-family:'Press Start 2P',monospace;font-size:.48rem;color:${ok?'var(--teal)':'var(--red)'};">${ok?'+10 XP':'0 XP'}</span>
+    </div>`;
+  });
+  c.innerHTML+=`<div style="text-align:center;margin-top:8px;font-family:'Press Start 2P',monospace;font-size:.52rem;color:var(--teal);">TOTAL: ${done.length*10}/30 XP</div>`;
+}
+
+function fullReset(){
+  cur=0;done=[];questMode=false;
+  go('s-intro');
+}
+
+// ══════════════════════
+// CONFETTI
+// ══════════════════════
+function spawnConf(cid){
+  const c=document.getElementById(cid);
+  const cols=['#1de9b6','#a7ffeb','#f5c842','#40c4ff','#ff9800','#ce93d8','#00e676'];
+  for(let i=0;i<80;i++){
+    const el=document.createElement('div');
+    const sz=4+Math.random()*8;
+    el.style.cssText=`position:absolute;width:${sz}px;height:${sz}px;background:${cols[Math.floor(Math.random()*cols.length)]};left:${Math.random()*100}%;top:-10px;border-radius:${Math.random()>.5?'50%':'2px'};animation:cf ${1.5+Math.random()*2}s ease ${Math.random()*.5}s both;`;
+    c.appendChild(el);
+  }
+  setTimeout(()=>c.innerHTML='',5000);
+}
+(()=>{const s=document.createElement('style');s.textContent='@keyframes cf{from{transform:translateY(0) rotate(0deg);opacity:1}to{transform:translateY(100vh) rotate(720deg);opacity:0}}';document.head.appendChild(s);})();
+
+// ══════════════════════
+// NAV
+// ══════════════════════
+function go(id){
+  document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on'));
+  document.getElementById(id).classList.add('on');
+  window.scrollTo(0,0);
+}
+</script>
+</body>
+</html>

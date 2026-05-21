@@ -1,0 +1,946 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Mega Servidor da Guilda — ERP</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Exo+2:wght@400;600;700;800;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:       #06070e;
+  --bg2:      #0a0c1a;
+  --panel:    #0e1126;
+  --panel2:   #131630;
+  --border:   #1c2254;
+  --border2:  #252d68;
+  --gold:     #f5c842;
+  --gold2:    #ffe082;
+  --gold3:    #fff8dc;
+  --green:    #00e676;
+  --green2:   #b9f6ca;
+  --red:      #ff5252;
+  --red2:     #ffd0d0;
+  --blue:     #40c4ff;
+  --blue2:    #b3e5fc;
+  --purple:   #d180ff;
+  --purple2:  #f3d9ff;
+  --orange:   #ff9800;
+  --cyan:     #18ffff;
+  --white:    #e8edff;
+  --gray:     #6b77c4;
+  --gray2:    #3a4494;
+
+  /* modules */
+  --mod-compras:  #ff9800;
+  --mod-vendas:   #00e676;
+  --mod-estoque:  #40c4ff;
+  --mod-rh:       #ce93d8;
+  --mod-contabil: #f5c842;
+  --mod-relat:    #ff5252;
+}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{font-family:'Exo 2',sans-serif;background:var(--bg);color:var(--white);min-height:100vh;overflow-x:hidden;cursor:default;}
+
+/* GRID OVERLAY */
+body::before{
+  content:'';position:fixed;inset:0;
+  background-image:
+    linear-gradient(rgba(64,196,255,.03) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(64,196,255,.03) 1px,transparent 1px);
+  background-size:40px 40px;
+  pointer-events:none;z-index:0;
+}
+
+/* GLOWING STARS */
+body::after{
+  content:'';position:fixed;inset:0;
+  background-image:
+    radial-gradient(1px 1px at 10% 20%,rgba(255,255,255,.9) 0%,transparent 100%),
+    radial-gradient(1px 1px at 85% 15%,rgba(255,255,255,.7) 0%,transparent 100%),
+    radial-gradient(1px 1px at 50% 85%,rgba(255,255,255,.8) 0%,transparent 100%),
+    radial-gradient(1px 1px at 25% 65%,rgba(255,255,255,.6) 0%,transparent 100%),
+    radial-gradient(1px 1px at 75% 45%,rgba(255,255,255,.7) 0%,transparent 100%),
+    radial-gradient(1px 1px at 93% 80%,rgba(255,255,255,.5) 0%,transparent 100%),
+    radial-gradient(1px 1px at 40% 8%, rgba(255,255,255,.7) 0%,transparent 100%);
+  pointer-events:none;z-index:0;
+}
+
+.scr{display:none;position:relative;z-index:1;min-height:100vh;flex-direction:column;align-items:center;padding:18px 14px 50px;}
+.scr.on{display:flex;}
+
+/* PANEL */
+.panel{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:22px 26px;max-width:1060px;width:100%;box-shadow:0 0 60px rgba(64,196,255,.05),0 20px 60px rgba(0,0,0,.85),inset 0 1px 0 rgba(255,255,255,.04);}
+
+/* PIXEL */
+.ptitle{font-family:'Press Start 2P',monospace;font-size:clamp(.5rem,1.5vw,.8rem);color:var(--gold);text-shadow:2px 2px 0 rgba(0,0,0,.8),0 0 20px rgba(245,200,66,.5);line-height:2.1;text-align:center;}
+.psub{font-family:'Press Start 2P',monospace;font-size:.36rem;color:var(--gray);letter-spacing:2px;text-align:center;}
+.mono{font-family:'Share Tech Mono',monospace;}
+
+/* NPC */
+.npc-wrap{display:flex;gap:12px;align-items:flex-start;background:rgba(13,16,38,.95);border:1px solid rgba(64,196,255,.2);border-radius:10px;padding:13px 15px;margin-bottom:15px;position:relative;}
+.npc-wrap::before{content:'';position:absolute;left:60px;top:-1px;width:80px;height:1px;background:linear-gradient(90deg,var(--blue),transparent);}
+.npc-av{width:48px;height:48px;border-radius:8px;border:1px solid var(--gold);background:linear-gradient(135deg,#1a0f02,#3a2008);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;animation:fl 3s ease-in-out infinite;box-shadow:0 0 12px rgba(245,200,66,.2);}
+@keyframes fl{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+.npc-name{font-family:'Press Start 2P',monospace;font-size:.4rem;color:var(--gold);margin-bottom:5px;}
+.npc-txt{font-size:.88rem;font-weight:600;color:#c8d0f0;line-height:1.75;}
+.npc-txt strong{color:var(--gold2);}
+.code-tip{font-family:'Share Tech Mono',monospace;font-size:.78rem;color:var(--green);background:rgba(0,230,118,.08);border:1px solid rgba(0,230,118,.25);border-radius:5px;padding:3px 8px;display:inline-block;margin-top:5px;}
+
+/* BTN */
+.btn{display:inline-flex;align-items:center;gap:7px;font-family:'Press Start 2P',monospace;font-size:.46rem;border:1px solid transparent;border-radius:7px;padding:10px 18px;cursor:pointer;transition:all .2s;color:white;letter-spacing:.3px;position:relative;overflow:hidden;}
+.btn::after{content:'';position:absolute;inset:0;background:rgba(255,255,255,0);transition:background .2s;}
+.btn:hover::after{background:rgba(255,255,255,.06);}
+.btn-blue  {background:linear-gradient(135deg,#0d3b7a,#1565c0);border-color:rgba(64,196,255,.35);box-shadow:0 4px 14px rgba(64,196,255,.25);}
+.btn-blue:hover  {transform:translateY(-1px);box-shadow:0 6px 18px rgba(64,196,255,.4);}
+.btn-green {background:linear-gradient(135deg,#0a3d1a,#1b7a35);border-color:rgba(0,230,118,.35);box-shadow:0 4px 14px rgba(0,230,118,.25);}
+.btn-green:hover {transform:translateY(-1px);}
+.btn-gold  {background:linear-gradient(135deg,#5a3600,#b87800);border-color:rgba(245,200,66,.4);color:#fef3c7;box-shadow:0 4px 14px rgba(245,200,66,.25);}
+.btn-gold:hover  {transform:translateY(-1px);}
+.btn-ghost {background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.15);font-size:.38rem;}
+.btn-ghost:hover {background:rgba(255,255,255,.1);}
+
+/* ════════════════════════════════
+   ERP INTERFACE
+   ════════════════════════════════ */
+
+/* TOP BAR */
+.erp-topbar{
+  display:flex;align-items:center;justify-content:space-between;
+  background:rgba(6,7,14,.9);border:1px solid var(--border);
+  border-radius:8px 8px 0 0;padding:8px 16px;margin-bottom:0;
+  flex-wrap:wrap;gap:8px;
+}
+.erp-logo{font-family:'Press Start 2P',monospace;font-size:.52rem;color:var(--gold);display:flex;align-items:center;gap:8px;}
+.erp-logo .dot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 6px var(--green);animation:blink 2s infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.4}}
+.erp-status-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.status-chip{font-family:'Share Tech Mono',monospace;font-size:.7rem;padding:3px 10px;border-radius:20px;border:1px solid;display:flex;align-items:center;gap:5px;}
+.status-chip.online{border-color:rgba(0,230,118,.4);background:rgba(0,230,118,.08);color:var(--green);}
+.status-chip.alert {border-color:rgba(255,200,64,.4);background:rgba(255,200,64,.08);color:var(--gold2);}
+
+/* SIDEBAR */
+.erp-layout{
+  display:grid;grid-template-columns:200px 1fr;
+  border:1px solid var(--border);border-top:none;border-radius:0 0 8px 8px;
+  overflow:hidden;min-height:500px;
+  background:var(--bg);
+}
+@media(max-width:640px){.erp-layout{grid-template-columns:1fr;}}
+
+.erp-sidebar{
+  background:rgba(6,7,14,.95);
+  border-right:1px solid var(--border);
+  padding:12px 0;
+  position:relative;
+}
+.sidebar-section{font-family:'Press Start 2P',monospace;font-size:.32rem;color:var(--gray2);padding:8px 14px 4px;letter-spacing:2px;text-transform:uppercase;}
+.sidebar-item{
+  display:flex;align-items:center;gap:9px;
+  padding:9px 14px;font-size:.82rem;font-weight:600;
+  color:#8890cc;cursor:pointer;transition:all .2s;
+  border-left:2px solid transparent;position:relative;
+}
+.sidebar-item .si-icon{font-size:1rem;flex-shrink:0;width:20px;text-align:center;}
+.sidebar-item:hover:not(.locked){color:var(--white);background:rgba(64,196,255,.06);border-left-color:rgba(64,196,255,.4);}
+.sidebar-item.active{color:var(--blue);background:rgba(64,196,255,.1);border-left-color:var(--blue);}
+.sidebar-item.locked{opacity:.3;cursor:not-allowed;}
+.sidebar-item .quest-badge{
+  margin-left:auto;
+  font-family:'Press Start 2P',monospace;font-size:.3rem;
+  padding:2px 5px;border-radius:4px;
+  background:rgba(245,200,66,.15);border:1px solid rgba(245,200,66,.3);color:var(--gold);
+  animation:questPulse 1.5s ease-in-out infinite;
+}
+@keyframes questPulse{0%,100%{opacity:1}50%{opacity:.5}}
+
+/* MAIN CONTENT */
+.erp-main{
+  padding:0;position:relative;overflow:hidden;
+  background:linear-gradient(135deg,rgba(10,12,26,.9),rgba(8,9,20,.95));
+}
+
+/* SCREEN VIEWS */
+.erp-view{display:none;padding:20px;height:100%;animation:fadeSlide .3s ease;}
+.erp-view.active{display:block;}
+@keyframes fadeSlide{from{opacity:0;transform:translateX(8px)}to{opacity:1;transform:translateX(0)}}
+
+/* BREADCRUMB */
+.breadcrumb{font-family:'Share Tech Mono',monospace;font-size:.72rem;color:var(--gray);margin-bottom:14px;display:flex;align-items:center;gap:6px;}
+.breadcrumb span{color:var(--blue);}
+.bc-sep{color:var(--border2);}
+
+/* VIEW TITLE */
+.view-title{font-family:'Press Start 2P',monospace;font-size:.58rem;margin-bottom:4px;}
+.view-subtitle{font-size:.8rem;font-weight:600;color:var(--gray);margin-bottom:16px;}
+
+/* DATA TABLE */
+.data-table{width:100%;border-collapse:collapse;font-size:.82rem;}
+.data-table th{
+  font-family:'Press Start 2P',monospace;font-size:.32rem;
+  padding:8px 12px;text-align:left;letter-spacing:1px;
+  background:rgba(0,0,0,.4);border-bottom:1px solid var(--border2);color:var(--gray);
+}
+.data-table td{padding:9px 12px;border-bottom:1px solid rgba(28,34,84,.5);color:#b8c0e8;font-weight:600;}
+.data-table tr:hover td{background:rgba(64,196,255,.04);}
+.data-table tr.highlight td{background:rgba(245,200,66,.05);}
+.tag{display:inline-block;padding:2px 8px;border-radius:4px;font-size:.72rem;font-weight:700;}
+.tag-green{background:rgba(0,230,118,.15);border:1px solid rgba(0,230,118,.3);color:var(--green);}
+.tag-blue {background:rgba(64,196,255,.15); border:1px solid rgba(64,196,255,.3); color:var(--blue);}
+.tag-gold {background:rgba(245,200,66,.15); border:1px solid rgba(245,200,66,.3); color:var(--gold2);}
+.tag-red  {background:rgba(255,82,82,.15);  border:1px solid rgba(255,82,82,.3);  color:var(--red2);}
+
+/* KPIS */
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:16px;}
+.kpi-box{background:rgba(0,0,0,.4);border:1px solid var(--border);border-radius:8px;padding:13px;text-align:center;transition:all .25s;cursor:default;}
+.kpi-box:hover{border-color:var(--border2);transform:translateY(-2px);}
+.kpi-val{font-family:'Share Tech Mono',monospace;font-size:1.1rem;font-weight:700;line-height:1;margin-bottom:5px;}
+.kpi-lbl{font-family:'Press Start 2P',monospace;font-size:.3rem;color:var(--gray);letter-spacing:1px;}
+
+/* CHART MINI */
+.mini-chart{display:flex;align-items:flex-end;gap:4px;height:60px;margin:8px 0;}
+.mc-bar{border-radius:3px 3px 0 0;flex:1;min-height:4px;transition:height .8s ease;position:relative;}
+.mc-bar::after{content:attr(data-val);position:absolute;top:-18px;left:50%;transform:translateX(-50%);font-family:'Share Tech Mono',monospace;font-size:.6rem;color:inherit;white-space:nowrap;}
+
+/* MODULE FLOW DIAGRAM */
+.flow-diagram{display:flex;align-items:center;justify-content:center;gap:0;flex-wrap:wrap;margin:14px 0;}
+.flow-node{
+  border-radius:8px;padding:10px 14px;text-align:center;
+  border:1.5px solid;position:relative;min-width:90px;
+  cursor:pointer;transition:all .25s;
+}
+.flow-node:hover{transform:scale(1.06);z-index:2;}
+.flow-node .fn-icon{font-size:1.5rem;display:block;margin-bottom:5px;}
+.flow-node .fn-name{font-family:'Press Start 2P',monospace;font-size:.32rem;line-height:1.5;}
+.flow-arrow{font-size:1.2rem;color:var(--border2);margin:0 2px;animation:arrowPulse 2s infinite;flex-shrink:0;}
+@keyframes arrowPulse{0%,100%{color:var(--border2)}50%{color:var(--blue)}}
+
+/* QUEST POPUP */
+.quest-popup{
+  position:fixed;top:0;left:0;right:0;bottom:0;
+  background:rgba(0,0,0,.88);z-index:600;
+  display:none;align-items:center;justify-content:center;flex-direction:column;
+}
+.quest-popup.show{display:flex;}
+.qp-box{
+  background:var(--panel2);border:2px solid;border-radius:14px;
+  padding:28px 32px;max-width:560px;width:90%;
+  animation:popIn .4s cubic-bezier(.34,1.56,.64,1);
+  position:relative;text-align:center;
+}
+@keyframes popIn{from{transform:scale(.5) translateY(30px);opacity:0}to{transform:scale(1) translateY(0);opacity:1}}
+.qp-box.correct{border-color:var(--green);box-shadow:0 0 40px rgba(0,230,118,.25);}
+.qp-box.wrong  {border-color:var(--red);  box-shadow:0 0 30px rgba(255,82,82,.2);}
+.qp-box.quest  {border-color:var(--gold); box-shadow:0 0 40px rgba(245,200,66,.2);}
+.qp-icon{font-size:3rem;margin-bottom:10px;display:block;}
+.qp-title{font-family:'Press Start 2P',monospace;font-size:.7rem;margin-bottom:8px;}
+.qp-text{font-size:.9rem;font-weight:600;color:#c8d0f0;line-height:1.75;margin-bottom:16px;}
+.qp-text strong{color:var(--gold2);}
+
+/* QUEST PROGRESS */
+.quest-progress{
+  background:rgba(6,7,14,.9);border:1px solid var(--border);
+  border-radius:8px;padding:12px 16px;margin:14px 0;
+  display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+}
+.qp-steps{display:flex;gap:8px;align-items:center;}
+.qp-step{
+  display:flex;align-items:center;gap:5px;
+  font-family:'Press Start 2P',monospace;font-size:.34rem;
+  padding:5px 10px;border-radius:6px;border:1px solid;
+  transition:all .3s;
+}
+.qp-step.locked {border-color:var(--border);   color:rgba(255,255,255,.2);}
+.qp-step.active {border-color:var(--gold);      color:var(--gold);background:rgba(245,200,66,.1);}
+.qp-step.done   {border-color:var(--green);     color:var(--green);background:rgba(0,230,118,.08);}
+.qp-title-label{font-family:'Press Start 2P',monospace;font-size:.38rem;color:var(--gray);}
+
+/* HINT BUBBLE */
+.hint-bubble{
+  display:inline-flex;align-items:center;gap:6px;
+  font-family:'Share Tech Mono',monospace;font-size:.75rem;
+  color:var(--blue2);background:rgba(64,196,255,.08);
+  border:1px solid rgba(64,196,255,.2);border-radius:20px;
+  padding:5px 12px;cursor:pointer;margin-top:8px;transition:all .2s;
+}
+.hint-bubble:hover{background:rgba(64,196,255,.15);}
+
+/* CONF */
+.conf{position:fixed;inset:0;pointer-events:none;z-index:500;}
+
+/* RESULT */
+.result-frame{background:linear-gradient(135deg,rgba(245,200,66,.06),rgba(0,230,118,.04));border:2px solid var(--gold);border-radius:12px;padding:20px;margin:12px 0;animation:gf 2.5s ease-in-out infinite;}
+@keyframes gf{0%,100%{box-shadow:0 0 24px rgba(245,200,66,.12)}50%{box-shadow:0 0 44px rgba(245,200,66,.28)}}
+
+@media(max-width:500px){.panel{padding:14px 10px;}.qp-box{padding:20px 16px;}.erp-sidebar{display:none;}}
+</style>
+</head>
+<body>
+
+<div class="conf" id="conf"></div>
+
+<!-- QUEST POPUP (overlay) -->
+<div class="quest-popup" id="quest-popup">
+  <div class="qp-box" id="qp-box">
+    <span class="qp-icon" id="qp-icon">❓</span>
+    <p class="qp-title" id="qp-title">—</p>
+    <p class="qp-text" id="qp-text">—</p>
+    <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;">
+      <button class="btn btn-blue" id="qp-btn-main" onclick="closeQuestPopup()">CONTINUAR</button>
+      <button class="btn btn-ghost" onclick="closeQuestPopup()" style="display:none;" id="qp-btn-skip">PULAR</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════ INTRO ════ -->
+<div class="scr on" id="s-intro">
+  <div class="panel" style="max-width:680px;margin-top:16px;">
+    <div style="text-align:center;margin-bottom:14px;">
+      <div style="font-size:3rem;animation:fl 2.5s ease-in-out infinite;margin-bottom:8px;">🖥️</div>
+      <p class="ptitle">O MEGA SERVIDOR<br>DA GUILDA</p>
+      <p class="ptitle" style="color:var(--blue);font-size:clamp(.36rem,1.1vw,.52rem);">SISTEMA ERP</p>
+      <p class="psub" style="margin-top:5px;">SERVIDOR CENTRAL · MMORPG FINANCEIRO</p>
+    </div>
+
+    <div class="npc-wrap">
+      <div class="npc-av">🧙</div>
+      <div>
+        <p class="npc-name">MESTRE CONTADOR</p>
+        <p class="npc-txt">
+          Herói! A guilda ficou gigante! O <strong>Pergaminho Mágico</strong> (planilha) não aguenta mais tantos dados!<br><br>
+          Hoje vamos migrar tudo para o <strong>Servidor Central do Jogo</strong> — o ERP. Ele conecta o inventário, a loja e o banco de todos os jogadores <strong>ao mesmo tempo</strong>!
+          <span class="code-tip">ERP = Enterprise Resource Planning = Servidor de Todos os Módulos</span>
+        </p>
+      </div>
+    </div>
+
+    <!-- MODULE FLOW -->
+    <div style="background:rgba(0,0,0,.4);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:16px;">
+      <p style="font-family:'Press Start 2P',monospace;font-size:.44rem;color:var(--gold);margin-bottom:12px;">⚡ COMO O SERVIDOR CONECTA TUDO</p>
+      <div class="flow-diagram">
+        <div class="flow-node" style="border-color:var(--mod-vendas);background:rgba(0,230,118,.07);">
+          <span class="fn-icon">💰</span>
+          <span class="fn-name" style="color:var(--mod-vendas);">VENDAS</span>
+        </div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-node" style="border-color:var(--mod-estoque);background:rgba(64,196,255,.07);">
+          <span class="fn-icon">📦</span>
+          <span class="fn-name" style="color:var(--mod-estoque);">ESTOQUE</span>
+        </div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-node" style="border-color:var(--mod-contabil);background:rgba(245,200,66,.07);">
+          <span class="fn-icon">📊</span>
+          <span class="fn-name" style="color:var(--mod-contabil);">CONTÁBIL</span>
+        </div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-node" style="border-color:var(--mod-relat);background:rgba(255,82,82,.07);">
+          <span class="fn-icon">🏆</span>
+          <span class="fn-name" style="color:var(--mod-relat);">RELATÓRIOS</span>
+        </div>
+      </div>
+      <p style="font-size:.8rem;font-weight:600;color:var(--gray);text-align:center;line-height:1.6;">
+        Mercador vende espada → estoque diminui → banqueiro é avisado → relatório atualiza.<br>
+        <strong style="color:var(--blue);">Tudo automático. Um dado alimenta todos os módulos!</strong>
+      </p>
+    </div>
+
+    <!-- 3 QUESTS PREVIEW -->
+    <div style="background:rgba(245,200,66,.06);border:1px solid rgba(245,200,66,.2);border-radius:10px;padding:14px;margin-bottom:18px;">
+      <p style="font-family:'Press Start 2P',monospace;font-size:.44rem;color:var(--gold);margin-bottom:10px;">🗡️ SUAS 3 MISSÕES NO SERVIDOR</p>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <div style="display:flex;gap:10px;font-size:.86rem;font-weight:700;color:#c8d0f0;line-height:1.5;">
+          <span style="color:var(--gold);font-size:1rem;flex-shrink:0;">1.</span>
+          <span>🗡️ <strong style="color:var(--gold2);">Grimório de Aliados</strong> — Achar a tela de <strong>Cadastro de Clientes</strong></span>
+        </div>
+        <div style="display:flex;gap:10px;font-size:.86rem;font-weight:700;color:#c8d0f0;line-height:1.5;">
+          <span style="color:var(--gold);font-size:1rem;flex-shrink:0;">2.</span>
+          <span>📜 <strong style="color:var(--gold2);">Livro de Quests</strong> — Achar a tela de <strong>Registro de Vendas</strong></span>
+        </div>
+        <div style="display:flex;gap:10px;font-size:.86rem;font-weight:700;color:#c8d0f0;line-height:1.5;">
+          <span style="color:var(--gold);font-size:1rem;flex-shrink:0;">3.</span>
+          <span>🛡️ <strong style="color:var(--gold2);">Status de Power Level</strong> — Achar a tela de <strong>Relatórios Financeiros</strong></span>
+        </div>
+      </div>
+    </div>
+
+    <div style="text-align:center;">
+      <button class="btn btn-blue" style="font-size:.5rem;" onclick="go('s-erp');startQuestMode()">🖥️ ENTRAR NO SERVIDOR ERP</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════ ERP INTERFACE ════ -->
+<div class="scr" id="s-erp">
+  <div class="panel" style="max-width:1060px;margin-top:14px;padding:0;">
+
+    <!-- TOP BAR -->
+    <div class="erp-topbar">
+      <div class="erp-logo">
+        <div class="dot"></div>
+        <span>ERP GUILDA v3.0</span>
+      </div>
+      <div class="erp-status-bar">
+        <div class="status-chip online">🟢 Servidor Online</div>
+        <div class="status-chip alert">⚡ 4 Módulos Ativos</div>
+        <button class="btn btn-ghost" onclick="go('s-intro')" style="font-size:.36rem;">← SAIR</button>
+        <button class="btn btn-gold" style="font-size:.36rem;" onclick="go('s-result')">🏆 RESULTADO</button>
+      </div>
+    </div>
+
+    <!-- QUEST PROGRESS BAR inside ERP -->
+    <div class="quest-progress" id="quest-bar" style="margin:0;border-radius:0;border-top:none;border-left:none;border-right:none;">
+      <span class="qp-title-label">🗡️ MISSÃO ATIVA:</span>
+      <div class="qp-steps">
+        <div class="qp-step active" id="qs0">📜 QUEST 1</div>
+        <span style="color:var(--border2);font-size:.8rem;">›</span>
+        <div class="qp-step locked" id="qs1">📜 QUEST 2</div>
+        <span style="color:var(--border2);font-size:.8rem;">›</span>
+        <div class="qp-step locked" id="qs2">📜 QUEST 3</div>
+      </div>
+      <div style="margin-left:auto;" id="quest-hint-text">
+        <div class="hint-bubble" onclick="showCurrentHint()">💡 DICA DA QUEST</div>
+      </div>
+    </div>
+
+    <!-- ERP LAYOUT -->
+    <div class="erp-layout">
+
+      <!-- SIDEBAR -->
+      <nav class="erp-sidebar">
+        <div class="sidebar-section">MÓDULOS</div>
+
+        <div class="sidebar-item" id="si-dashboard" onclick="openView('dashboard')">
+          <span class="si-icon">🏠</span> Dashboard
+        </div>
+
+        <div class="sidebar-section" style="margin-top:6px;">COMERCIAL</div>
+
+        <div class="sidebar-item" id="si-clientes" onclick="handleClick('clientes')">
+          <span class="si-icon">👥</span> Clientes
+          <span class="quest-badge" id="badge-clientes" style="display:none;">!</span>
+        </div>
+        <div class="sidebar-item" id="si-vendas" onclick="handleClick('vendas')">
+          <span class="si-icon">💰</span> Vendas
+          <span class="quest-badge" id="badge-vendas" style="display:none;">!</span>
+        </div>
+        <div class="sidebar-item" id="si-pedidos" onclick="handleClick('pedidos')">
+          <span class="si-icon">📋</span> Pedidos
+        </div>
+
+        <div class="sidebar-section" style="margin-top:6px;">OPERAÇÕES</div>
+
+        <div class="sidebar-item" id="si-estoque" onclick="handleClick('estoque')">
+          <span class="si-icon">📦</span> Estoque
+        </div>
+        <div class="sidebar-item" id="si-compras" onclick="handleClick('compras')">
+          <span class="si-icon">🛒</span> Compras
+        </div>
+        <div class="sidebar-item" id="si-rh" onclick="handleClick('rh')">
+          <span class="si-icon">🧙</span> RH / Magos
+        </div>
+
+        <div class="sidebar-section" style="margin-top:6px;">FINANCEIRO</div>
+
+        <div class="sidebar-item" id="si-contabil" onclick="handleClick('contabil')">
+          <span class="si-icon">📊</span> Contábil
+        </div>
+        <div class="sidebar-item" id="si-relatorios" onclick="handleClick('relatorios')">
+          <span class="si-icon">🏆</span> Relatórios
+          <span class="quest-badge" id="badge-relatorios" style="display:none;">!</span>
+        </div>
+        <div class="sidebar-item" id="si-fluxo" onclick="handleClick('fluxo')">
+          <span class="si-icon">💧</span> Fluxo de Caixa
+        </div>
+      </nav>
+
+      <!-- MAIN VIEWS -->
+      <main class="erp-main">
+
+        <!-- DASHBOARD -->
+        <div class="erp-view active" id="view-dashboard">
+          <div class="breadcrumb">🏠 <span>Dashboard</span></div>
+          <p class="view-title" style="color:var(--gold);">🏰 PAINEL DO MESTRE — GUILDA TECHSOLUTIONS</p>
+          <p class="view-subtitle">Visão geral do servidor · Mês atual</p>
+
+          <div class="kpi-grid">
+            <div class="kpi-box" style="border-color:rgba(0,230,118,.3);">
+              <div class="kpi-val" style="color:var(--green);">28.000 G</div>
+              <div class="kpi-lbl">RECEITAS</div>
+            </div>
+            <div class="kpi-box" style="border-color:rgba(255,82,82,.3);">
+              <div class="kpi-val" style="color:var(--red);">11.300 G</div>
+              <div class="kpi-lbl">DESPESAS</div>
+            </div>
+            <div class="kpi-box" style="border-color:rgba(245,200,66,.4);">
+              <div class="kpi-val" style="color:var(--gold);">16.700 G</div>
+              <div class="kpi-lbl">SALDO</div>
+            </div>
+            <div class="kpi-box" style="border-color:rgba(64,196,255,.3);">
+              <div class="kpi-val" style="color:var(--blue);">12</div>
+              <div class="kpi-lbl">CLIENTES</div>
+            </div>
+          </div>
+
+          <p style="font-family:'Press Start 2P',monospace;font-size:.4rem;color:var(--gray);margin-bottom:8px;">📊 RECEITAS DOS ÚLTIMOS 4 MESES</p>
+          <div class="mini-chart">
+            <div class="mc-bar" style="height:50%;background:rgba(0,230,118,.5);color:var(--green);" data-val="14k"></div>
+            <div class="mc-bar" style="height:65%;background:rgba(0,230,118,.6);color:var(--green);" data-val="18k"></div>
+            <div class="mc-bar" style="height:80%;background:rgba(0,230,118,.7);color:var(--green);" data-val="23k"></div>
+            <div class="mc-bar" style="height:100%;background:var(--green);color:var(--green);" data-val="28k"></div>
+          </div>
+
+          <div style="margin-top:16px;background:rgba(245,200,66,.06);border:1px solid rgba(245,200,66,.2);border-radius:8px;padding:12px;">
+            <p style="font-family:'Press Start 2P',monospace;font-size:.36rem;color:var(--gold);margin-bottom:6px;">🗡️ QUEST ATIVA</p>
+            <p style="font-size:.85rem;font-weight:600;color:#c8d0f0;line-height:1.6;" id="dash-quest-hint">Explore o menu lateral para encontrar as 3 telas da missão!</p>
+          </div>
+        </div>
+
+        <!-- CLIENTES -->
+        <div class="erp-view" id="view-clientes">
+          <div class="breadcrumb">👥 <span>Módulo Comercial</span> <span class="bc-sep">/</span> <span>Cadastro de Clientes</span></div>
+          <p class="view-title" style="color:var(--green);">👥 GRIMÓRIO DE ALIADOS — CLIENTES</p>
+          <p class="view-subtitle">Cadastro e histórico de todos os aliados da guilda</p>
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>ID</th><th>ALIADO (CLIENTE)</th><th>REINO</th><th>STATUS</th><th>TOTAL DE QUESTS</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="highlight"><td class="mono">#001</td><td>⚔️ Rei Artur do Castelo</td><td>Reino do Norte</td><td><span class="tag tag-green">Ativo</span></td><td class="mono" style="color:var(--gold);">3 quests</td></tr>
+              <tr><td class="mono">#002</td><td>🧝 Elfos de Silvermoon</td><td>Floresta Mágica</td><td><span class="tag tag-green">Ativo</span></td><td class="mono" style="color:var(--gold);">1 quest</td></tr>
+              <tr><td class="mono">#003</td><td>🏰 Forja de Ironforge</td><td>Montanhas</td><td><span class="tag tag-blue">Negociando</span></td><td class="mono" style="color:var(--gold);">0 quests</td></tr>
+              <tr><td class="mono">#004</td><td>🐲 Guarda dos Dragões</td><td>Sul</td><td><span class="tag tag-green">Ativo</span></td><td class="mono" style="color:var(--gold);">2 quests</td></tr>
+              <tr><td class="mono">#005</td><td>🧙 Academia dos Magos</td><td>Capital</td><td><span class="tag tag-red">Inativo</span></td><td class="mono" style="color:var(--gold);">5 quests</td></tr>
+            </tbody>
+          </table>
+          <div style="margin-top:14px;background:rgba(0,230,118,.06);border:1px solid rgba(0,230,118,.2);border-radius:8px;padding:10px;">
+            <p style="font-size:.82rem;font-weight:600;color:var(--green2);line-height:1.6;">
+              📌 <strong>Módulo de Clientes</strong> = O Grimório de Aliados! Aqui ficam todos os dados de quem contrata a guilda. Quando uma venda é registrada, o sistema busca automaticamente o cliente nesta tela!
+            </p>
+          </div>
+        </div>
+
+        <!-- VENDAS -->
+        <div class="erp-view" id="view-vendas">
+          <div class="breadcrumb">💰 <span>Módulo Comercial</span> <span class="bc-sep">/</span> <span>Registro de Vendas</span></div>
+          <p class="view-title" style="color:var(--mod-vendas);">💰 LIVRO DE QUESTS — REGISTRO DE VENDAS</p>
+          <p class="view-subtitle">Todas as missões concluídas e recompensas recebidas</p>
+          <table class="data-table">
+            <thead>
+              <tr><th>QUEST ID</th><th>MISSÃO</th><th>CLIENTE</th><th>DATA</th><th>RECOMPENSA</th><th>STATUS</th></tr>
+            </thead>
+            <tbody>
+              <tr class="highlight"><td class="mono" style="color:var(--gold);">#V-2401</td><td>⚔️ Sistema de Defesa do Castelo</td><td>Rei Artur</td><td class="mono">Jan/25</td><td class="mono" style="color:var(--green);">+20.000 G</td><td><span class="tag tag-green">Pago</span></td></tr>
+              <tr><td class="mono" style="color:var(--gold);">#V-2402</td><td>📖 Consultoria Mágica</td><td>Elfos</td><td class="mono">Jan/25</td><td class="mono" style="color:var(--green);">+5.000 G</td><td><span class="tag tag-green">Pago</span></td></tr>
+              <tr><td class="mono" style="color:var(--gold);">#V-2403</td><td>🛠️ Suporte ao Servidor</td><td>Forja</td><td class="mono">Jan/25</td><td class="mono" style="color:var(--green);">+3.000 G</td><td><span class="tag tag-blue">A Receber</span></td></tr>
+              <tr><td class="mono" style="color:var(--gold);">#V-2404</td><td>🐲 Sistema de Vigilância</td><td>Dragões</td><td class="mono">Fev/25</td><td class="mono" style="color:var(--green);">+12.000 G</td><td><span class="tag tag-gold">Em Andamento</span></td></tr>
+            </tbody>
+          </table>
+          <div style="margin-top:14px;background:rgba(0,230,118,.06);border:1px solid rgba(0,230,118,.2);border-radius:8px;padding:10px;">
+            <p style="font-size:.82rem;font-weight:600;color:var(--green2);line-height:1.6;">
+              📌 <strong>Módulo de Vendas</strong> = O Livro de Quests! Cada venda registrada aqui <strong>avisa automaticamente</strong> o módulo Contábil que uma Receita entrou!
+            </p>
+          </div>
+        </div>
+
+        <!-- ESTOQUE -->
+        <div class="erp-view" id="view-estoque">
+          <div class="breadcrumb">📦 <span>Módulo de Operações</span> <span class="bc-sep">/</span> <span>Controle de Estoque</span></div>
+          <p class="view-title" style="color:var(--mod-estoque);">📦 INVENTÁRIO DO SERVIDOR</p>
+          <p class="view-subtitle">Recursos e itens disponíveis na base da guilda</p>
+          <table class="data-table">
+            <thead><tr><th>ITEM</th><th>CATEGORIA</th><th>QTD</th><th>STATUS</th></tr></thead>
+            <tbody>
+              <tr><td>💻 Computadores de Batalha</td><td>Equipamento</td><td class="mono">5 unid</td><td><span class="tag tag-green">OK</span></td></tr>
+              <tr><td>📡 Cristais de Conexão</td><td>Consumível</td><td class="mono">3 unid</td><td><span class="tag tag-gold">Baixo</span></td></tr>
+              <tr><td>📜 Pergaminhos de Código</td><td>Software</td><td class="mono">∞</td><td><span class="tag tag-blue">Digital</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- COMPRAS -->
+        <div class="erp-view" id="view-compras">
+          <div class="breadcrumb">🛒 <span>Módulo de Operações</span> <span class="bc-sep">/</span> <span>Compras</span></div>
+          <p class="view-title" style="color:var(--mod-compras);">🛒 FERREIRO DA GUILDA — COMPRAS</p>
+          <p class="view-subtitle">Pedidos de reposição e fornecedores</p>
+          <div style="font-size:.85rem;font-weight:600;color:var(--gray);padding:20px;text-align:center;">Em desenvolvimento pelo time da guilda...</div>
+        </div>
+
+        <!-- RH -->
+        <div class="erp-view" id="view-rh">
+          <div class="breadcrumb">🧙 <span>Módulo de Operações</span> <span class="bc-sep">/</span> <span>RH / Magos</span></div>
+          <p class="view-title" style="color:var(--purple);">🧙 GUILDA DOS MAGOS — RECURSOS HUMANOS</p>
+          <p class="view-subtitle">Equipe e folha de pagamento</p>
+          <table class="data-table">
+            <thead><tr><th>MAGO</th><th>ESPECIALIZAÇÃO</th><th>NÍVEL</th><th>SALÁRIO</th></tr></thead>
+            <tbody>
+              <tr><td>🧙 Aldric</td><td>Desenvolvedor Sênior</td><td class="mono">Lv.42</td><td class="mono" style="color:var(--red);">3.500 G/mês</td></tr>
+              <tr><td>🧝 Lyra</td><td>Designer de Interface</td><td class="mono">Lv.35</td><td class="mono" style="color:var(--red);">3.000 G/mês</td></tr>
+              <tr><td>⚔️ Gareth</td><td>Analista de Segurança</td><td class="mono">Lv.28</td><td class="mono" style="color:var(--red);">3.500 G/mês</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- CONTÁBIL -->
+        <div class="erp-view" id="view-contabil">
+          <div class="breadcrumb">📊 <span>Módulo Financeiro</span> <span class="bc-sep">/</span> <span>Contábil</span></div>
+          <p class="view-title" style="color:var(--mod-contabil);">📊 PAINEL DO MESTRE — MÓDULO CONTÁBIL</p>
+          <p class="view-subtitle">Onde todas as informações dos módulos se encontram!</p>
+          <div class="kpi-grid">
+            <div class="kpi-box" style="border-color:rgba(0,230,118,.3);"><div class="kpi-val" style="color:var(--green);">28.000</div><div class="kpi-lbl">RECEITAS</div></div>
+            <div class="kpi-box" style="border-color:rgba(255,82,82,.3);"><div class="kpi-val" style="color:var(--red);">11.300</div><div class="kpi-lbl">DESPESAS</div></div>
+            <div class="kpi-box" style="border-color:rgba(245,200,66,.4);"><div class="kpi-val" style="color:var(--gold);">16.700</div><div class="kpi-lbl">LUCRO</div></div>
+          </div>
+          <div style="background:rgba(245,200,66,.07);border:1px solid rgba(245,200,66,.2);border-radius:8px;padding:12px;">
+            <p style="font-size:.85rem;font-weight:700;color:var(--gold2);line-height:1.7;">
+              ⚙️ O Módulo Contábil é o <strong>"Painel do Mestre do Jogo"</strong>. Todos os outros módulos enviam dados para cá automaticamente. Uma venda no módulo Vendas → vira uma Receita aqui. Um salário no RH → vira uma Despesa aqui!
+            </p>
+          </div>
+        </div>
+
+        <!-- RELATÓRIOS -->
+        <div class="erp-view" id="view-relatorios">
+          <div class="breadcrumb">🏆 <span>Módulo Financeiro</span> <span class="bc-sep">/</span> <span>Relatórios</span></div>
+          <p class="view-title" style="color:var(--mod-relat);">🏆 STATUS DE POWER LEVEL — RELATÓRIOS</p>
+          <p class="view-subtitle">Onde o Mestre do Jogo vê se o baú está cheio ou vazio!</p>
+          <div class="kpi-grid">
+            <div class="kpi-box" style="border-color:rgba(0,230,118,.4);"><div class="kpi-val" style="color:var(--green);font-size:1.3rem;">📈 LUCRO</div><div class="kpi-lbl" style="margin-top:4px;">STATUS</div></div>
+            <div class="kpi-box" style="border-color:rgba(245,200,66,.4);"><div class="kpi-val" style="color:var(--gold);">16.700 G</div><div class="kpi-lbl">SALDO LÍQUIDO</div></div>
+            <div class="kpi-box" style="border-color:rgba(64,196,255,.3);"><div class="kpi-val" style="color:var(--blue);">+67%</div><div class="kpi-lbl">CRESCIMENTO</div></div>
+          </div>
+          <table class="data-table">
+            <thead><tr><th>RELATÓRIO</th><th>PERÍODO</th><th>STATUS</th></tr></thead>
+            <tbody>
+              <tr><td>📊 DRE — Demonstração do Resultado</td><td class="mono">Jan/25</td><td><span class="tag tag-green">Disponível</span></td></tr>
+              <tr><td>⚖️ Balanço Patrimonial</td><td class="mono">Jan/25</td><td><span class="tag tag-green">Disponível</span></td></tr>
+              <tr><td>💧 Fluxo de Caixa</td><td class="mono">Jan/25</td><td><span class="tag tag-blue">Em Processamento</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- FLUXO -->
+        <div class="erp-view" id="view-fluxo">
+          <div class="breadcrumb">💧 <span>Módulo Financeiro</span> <span class="bc-sep">/</span> <span>Fluxo de Caixa</span></div>
+          <p class="view-title" style="color:var(--blue);">💧 FLUXO DE CAIXA</p>
+          <p class="view-subtitle">Entradas e saídas de ouro ao longo do tempo</p>
+          <div style="font-size:.85rem;font-weight:600;color:var(--gray);padding:20px;text-align:center;">Relatório sendo gerado pelo servidor...</div>
+        </div>
+
+        <!-- PEDIDOS -->
+        <div class="erp-view" id="view-pedidos">
+          <div class="breadcrumb">📋 <span>Módulo Comercial</span> <span class="bc-sep">/</span> <span>Pedidos</span></div>
+          <p class="view-title" style="color:var(--blue);">📋 PEDIDOS</p>
+          <p class="view-subtitle">Ordens de serviço e status de entrega</p>
+          <div style="font-size:.85rem;font-weight:600;color:var(--gray);padding:20px;text-align:center;">3 pedidos em andamento...</div>
+        </div>
+
+      </main>
+    </div>
+
+    <!-- NPC bar at bottom -->
+    <div class="npc-wrap" style="border-radius:0 0 10px 10px;margin:0;border-top:1px solid var(--border);">
+      <div class="npc-av">🧙</div>
+      <div>
+        <p class="npc-name">MESTRE CONTADOR</p>
+        <p class="npc-txt" id="npc-erp-hint">Explore o menu lateral e encontre as 3 telas da missão! Clique nos itens do menu para navegar pelo servidor.</p>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ════ RESULTADO ════ -->
+<div class="scr" id="s-result">
+  <div class="panel" style="max-width:700px;margin-top:16px;">
+    <div style="text-align:center;margin-bottom:12px;">
+      <div style="font-size:3rem;animation:fl 2.5s ease-in-out infinite;">🏆</div>
+      <p class="ptitle">SERVIDOR<br>DOMINADO!</p>
+      <p class="psub" style="margin-top:4px;margin-bottom:14px;">MAPEAMENTO COMPLETO DO ERP</p>
+    </div>
+
+    <div class="result-frame">
+      <p style="font-family:'Press Start 2P',monospace;font-size:.5rem;color:var(--gold);text-align:center;margin-bottom:14px;">🗡️ MISSÕES CONCLUÍDAS</p>
+      <div id="result-quests"></div>
+    </div>
+
+    <!-- ERP CONCEPT MAP -->
+    <div style="margin:14px 0;background:rgba(0,0,0,.4);border:1px solid var(--border);border-radius:10px;padding:16px;">
+      <p style="font-family:'Press Start 2P',monospace;font-size:.44rem;color:var(--gold);margin-bottom:12px;">🧠 MAPA DO SERVIDOR ERP</p>
+      <div class="flow-diagram" style="flex-direction:column;align-items:flex-start;gap:8px;">
+        <div style="display:flex;align-items:center;gap:10px;font-size:.85rem;font-weight:700;color:#c8d0f0;line-height:1.5;">
+          <span style="font-size:1.1rem;">👥</span>
+          <span><strong style="color:var(--green);">Clientes</strong> = Grimório de Aliados → cadastra quem vai comprar</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;font-size:.85rem;font-weight:700;color:#c8d0f0;line-height:1.5;">
+          <span style="font-size:1.1rem;">💰</span>
+          <span><strong style="color:var(--mod-vendas);">Vendas</strong> = Livro de Quests → registra a missão concluída e o ouro ganho</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;font-size:.85rem;font-weight:700;color:#c8d0f0;line-height:1.5;">
+          <span style="font-size:1.1rem;">🏆</span>
+          <span><strong style="color:var(--mod-relat);">Relatórios</strong> = Power Level → mostra se a guilda está rica ou em dívida</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;font-size:.85rem;font-weight:700;color:#c8d0f0;line-height:1.5;">
+          <span style="font-size:1.1rem;">⚙️</span>
+          <span><strong style="color:var(--mod-contabil);">ERP</strong> = todos os módulos conversam sozinhos → <strong style="color:var(--blue);">automação total!</strong></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="npc-wrap">
+      <div class="npc-av">🧙</div>
+      <div>
+        <p class="npc-name">MESTRE CONTADOR</p>
+        <p class="npc-txt">
+          <strong>Parabéns, Herói! Você mapeou o Servidor ERP!</strong><br><br>
+          Agora você sabe que um ERP é o <strong>Servidor Central do MMORPG financeiro</strong>: conecta Vendas, Estoque, RH e Contabilidade numa única máquina. Uma ação em qualquer módulo <strong>atualiza todo o servidor automaticamente</strong>!
+          <span class="code-tip">ERP = O motor invisível que faz a guilda funcionar!</span>
+        </p>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;">
+      <button class="btn btn-blue" onclick="go('s-erp')">← VOLTAR AO SERVIDOR</button>
+      <button class="btn btn-ghost" onclick="fullReset()">↺ RECOMEÇAR</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════
+// QUEST STATE
+// ══════════════════════════════════
+const QUESTS = [
+  {
+    id: 0,
+    name: '🗡️ Grimório de Aliados',
+    target: 'clientes',
+    badge: 'badge-clientes',
+    hint: 'O Grimório guarda os ALIADOS da guilda. Pensa: quem é que compra nossos serviços? Procura no menu COMERCIAL!',
+    npcHint: 'Herói! Missão 1: ache o <strong>Grimório de Aliados</strong>. Onde ficam guardados os dados dos nossos clientes?',
+    correctMsg: 'Encontrou! O módulo de <strong>Clientes</strong> é o Grimório de Aliados — onde ficam todos os dados de quem contrata a guilda!',
+    wrongMsg: 'Esta tela não é o Grimório de Aliados. Tente procurar nos menus do bloco COMERCIAL!'
+  },
+  {
+    id: 1,
+    name: '📜 Livro de Quests',
+    target: 'vendas',
+    badge: 'badge-vendas',
+    hint: 'O Livro registra as MISSÕES CONCLUÍDAS onde ganhamos ouro. Uma venda = uma missão completada! Olha no COMERCIAL.',
+    npcHint: 'Missão 2: ache o <strong>Livro de Quests</strong>. Onde o sistema registra que fizemos um serviço e ganhamos ouro?',
+    correctMsg: 'Perfeito! O módulo de <strong>Vendas</strong> é o Livro de Quests — cada venda registrada aqui avisa automaticamente o módulo contábil!',
+    wrongMsg: 'Ainda não! O Livro de Quests registra as VENDAS — missões onde ganhamos ouro. Procura em COMERCIAL!'
+  },
+  {
+    id: 2,
+    name: '🛡️ Status de Power Level',
+    target: 'relatorios',
+    badge: 'badge-relatorios',
+    hint: 'O Power Level mostra se a guilda está rica ou pobre. É o RELATÓRIO que o Mestre do Jogo abre para decidir estratégias. Olha em FINANCEIRO!',
+    npcHint: 'Última missão: ache o <strong>Status de Power Level</strong>. Onde o Mestre do Jogo vê se o baú está cheio ou vazio?',
+    correctMsg: 'MISSÃO COMPLETA! Os <strong>Relatórios Financeiros</strong> são o Status de Power Level — o Mestre do Jogo abre aqui para ver DRE, Balanço e Fluxo de Caixa!',
+    wrongMsg: 'Quase! O Power Level são os RELATÓRIOS financeiros. Procura no bloco FINANCEIRO do menu!'
+  }
+];
+
+let currentQuest = 0;
+let questsDone = [];
+let questMode = false;
+
+// Screens that DON'T count as wrong clicks (neutral exploration)
+const NEUTRAL_VIEWS = ['dashboard','estoque','compras','rh','contabil','fluxo','pedidos'];
+
+// ══════════════════════════════════
+// START QUEST
+// ══════════════════════════════════
+function startQuestMode(){
+  questMode = true;
+  currentQuest = 0;
+  questsDone = [];
+  updateQuestBadges();
+  updateQuestStepUI();
+  updateNpcHint(QUESTS[0].npcHint);
+  document.getElementById('dash-quest-hint').textContent = 'Missão 1: Ache o Grimório de Aliados — onde ficam os dados dos clientes?';
+  openView('dashboard');
+}
+
+function updateQuestBadges(){
+  QUESTS.forEach((q,i)=>{
+    const b = document.getElementById(q.badge);
+    if(b) b.style.display = (i === currentQuest && !questsDone.includes(i)) ? 'inline' : 'none';
+  });
+}
+
+function updateQuestStepUI(){
+  for(let i=0;i<3;i++){
+    const el = document.getElementById('qs'+i);
+    if(!el) return;
+    el.className = 'qp-step ' + (questsDone.includes(i) ? 'done' : i===currentQuest ? 'active' : 'locked');
+  }
+}
+
+function showCurrentHint(){
+  if(currentQuest >= QUESTS.length) return;
+  const q = QUESTS[currentQuest];
+  showQuestPopup({
+    type: 'quest',
+    icon: '💡',
+    title: 'DICA DA QUEST',
+    text: q.hint,
+    btn: 'ENTENDIDO!'
+  });
+}
+
+function updateNpcHint(html){
+  const el = document.getElementById('npc-erp-hint');
+  if(el) el.innerHTML = html;
+}
+
+// ══════════════════════════════════
+// CLICK HANDLER
+// ══════════════════════════════════
+function handleClick(view){
+  openView(view);
+
+  if(!questMode || currentQuest >= QUESTS.length) return;
+
+  const q = QUESTS[currentQuest];
+  const isNeutral = NEUTRAL_VIEWS.includes(view);
+
+  if(view === q.target){
+    // CORRECT
+    questsDone.push(currentQuest);
+    currentQuest++;
+    updateQuestBadges();
+    updateQuestStepUI();
+
+    const isDone = currentQuest >= QUESTS.length;
+
+    showQuestPopup({
+      type: 'correct',
+      icon: isDone ? '🏆' : '✅',
+      title: isDone ? 'TODAS AS MISSÕES CONCLUÍDAS!' : 'MISSÃO CONCLUÍDA!',
+      text: q.correctMsg + (isDone ? '<br><br><strong>Parabéns! Você mapeou o servidor ERP completo!</strong>' : ''),
+      btn: isDone ? 'VER RESULTADO' : 'PRÓXIMA MISSÃO',
+      onClose: isDone ? ()=>{ closeQuestPopup(); buildResultScreen(); go('s-result'); spawnConf('conf'); } : null
+    });
+
+    if(!isDone){
+      updateNpcHint(QUESTS[currentQuest].npcHint);
+      document.getElementById('dash-quest-hint').innerHTML = `Missão ${currentQuest+1}: ${QUESTS[currentQuest].npcHint}`;
+    }
+
+  } else if(!isNeutral){
+    // WRONG answer (only for quest-relevant screens)
+    // Check if it's a quest target but wrong one
+    const isOtherQuestTarget = QUESTS.some(qq=>qq.target===view && qq.id!==currentQuest);
+    if(isOtherQuestTarget){
+      showQuestPopup({
+        type: 'wrong',
+        icon: '⚠️',
+        title: 'NÃO É ESTA TELA!',
+        text: q.wrongMsg + '<br><br><span style="color:var(--gray);font-size:.9rem;">💡 Toque em "Dica da Quest" se precisar de ajuda!</span>',
+        btn: 'TENTAR DE NOVO'
+      });
+    }
+  }
+}
+
+// ══════════════════════════════════
+// POPUP
+// ══════════════════════════════════
+let _popupOnClose = null;
+
+function showQuestPopup({type, icon, title, text, btn, onClose}){
+  const popup = document.getElementById('quest-popup');
+  const box = document.getElementById('qp-box');
+  document.getElementById('qp-icon').textContent = icon;
+  document.getElementById('qp-title').textContent = title;
+  document.getElementById('qp-text').innerHTML = text;
+
+  const mainBtn = document.getElementById('qp-btn-main');
+  mainBtn.textContent = btn || 'CONTINUAR';
+
+  box.className = 'qp-box ' + (type === 'correct' ? 'correct' : type === 'wrong' ? 'wrong' : 'quest');
+  popup.classList.add('show');
+  _popupOnClose = onClose || null;
+
+  if(type === 'correct') spawnConf('conf');
+}
+
+function closeQuestPopup(){
+  document.getElementById('quest-popup').classList.remove('show');
+  if(_popupOnClose){ _popupOnClose(); _popupOnClose = null; }
+}
+
+// ══════════════════════════════════
+// VIEW NAVIGATION
+// ══════════════════════════════════
+function openView(viewId){
+  document.querySelectorAll('.erp-view').forEach(v=>v.classList.remove('active'));
+  const v = document.getElementById('view-'+viewId);
+  if(v) v.classList.add('active');
+
+  // sidebar active
+  document.querySelectorAll('.sidebar-item').forEach(s=>s.classList.remove('active'));
+  const si = document.getElementById('si-'+viewId);
+  if(si) si.classList.add('active');
+}
+
+// ══════════════════════════════════
+// RESULT
+// ══════════════════════════════════
+function buildResultScreen(){
+  const container = document.getElementById('result-quests');
+  container.innerHTML = '';
+  QUESTS.forEach((q,i)=>{
+    const done = questsDone.includes(i);
+    container.innerHTML += `
+      <div style="display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:8px;border:1px solid ${done?'rgba(0,230,118,.25)':'rgba(255,82,82,.2)'};background:${done?'rgba(0,230,118,.06)':'rgba(255,82,82,.06)'};margin-bottom:8px;">
+        <span style="font-size:1.5rem;">${done?'✅':'❌'}</span>
+        <div style="flex:1;">
+          <div style="font-family:'Press Start 2P',monospace;font-size:.42rem;color:${done?'var(--green)':'var(--red)'};margin-bottom:5px;">${q.name}</div>
+          <div style="font-size:.82rem;font-weight:600;color:#c8d0f0;">Tela correta: <strong style="color:${done?'var(--green)':'var(--gray)'};">${q.target.charAt(0).toUpperCase()+q.target.slice(1)}</strong></div>
+        </div>
+        <span style="font-family:'Press Start 2P',monospace;font-size:.5rem;color:${done?'var(--green)':'var(--red)'};">${done?'+10 XP':'0 XP'}</span>
+      </div>`;
+  });
+  const xp = questsDone.length * 10;
+  container.innerHTML += `<div style="text-align:center;margin-top:8px;font-family:'Press Start 2P',monospace;font-size:.55rem;color:var(--gold);">TOTAL: ${xp}/30 XP</div>`;
+}
+
+function fullReset(){
+  currentQuest = 0;
+  questsDone = [];
+  questMode = false;
+  go('s-intro');
+}
+
+// ══════════════════════════════════
+// CONFETTI
+// ══════════════════════════════════
+function spawnConf(cid){
+  const c = document.getElementById(cid);
+  const cols=['#f5c842','#ffe082','#00e676','#40c4ff','#ff5252','#ce93d8','#ffab40'];
+  for(let i=0;i<70;i++){
+    const el=document.createElement('div');
+    const sz=4+Math.random()*8;
+    el.style.cssText=`position:absolute;width:${sz}px;height:${sz}px;background:${cols[Math.floor(Math.random()*cols.length)]};left:${Math.random()*100}%;top:-10px;border-radius:${Math.random()>.5?'50%':'2px'};animation:cf ${1.5+Math.random()*2}s ease ${Math.random()*.5}s both;`;
+    c.appendChild(el);
+  }
+  setTimeout(()=>c.innerHTML='',5000);
+}
+(()=>{const s=document.createElement('style');s.textContent='@keyframes cf{from{transform:translateY(0) rotate(0deg);opacity:1}to{transform:translateY(100vh) rotate(720deg);opacity:0}}';document.head.appendChild(s);})();
+
+// ══════════════════════════════════
+// UTILS
+// ══════════════════════════════════
+function go(id){
+  document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on'));
+  document.getElementById(id).classList.add('on');
+  window.scrollTo(0,0);
+}
+</script>
+</body>
+</html>
