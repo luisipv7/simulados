@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Cofre Mestre da Guilda — PostgreSQL</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Exo+2:wght@400;600;700;800&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#06080e;--panel:#0c1020;--panel2:#111828;--border:#1a2440;--border2:#263660;
+  --gold:#f5c842;--gold2:#ffe082;--green:#00e676;--green2:#b9f6ca;
+  --red:#ff5252;--red2:#ffd0d0;--blue:#40c4ff;--blue2:#b3e5fc;
+  --purple:#ce93d8;--purple2:#f3d9ff;--orange:#ff9800;--orange2:#ffe0b2;
+  --teal:#1de9b6;--cyan:#18ffff;--white:#dde8ff;--gray:#5a6fa0;--gray2:#3a4f80;
+  --pk:#f5c842;--fk:#ff9800;--col:#40c4ff;
+  --chest-a:rgba(0,230,118,.12);--chest-b:rgba(64,196,255,.1);
+  --chest-c:rgba(245,200,66,.1);--chest-d:rgba(206,147,216,.1);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{font-family:'Exo 2',sans-serif;background:var(--bg);color:var(--white);min-height:100vh;overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(64,196,255,.015) 1px,transparent 1px),linear-gradient(90deg,rgba(64,196,255,.015) 1px,transparent 1px);background-size:44px 44px;pointer-events:none;z-index:0;}
+body::after{content:'';position:fixed;inset:0;background-image:radial-gradient(1px 1px at 8% 20%,rgba(255,255,255,.8) 0%,transparent 100%),radial-gradient(1px 1px at 82% 12%,rgba(255,255,255,.6) 0%,transparent 100%),radial-gradient(1px 1px at 45% 88%,rgba(255,255,255,.7) 0%,transparent 100%),radial-gradient(1px 1px at 23% 58%,rgba(255,255,255,.5) 0%,transparent 100%),radial-gradient(1px 1px at 70% 42%,rgba(255,255,255,.6) 0%,transparent 100%);pointer-events:none;z-index:0;}
+
+.scr{display:none;position:relative;z-index:1;min-height:100vh;flex-direction:column;align-items:center;padding:18px 14px 50px;}
+.scr.on{display:flex;}
+.panel{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:24px 28px;max-width:1020px;width:100%;box-shadow:0 0 50px rgba(64,196,255,.05),0 18px 60px rgba(0,0,0,.9);}
+
+.ptitle{font-family:'Press Start 2P',monospace;font-size:clamp(.48rem,1.5vw,.78rem);color:var(--gold);text-shadow:2px 2px 0 rgba(0,0,0,.9),0 0 20px rgba(245,200,66,.45);line-height:2.1;text-align:center;}
+.psub{font-family:'Press Start 2P',monospace;font-size:.35rem;color:var(--gray);letter-spacing:2px;text-align:center;}
+
+.npc-wrap{display:flex;gap:12px;align-items:flex-start;background:rgba(6,8,14,.95);border:1px solid rgba(64,196,255,.18);border-radius:10px;padding:13px 15px;margin-bottom:14px;}
+.npc-av{width:48px;height:48px;border-radius:8px;border:1px solid var(--gold);background:linear-gradient(135deg,#120c02,#382204);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;animation:fl 3s ease-in-out infinite;box-shadow:0 0 10px rgba(245,200,66,.18);}
+@keyframes fl{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+.npc-name{font-family:'Press Start 2P',monospace;font-size:.38rem;color:var(--gold);margin-bottom:5px;}
+.npc-txt{font-size:.87rem;font-weight:600;color:#b8c8e0;line-height:1.75;}
+.npc-txt strong{color:var(--gold2);}
+.code-tip{font-family:'Fira Code',monospace;font-size:.76rem;color:var(--green);background:rgba(0,230,118,.08);border:1px solid rgba(0,230,118,.22);border-radius:5px;padding:3px 8px;display:inline-block;margin-top:5px;}
+
+.btn{display:inline-flex;align-items:center;gap:7px;font-family:'Press Start 2P',monospace;font-size:.45rem;border:1px solid transparent;border-radius:7px;padding:10px 18px;cursor:pointer;transition:all .2s;color:white;letter-spacing:.3px;}
+.btn-gold{background:linear-gradient(135deg,#4a2c00,#9a6000);border-color:rgba(245,200,66,.4);color:#fef3c7;box-shadow:0 4px 14px rgba(245,200,66,.2);}
+.btn-gold:hover{transform:translateY(-1px);box-shadow:0 6px 18px rgba(245,200,66,.35);}
+.btn-green{background:linear-gradient(135deg,#073a10,#155a20);border-color:rgba(0,230,118,.35);box-shadow:0 4px 12px rgba(0,230,118,.2);}
+.btn-green:hover{transform:translateY(-1px);}
+.btn-blue{background:linear-gradient(135deg,#0a2a50,#164080);border-color:rgba(64,196,255,.35);box-shadow:0 4px 12px rgba(64,196,255,.2);}
+.btn-blue:hover{transform:translateY(-1px);}
+.btn-purple{background:linear-gradient(135deg,#2a0a40,#5a2080);border-color:rgba(206,147,216,.35);box-shadow:0 4px 12px rgba(206,147,216,.2);}
+.btn-purple:hover{transform:translateY(-1px);}
+.btn-ghost{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);font-size:.38rem;}
+.btn-ghost:hover{background:rgba(255,255,255,.1);}
+.btn-red{background:linear-gradient(135deg,#3a0808,#700000);border-color:rgba(255,82,82,.35);}
+.btn:disabled{opacity:.3;cursor:not-allowed;transform:none;}
+
+/* STEPS NAV */
+.steps-nav{display:flex;gap:6px;justify-content:center;margin-bottom:14px;flex-wrap:wrap;}
+.sn-dot{font-family:'Press Start 2P',monospace;font-size:.33rem;padding:5px 9px;border-radius:5px;border:1px solid;transition:all .3s;}
+.sn-dot.done  {border-color:var(--green);background:rgba(0,230,118,.08);color:var(--green);}
+.sn-dot.active{border-color:var(--gold); background:rgba(245,200,66,.08);color:var(--gold);}
+.sn-dot.locked{border-color:var(--border);color:rgba(255,255,255,.18);}
+
+/* ════ PLANTA BAIXA (Chests) ════ */
+.chests-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin:14px 0;}
+.chest{border:2px solid;border-radius:12px;padding:16px;transition:all .25s;position:relative;overflow:hidden;}
+.chest::before{content:'';position:absolute;inset:0;opacity:.06;pointer-events:none;}
+.chest-a{border-color:rgba(0,230,118,.4); .chest-a::before{background:var(--green);}}
+.chest-b{border-color:rgba(64,196,255,.4);}
+.chest-c{border-color:rgba(245,200,66,.45);}
+.chest-d{border-color:rgba(206,147,216,.4);}
+.chest-a::before{background:rgba(0,230,118,.06);}
+.chest-b::before{background:rgba(64,196,255,.06);}
+.chest-c::before{background:rgba(245,200,66,.06);}
+.chest-d::before{background:rgba(206,147,216,.06);}
+
+.chest-header{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.chest-icon{font-size:1.6rem;}
+.chest-title-wrap{}
+.chest-title{font-family:'Press Start 2P',monospace;font-size:.46rem;line-height:1.5;}
+.chest-a .chest-title{color:var(--green);}
+.chest-b .chest-title{color:var(--blue);}
+.chest-c .chest-title{color:var(--gold);}
+.chest-d .chest-title{color:var(--purple);}
+.chest-sql{font-family:'Fira Code',monospace;font-size:.68rem;color:var(--gray);margin-top:2px;}
+
+/* COLUMN ROWS */
+.col-row{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:7px;border:1px solid;margin-bottom:6px;transition:all .2s;cursor:pointer;}
+.col-row:last-child{margin-bottom:0;}
+.col-row.pk{border-color:rgba(245,200,66,.4);background:rgba(245,200,66,.06);}
+.col-row.fk{border-color:rgba(255,152,0,.4);background:rgba(255,152,0,.06);}
+.col-row.reg{border-color:rgba(64,196,255,.25);background:rgba(64,196,255,.04);}
+.col-row:hover{transform:translateX(3px);}
+.col-key{font-size:.85rem;flex-shrink:0;}
+.col-name{font-family:'Fira Code',monospace;font-size:.78rem;font-weight:600;flex:1;}
+.col-row.pk .col-name{color:var(--pk);}
+.col-row.fk .col-name{color:var(--fk);}
+.col-row.reg .col-name{color:var(--blue2);}
+.col-type{font-family:'Fira Code',monospace;font-size:.62rem;color:var(--gray);background:rgba(0,0,0,.3);border-radius:4px;padding:2px 6px;}
+.col-badge{font-family:'Press Start 2P',monospace;font-size:.28rem;padding:2px 5px;border-radius:3px;}
+.badge-pk{background:rgba(245,200,66,.15);border:1px solid rgba(245,200,66,.3);color:var(--gold);}
+.badge-fk{background:rgba(255,152,0,.15);border:1px solid rgba(255,152,0,.3);color:var(--orange);}
+
+/* LEGEND */
+.legend{display:flex;gap:12px;flex-wrap:wrap;margin:10px 0 14px;}
+.leg-item{display:flex;align-items:center;gap:6px;font-size:.78rem;font-weight:700;}
+.leg-dot{width:10px;height:10px;border-radius:2px;}
+.leg-pk{background:var(--pk);}
+.leg-fk{background:var(--orange);}
+.leg-col{background:var(--blue);}
+
+/* FK ARROWS */
+.fk-map{background:rgba(0,0,0,.4);border:1px solid var(--border);border-radius:10px;padding:14px;margin:12px 0;}
+.fk-map-title{font-family:'Press Start 2P',monospace;font-size:.42rem;color:var(--orange);margin-bottom:10px;}
+.fk-line{display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap;}
+.fk-from,.fk-to{font-family:'Fira Code',monospace;font-size:.76rem;padding:4px 10px;border-radius:5px;border:1px solid;}
+.fk-from{border-color:rgba(255,152,0,.4);background:rgba(255,152,0,.08);color:var(--orange2);}
+.fk-to  {border-color:rgba(245,200,66,.4);background:rgba(245,200,66,.08);color:var(--gold2);}
+.fk-arr {color:var(--orange);font-size:1rem;}
+.fk-desc{font-size:.78rem;font-weight:700;color:var(--gray);flex:1;}
+
+/* CODE EDITOR */
+.code-editor-wrap{background:rgba(3,5,10,.95);border:1px solid var(--border2);border-radius:10px;overflow:hidden;margin:12px 0;}
+.ce-topbar{display:flex;align-items:center;gap:10px;padding:8px 14px;background:rgba(0,0,0,.5);border-bottom:1px solid var(--border);}
+.ce-dots{display:flex;gap:5px;}
+.ce-dot{width:10px;height:10px;border-radius:50%;}
+.ce-dot-r{background:#ff5f56;}
+.ce-dot-y{background:#ffbd2e;}
+.ce-dot-g{background:#27c93f;}
+.ce-fname{font-family:'Fira Code',monospace;font-size:.72rem;color:var(--gray);}
+.ce-body{padding:0;position:relative;}
+.code-textarea{width:100%;min-height:220px;background:transparent;border:none;outline:none;font-family:'Fira Code',monospace;font-size:.82rem;color:#a8c0e8;padding:16px;resize:vertical;caret-color:var(--green);line-height:1.7;tab-size:2;}
+.code-textarea::placeholder{color:rgba(90,111,160,.5);}
+.ce-hint{font-family:'Press Start 2P',monospace;font-size:.34rem;color:var(--gray);padding:0 14px 10px;display:flex;align-items:center;gap:6px;}
+
+/* QUIZ */
+.quiz-wrap{background:rgba(6,8,14,.9);border:1px solid var(--border);border-radius:10px;padding:16px;margin:12px 0;}
+.quiz-title{font-family:'Press Start 2P',monospace;font-size:.46rem;color:var(--blue);margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+.q-stem{font-size:.9rem;font-weight:700;color:#b8c8e0;line-height:1.7;margin-bottom:12px;}
+.q-stem strong{color:var(--gold2);}
+.q-opts{display:flex;flex-direction:column;gap:8px;}
+.q-opt{display:flex;align-items:flex-start;gap:10px;background:rgba(255,255,255,.03);border:1.5px solid var(--border);border-radius:8px;padding:11px 14px;cursor:pointer;font-size:.88rem;font-weight:600;color:#a0b4cc;transition:all .2s;width:100%;}
+.q-opt:hover:not(.locked){border-color:var(--blue2);color:var(--white);background:rgba(64,196,255,.06);}
+.q-opt .ql{font-family:'Press Start 2P',monospace;font-size:.36rem;color:var(--gray2);flex-shrink:0;margin-top:2px;}
+.q-opt.ok {border-color:var(--green)!important;background:rgba(0,230,118,.1)!important;color:var(--green2)!important;}
+.q-opt.nok{border-color:var(--red)!important;  background:rgba(255,82,82,.1)!important; color:var(--red2)!important;}
+.q-opt.rev{border-color:var(--green)!important; background:rgba(0,230,118,.05)!important;}
+.q-opt.locked{cursor:default;}
+.q-fb{border-radius:8px;padding:10px 13px;font-size:.85rem;font-weight:700;line-height:1.6;display:none;margin-top:10px;animation:pu .3s ease;}
+@keyframes pu{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+.q-fb.ok {background:rgba(0,230,118,.1);border:1px solid rgba(0,230,118,.3);color:var(--green2);}
+.q-fb.nok{background:rgba(255,82,82,.08);border:1px solid rgba(255,82,82,.25);color:var(--red2);}
+
+/* TABS */
+.tabs-nav{display:flex;gap:5px;margin-bottom:0;flex-wrap:wrap;}
+.tab-b{font-family:'Press Start 2P',monospace;font-size:.38rem;padding:7px 12px;border-radius:7px 7px 0 0;border:1px solid var(--border);background:rgba(0,0,0,.4);color:var(--gray);cursor:pointer;transition:all .2s;border-bottom-color:transparent;}
+.tab-b.active{background:var(--panel2);border-color:var(--gold);border-bottom-color:var(--panel2);color:var(--gold);}
+.tab-content{background:var(--panel2);border:1px solid var(--border);border-radius:0 8px 8px 8px;border-top-color:var(--gold);padding:16px;animation:pu .3s ease;}
+.tab-pane{display:none;}
+.tab-pane.active{display:block;}
+
+/* RESULT */
+.res-frame{background:linear-gradient(135deg,rgba(245,200,66,.06),rgba(0,230,118,.04));border:2px solid var(--gold);border-radius:12px;padding:20px;margin:12px 0;animation:gf 2.5s ease-in-out infinite;}
+@keyframes gf{0%,100%{box-shadow:0 0 22px rgba(245,200,66,.12)}50%{box-shadow:0 0 42px rgba(245,200,66,.28)}}
+.mod-score{border:1px solid;border-radius:9px;padding:12px;margin-bottom:8px;display:flex;align-items:center;gap:12px;}
+.ms-ok {border-color:rgba(0,230,118,.3);background:rgba(0,230,118,.06);}
+.ms-nok{border-color:rgba(255,82,82,.25);background:rgba(255,82,82,.05);}
+
+/* CONF/OV */
+.conf{position:fixed;inset:0;pointer-events:none;z-index:400;}
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:500;display:none;align-items:center;justify-content:center;flex-direction:column;}
+.ov.on{display:flex;}
+.ov-t{font-family:'Press Start 2P',monospace;font-size:clamp(.7rem,3vw,1.3rem);text-align:center;animation:bp .5s ease;}
+@keyframes bp{from{transform:scale(.3);opacity:0}70%{transform:scale(1.1)}100%{transform:scale(1);opacity:1}}
+.ov-s{font-size:.9rem;font-weight:700;color:var(--white);text-align:center;margin-top:12px;max-width:380px;line-height:1.7;padding:0 16px;}
+
+@media(max-width:540px){.panel{padding:16px 12px;}.chests-grid{grid-template-columns:1fr;}.legend{gap:8px;}}
+</style>
+</head>
+<body>
+<div class="conf" id="conf"></div>
+<div class="ov" id="ov"><div class="ov-t" id="ov-t" style="color:var(--green);">✅ CORRETO!</div><div class="ov-s" id="ov-s"></div></div>
+
+<!-- ════ INTRO ════ -->
+<div class="scr on" id="s-intro">
+  <div class="panel" style="max-width:680px;margin-top:16px;">
+    <div style="text-align:center;margin-bottom:14px;">
+      <div style="font-size:3rem;animation:fl 2.5s ease-in-out infinite;margin-bottom:8px;">🏦</div>
+      <p class="ptitle">O COFRE MESTRE<br>DA GUILDA</p>
+      <p class="ptitle" style="color:var(--blue);font-size:clamp(.35rem,1.1vw,.5rem);">POSTGRESQL · BANCO RELACIONAL</p>
+      <p class="psub" style="margin-top:5px;">FORJANDO OS BAÚS DO SERVIDOR</p>
+    </div>
+
+    <div class="npc-wrap">
+      <div class="npc-av">🧙</div>
+      <div>
+        <p class="npc-name">MESTRE GUARDIÃO</p>
+        <p class="npc-txt">
+          Herói! Você já se perguntou onde o servidor guarda o ouro de TODOS os jogadores sem misturar?<br><br>
+          Ele guarda tudo no <strong>Cofre Mestre de Dados</strong> (o PostgreSQL). Hoje você vai <strong>desenhar a planta</strong> desse cofre e <strong>construí-lo com código SQL</strong>!
+          <span class="code-tip">PostgreSQL = o cofre inquebrável do servidor</span>
+        </p>
+      </div>
+    </div>
+
+    <div style="background:rgba(0,0,0,.4);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:14px;">
+      <p style="font-family:'Press Start 2P',monospace;font-size:.42rem;color:var(--gold);margin-bottom:10px;">🗝️ AS CHAVES MÁGICAS</p>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <div style="display:flex;gap:10px;font-size:.85rem;font-weight:700;color:#b8c8e0;line-height:1.5;"><span style="font-size:1rem;flex-shrink:0;">🏅</span><span><strong style="color:var(--pk);">Chave Primária (PK)</strong> — O CPF do registro. Cada linha tem um ID único. Nunca se repete!</span></div>
+        <div style="display:flex;gap:10px;font-size:.85rem;font-weight:700;color:#b8c8e0;line-height:1.5;"><span style="font-size:1rem;flex-shrink:0;">🔗</span><span><strong style="color:var(--fk);">Chave Estrangeira (FK)</strong> — O código de item que aponta para outro baú. Em vez de escrever o nome do Rei, usamos o ID dele!</span></div>
+        <div style="display:flex;gap:10px;font-size:.85rem;font-weight:700;color:#b8c8e0;line-height:1.5;"><span style="font-size:1rem;flex-shrink:0;">📋</span><span><strong style="color:var(--col);">Coluna regular</strong> — O atributo do registro (nome, valor, data).</span></div>
+      </div>
+    </div>
+
+    <div style="background:rgba(245,200,66,.06);border:1px solid rgba(245,200,66,.2);border-radius:10px;padding:14px;margin-bottom:18px;">
+      <p style="font-family:'Press Start 2P',monospace;font-size:.42rem;color:var(--gold);margin-bottom:10px;">📦 4 BAÚS PARA FORJAR</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+        <div style="font-size:.82rem;font-weight:700;color:#b8c8e0;line-height:1.5;"><strong style="color:var(--green);">Baú 1</strong><br>👥 Fichário de Aliados<br><span style="color:var(--gray);">(tabela clientes)</span></div>
+        <div style="font-size:.82rem;font-weight:700;color:#b8c8e0;line-height:1.5;"><strong style="color:var(--blue);">Baú 2</strong><br>📖 Livro de Magias<br><span style="color:var(--gray);">(tabela servicos)</span></div>
+        <div style="font-size:.82rem;font-weight:700;color:#b8c8e0;line-height:1.5;"><strong style="color:var(--gold);">Baú 3</strong><br>📜 Pergaminho de Missões<br><span style="color:var(--gray);">(tabela faturas)</span></div>
+        <div style="font-size:.82rem;font-weight:700;color:#b8c8e0;line-height:1.5;"><strong style="color:var(--purple);">Baú 4</strong><br>💰 Tesouro Recebido<br><span style="color:var(--gray);">(tabela pagamentos)</span></div>
+      </div>
+    </div>
+
+    <div style="text-align:center;">
+      <button class="btn btn-gold" style="font-size:.5rem;" onclick="go('s-game')">🏦 ABRIR O COFRE</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════ JOGO ════ -->
+<div class="scr" id="s-game">
+  <div class="panel" style="max-width:1020px;margin-top:14px;">
+
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px;">
+      <div><p class="ptitle" style="font-size:.48rem;text-align:left;">🏦 COFRE MESTRE — PLANTA DOS BAÚS</p><p class="psub" style="text-align:left;margin-top:2px;">POSTGRES · GUILDA TECHSOLUTIONS</p></div>
+      <div style="display:flex;gap:6px;"><button class="btn btn-ghost" onclick="go('s-intro')">← INTRO</button><button class="btn btn-gold" style="font-size:.38rem;" onclick="go('s-result')">🏆 RESULTADO</button></div>
+    </div>
+
+    <div class="steps-nav" id="steps-nav">
+      <div class="sn-dot active" id="sd0">📋 PLANTA</div>
+      <div class="sn-dot locked" id="sd1">🔗 RELAÇÕES</div>
+      <div class="sn-dot locked" id="sd2">💻 CÓDIGO</div>
+      <div class="sn-dot locked" id="sd3">🧠 QUIZ</div>
+    </div>
+
+    <div class="npc-wrap"><div class="npc-av">🧙</div><div><p class="npc-name">MESTRE GUARDIÃO</p><p class="npc-txt" id="npc-game">Explore os <strong>4 Baús do Cofre</strong>! Clique em cada coluna para ver o que ela faz. Depois avance para o próximo passo!</p></div></div>
+
+    <!-- TABS -->
+    <div class="tabs-nav">
+      <button class="tab-b active" id="tab-planta" onclick="switchTab('planta')">📋 PLANTA</button>
+      <button class="tab-b" id="tab-relacoes" onclick="switchTab('relacoes')">🔗 RELAÇÕES</button>
+      <button class="tab-b" id="tab-codigo" onclick="switchTab('codigo')">💻 CÓDIGO SQL</button>
+      <button class="tab-b" id="tab-quiz" onclick="switchTab('quiz')">🧠 QUIZ</button>
+    </div>
+
+    <div class="tab-content">
+
+      <!-- PLANTA -->
+      <div class="tab-pane active" id="tp-planta">
+        <div class="legend">
+          <div class="leg-item"><div class="leg-dot leg-pk"></div><span style="color:var(--gold);">Chave Primária (PK)</span></div>
+          <div class="leg-item"><div class="leg-dot leg-fk"></div><span style="color:var(--orange);">Chave Estrangeira (FK)</span></div>
+          <div class="leg-item"><div class="leg-dot leg-col"></div><span style="color:var(--blue2);">Coluna Regular</span></div>
+        </div>
+
+        <div class="chests-grid">
+          <!-- BAÚ 1 -->
+          <div class="chest chest-a">
+            <div class="chest-header"><span class="chest-icon">👥</span><div class="chest-title-wrap"><div class="chest-title">BAÚ 1</div><div class="chest-sql">tabela clientes</div></div></div>
+            <div class="col-row pk" onclick="showColInfo('pk','id_cliente','SERIAL','Chave Primária. O número único de cada aliado. Nunca se repete!')">
+              <span class="col-key">🏅</span><span class="col-name">id_cliente</span><span class="col-type">SERIAL</span><span class="col-badge badge-pk">PK</span>
+            </div>
+            <div class="col-row reg" onclick="showColInfo('reg','nome_heroi','VARCHAR(100)','O nome do aliado/cliente. Pode ter até 100 caracteres.')">
+              <span class="col-key">📝</span><span class="col-name">nome_heroi</span><span class="col-type">VARCHAR(100)</span>
+            </div>
+            <div class="col-row reg" onclick="showColInfo('reg','reino','VARCHAR(100)','O endereço/reino de origem do aliado.')">
+              <span class="col-key">🗺️</span><span class="col-name">reino</span><span class="col-type">VARCHAR(100)</span>
+            </div>
+          </div>
+
+          <!-- BAÚ 2 -->
+          <div class="chest chest-b">
+            <div class="chest-header"><span class="chest-icon">📖</span><div class="chest-title-wrap"><div class="chest-title">BAÚ 2</div><div class="chest-sql">tabela servicos</div></div></div>
+            <div class="col-row pk" onclick="showColInfo('pk','id_servico','SERIAL','Chave Primária. O código único de cada feitiço/serviço.')">
+              <span class="col-key">🏅</span><span class="col-name">id_servico</span><span class="col-type">SERIAL</span><span class="col-badge badge-pk">PK</span>
+            </div>
+            <div class="col-row reg" onclick="showColInfo('reg','nome_feitico','VARCHAR(100)','O nome do serviço. Ex: Criar Site, Desenvolver App.')">
+              <span class="col-key">✨</span><span class="col-name">nome_feitico</span><span class="col-type">VARCHAR(100)</span>
+            </div>
+            <div class="col-row reg" onclick="showColInfo('reg','custo_mana','NUMERIC(10,2)','O preço/custo do serviço em ouro. NUMERIC garante precisão monetária!')">
+              <span class="col-key">💎</span><span class="col-name">custo_mana</span><span class="col-type">NUMERIC(10,2)</span>
+            </div>
+          </div>
+
+          <!-- BAÚ 3 -->
+          <div class="chest chest-c">
+            <div class="chest-header"><span class="chest-icon">📜</span><div class="chest-title-wrap"><div class="chest-title">BAÚ 3</div><div class="chest-sql">tabela faturas</div></div></div>
+            <div class="col-row pk" onclick="showColInfo('pk','id_fatura','SERIAL','PK da fatura. Cada missão tem um número único.')">
+              <span class="col-key">🏅</span><span class="col-name">id_fatura</span><span class="col-type">SERIAL</span><span class="col-badge badge-pk">PK</span>
+            </div>
+            <div class="col-row fk" onclick="showColInfo('fk','id_cliente','INTEGER','FK → tabela clientes. Em vez de escrever o nome do Rei, usamos o ID dele. Mais rápido e sem erros!')">
+              <span class="col-key">🔗</span><span class="col-name">id_cliente</span><span class="col-type">INTEGER</span><span class="col-badge badge-fk">FK</span>
+            </div>
+            <div class="col-row fk" onclick="showColInfo('fk','id_servico','INTEGER','FK → tabela servicos. Qual feitiço foi usado nesta missão?')">
+              <span class="col-key">🔗</span><span class="col-name">id_servico</span><span class="col-type">INTEGER</span><span class="col-badge badge-fk">FK</span>
+            </div>
+            <div class="col-row reg" onclick="showColInfo('reg','ouro_cobrado','NUMERIC(10,2)','O valor cobrado nesta fatura específica. Pode ser diferente do custo padrão do serviço!')">
+              <span class="col-key">💰</span><span class="col-name">ouro_cobrado</span><span class="col-type">NUMERIC(10,2)</span>
+            </div>
+          </div>
+
+          <!-- BAÚ 4 -->
+          <div class="chest chest-d">
+            <div class="chest-header"><span class="chest-icon">💰</span><div class="chest-title-wrap"><div class="chest-title">BAÚ 4</div><div class="chest-sql">tabela pagamentos</div></div></div>
+            <div class="col-row pk" onclick="showColInfo('pk','id_pagamento','SERIAL','PK do pagamento. Cada entrada de ouro tem seu próprio ID.')">
+              <span class="col-key">🏅</span><span class="col-name">id_pagamento</span><span class="col-type">SERIAL</span><span class="col-badge badge-pk">PK</span>
+            </div>
+            <div class="col-row fk" onclick="showColInfo('fk','id_fatura','INTEGER','FK → tabela faturas. Qual fatura foi paga nesta transação?')">
+              <span class="col-key">🔗</span><span class="col-name">id_fatura</span><span class="col-type">INTEGER</span><span class="col-badge badge-fk">FK</span>
+            </div>
+            <div class="col-row reg" onclick="showColInfo('reg','ouro_recebido','NUMERIC(10,2)','O ouro que realmente entrou no caixa da guilda.')">
+              <span class="col-key">🪙</span><span class="col-name">ouro_recebido</span><span class="col-type">NUMERIC(10,2)</span>
+            </div>
+            <div class="col-row reg" onclick="showColInfo('reg','data_pagamento','DATE','Quando o ouro entrou. DATE = formato ano-mês-dia.')">
+              <span class="col-key">📅</span><span class="col-name">data_pagamento</span><span class="col-type">DATE</span>
+            </div>
+          </div>
+        </div>
+
+        <div style="text-align:center;margin-top:10px;">
+          <button class="btn btn-green" onclick="unlockAndSwitch('relacoes',1)">🔗 VER RELAÇÕES →</button>
+        </div>
+
+        <!-- COL INFO POPUP inline -->
+        <div id="col-info" style="display:none;margin-top:12px;border-radius:9px;padding:13px 15px;animation:pu .3s ease;border:1px solid;">
+          <p style="font-family:'Press Start 2P',monospace;font-size:.38rem;margin-bottom:5px;" id="ci-title">—</p>
+          <p style="font-size:.85rem;font-weight:600;color:#b8c8e0;line-height:1.65;" id="ci-desc">—</p>
+        </div>
+      </div>
+
+      <!-- RELAÇÕES -->
+      <div class="tab-pane" id="tp-relacoes">
+        <p style="font-size:.88rem;font-weight:700;color:#b8c8e0;margin-bottom:14px;line-height:1.7;">
+          As <strong style="color:var(--orange);">Chaves Estrangeiras</strong> são como <strong style="color:var(--gold);">portais mágicos</strong> entre os baús. Em vez de copiar o nome do Rei em todas as faturas, apenas guardamos o <strong style="color:var(--gold);">ID do Rei (ex: 1)</strong>. O servidor busca o nome sozinho quando precisar!
+        </p>
+
+        <div class="fk-map">
+          <p class="fk-map-title">🔗 MAPA DE RELAÇÕES DO COFRE</p>
+          <div class="fk-line">
+            <span class="fk-from">faturas.id_cliente</span>
+            <span class="fk-arr">→</span>
+            <span class="fk-to">clientes.id_cliente</span>
+            <span class="fk-desc">A fatura sabe <em>quem</em> é o aliado sem repetir o nome!</span>
+          </div>
+          <div class="fk-line">
+            <span class="fk-from">faturas.id_servico</span>
+            <span class="fk-arr">→</span>
+            <span class="fk-to">servicos.id_servico</span>
+            <span class="fk-desc">A fatura sabe <em>qual</em> feitiço foi usado!</span>
+          </div>
+          <div class="fk-line">
+            <span class="fk-from">pagamentos.id_fatura</span>
+            <span class="fk-arr">→</span>
+            <span class="fk-to">faturas.id_fatura</span>
+            <span class="fk-desc">O pagamento sabe <em>qual</em> missão foi quitada!</span>
+          </div>
+        </div>
+
+        <!-- EXEMPLO PRÁTICO -->
+        <div style="background:rgba(0,0,0,.4);border:1px solid var(--border2);border-radius:10px;padding:14px;margin:12px 0;">
+          <p style="font-family:'Press Start 2P',monospace;font-size:.4rem;color:var(--gold);margin-bottom:10px;">💡 EXEMPLO REAL NO SERVIDOR</p>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;">
+            <div style="background:rgba(0,230,118,.06);border:1px solid rgba(0,230,118,.2);border-radius:8px;padding:10px;">
+              <p style="font-family:'Press Start 2P',monospace;font-size:.32rem;color:var(--green);margin-bottom:6px;">CLIENTES</p>
+              <p style="font-family:'Fira Code',monospace;font-size:.72rem;color:#a8c0e8;line-height:1.8;">id_cliente: <strong style="color:var(--pk);">1</strong><br>nome_heroi: Rei Artur<br>reino: Norte</p>
+            </div>
+            <div style="background:rgba(245,200,66,.06);border:1px solid rgba(245,200,66,.2);border-radius:8px;padding:10px;">
+              <p style="font-family:'Press Start 2P',monospace;font-size:.32rem;color:var(--gold);margin-bottom:6px;">FATURAS</p>
+              <p style="font-family:'Fira Code',monospace;font-size:.72rem;color:#a8c0e8;line-height:1.8;">id_fatura: <strong style="color:var(--pk);">1</strong><br>id_cliente: <strong style="color:var(--fk);">1</strong> ← FK!<br>id_servico: <strong style="color:var(--fk);">3</strong> ← FK!<br>ouro_cobrado: 20000</p>
+            </div>
+          </div>
+          <p style="font-size:.8rem;font-weight:700;color:var(--orange2);margin-top:10px;line-height:1.6;">
+            ⚡ O servidor lê <code style="color:var(--fk);">id_cliente = 1</code> e vai <em>automaticamente</em> buscar "Rei Artur" no Baú 1. Sem copiar nada!
+          </p>
+        </div>
+
+        <div style="text-align:center;margin-top:10px;">
+          <button class="btn btn-blue" onclick="unlockAndSwitch('codigo',2)">💻 VER CÓDIGO SQL →</button>
+        </div>
+      </div>
+
+      <!-- CÓDIGO SQL -->
+      <div class="tab-pane" id="tp-codigo">
+        <p style="font-size:.88rem;font-weight:700;color:#b8c8e0;margin-bottom:14px;line-height:1.7;">
+          Agora veja os <strong style="color:var(--green);">feitiços SQL reais</strong> para construir esses baús no PostgreSQL! O comando <code style="color:var(--green);">CREATE TABLE</code> é a <strong style="color:var(--green);">invocação de criação do baú</strong>.
+        </p>
+
+        <div class="tabs-nav" style="margin-bottom:0;">
+          <button class="tab-b active" id="sqt0" onclick="switchSqlTab(0)">👥 clientes</button>
+          <button class="tab-b" id="sqt1" onclick="switchSqlTab(1)">📖 servicos</button>
+          <button class="tab-b" id="sqt2" onclick="switchSqlTab(2)">📜 faturas</button>
+          <button class="tab-b" id="sqt3" onclick="switchSqlTab(3)">💰 pagamentos</button>
+        </div>
+
+        <div class="code-editor-wrap">
+          <div class="ce-topbar"><div class="ce-dots"><div class="ce-dot ce-dot-r"></div><div class="ce-dot ce-dot-y"></div><div class="ce-dot ce-dot-g"></div></div><span class="ce-fname" id="sql-fname">guilda.sql</span></div>
+          <div class="ce-body"><textarea class="code-textarea" id="sql-display" readonly></textarea></div>
+          <div class="ce-hint">💡 Leia o código e tente entender cada linha antes de avançar!</div>
+        </div>
+
+        <div style="text-align:center;margin-top:10px;">
+          <button class="btn btn-purple" onclick="unlockAndSwitch('quiz',3)">🧠 FAZER O QUIZ →</button>
+        </div>
+      </div>
+
+      <!-- QUIZ -->
+      <div class="tab-pane" id="tp-quiz">
+        <div id="quiz-container"></div>
+        <div style="text-align:center;margin-top:14px;" id="quiz-result-btn" style="display:none;">
+          <button class="btn btn-gold" onclick="go('s-result');buildResult()">🏆 VER RESULTADO FINAL</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════ RESULTADO ════ -->
+<div class="scr" id="s-result">
+  <div class="panel" style="max-width:680px;margin-top:16px;">
+    <div style="text-align:center;margin-bottom:12px;">
+      <div style="font-size:3rem;animation:fl 2.5s ease-in-out infinite;">🏆</div>
+      <p class="ptitle">COFRE MESTRE<br>FORJADO!</p>
+      <p class="psub" style="margin-top:4px;margin-bottom:14px;">BANCO RELACIONAL DOMINADO</p>
+    </div>
+
+    <div class="res-frame">
+      <p style="font-family:'Press Start 2P',monospace;font-size:.46rem;color:var(--gold);text-align:center;margin-bottom:12px;">📋 SEU DESEMPENHO</p>
+      <div id="result-content"></div>
+    </div>
+
+    <div style="background:rgba(0,0,0,.4);border:1px solid var(--border);border-radius:10px;padding:14px;margin:12px 0;">
+      <p style="font-family:'Press Start 2P',monospace;font-size:.4rem;color:var(--gold);margin-bottom:10px;">🧠 O QUE VOCÊ APRENDEU</p>
+      <div style="display:flex;flex-direction:column;gap:7px;">
+        <div style="display:flex;gap:9px;font-size:.84rem;font-weight:700;color:#b8c8e0;line-height:1.5;"><span>🏅</span><span><strong style="color:var(--pk);">PK (SERIAL PRIMARY KEY)</strong> = ID único e automático de cada registro</span></div>
+        <div style="display:flex;gap:9px;font-size:.84rem;font-weight:700;color:#b8c8e0;line-height:1.5;"><span>🔗</span><span><strong style="color:var(--fk);">FK (REFERENCES)</strong> = portal mágico para outro baú — sem copiar dados!</span></div>
+        <div style="display:flex;gap:9px;font-size:.84rem;font-weight:700;color:#b8c8e0;line-height:1.5;"><span>💻</span><span><strong style="color:var(--green);">CREATE TABLE</strong> = feitiço de invocação do baú no PostgreSQL</span></div>
+        <div style="display:flex;gap:9px;font-size:.84rem;font-weight:700;color:#b8c8e0;line-height:1.5;"><span>🔢</span><span><strong style="color:var(--blue2);">NUMERIC(10,2)</strong> = tipo certo para valores em dinheiro</span></div>
+        <div style="display:flex;gap:9px;font-size:.84rem;font-weight:700;color:#b8c8e0;line-height:1.5;"><span>⚡</span><span>Banco <strong style="color:var(--purple);">relacional</strong> = baús conectados por chaves. Muda um, atualiza tudo!</span></div>
+      </div>
+    </div>
+
+    <div class="npc-wrap"><div class="npc-av">🧙</div><div><p class="npc-name">MESTRE GUARDIÃO</p><p class="npc-txt"><strong>Parabéns! O Cofre Mestre está forjado!</strong><br><br>Você aprendeu que um banco relacional não é uma planilha gigante — é um sistema de <strong>baús conectados por chaves mágicas</strong>. O PostgreSQL garante que nenhum ouro se perca ou se misture!<span class="code-tip">SELECT * FROM guilda WHERE heroi = 'você' ✓</span></p></div></div>
+
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;">
+      <button class="btn btn-blue" onclick="go('s-game')">← VOLTAR</button>
+      <button class="btn btn-ghost" onclick="go('s-intro')">↺ RECOMEÇAR</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════
+// SQL CODE SNIPPETS
+// ══════════════════════
+const SQL_CODES = [
+  {name:'clientes.sql', code:`-- 🏦 BAÚ 1: FICHÁRIO DE ALIADOS
+-- Guarda os dados de cada cliente da guilda
+
+CREATE TABLE clientes (
+  id_cliente  SERIAL        PRIMARY KEY,
+  -- SERIAL = número automático (1, 2, 3...)
+  -- PRIMARY KEY = chave única, nunca repete!
+
+  nome_heroi  VARCHAR(100)  NOT NULL,
+  -- VARCHAR(100) = texto de até 100 caracteres
+  -- NOT NULL = não pode ficar vazio!
+
+  reino       VARCHAR(100)
+  -- Endereço/reino do aliado (pode ser nulo)
+);`},
+  {name:'servicos.sql', code:`-- 📖 BAÚ 2: LIVRO DE MAGIAS
+-- Catálogo de serviços que a guilda oferece
+
+CREATE TABLE servicos (
+  id_servico    SERIAL          PRIMARY KEY,
+  -- Código único de cada feitiço
+
+  nome_feitico  VARCHAR(100)    NOT NULL,
+  -- Ex: 'Criar Site', 'Desenvolver App'
+
+  custo_mana    NUMERIC(10, 2)  NOT NULL
+  -- NUMERIC(10,2) = número com 2 casas decimais
+  -- Perfeito para valores em ouro/dinheiro!
+);`},
+  {name:'faturas.sql', code:`-- 📜 BAÚ 3: PERGAMINHO DE MISSÕES
+-- Registra cada missão/venda da guilda
+-- ⚠️ Este baú NÃO guarda nomes — só IDs!
+
+CREATE TABLE faturas (
+  id_fatura    SERIAL          PRIMARY KEY,
+
+  id_cliente   INTEGER         NOT NULL,
+  -- 🔗 FK: aponta para clientes.id_cliente
+  FOREIGN KEY (id_cliente)
+    REFERENCES clientes(id_cliente),
+
+  id_servico   INTEGER         NOT NULL,
+  -- 🔗 FK: aponta para servicos.id_servico
+  FOREIGN KEY (id_servico)
+    REFERENCES servicos(id_servico),
+
+  ouro_cobrado NUMERIC(10, 2)  NOT NULL
+  -- Valor cobrado nesta fatura específica
+);`},
+  {name:'pagamentos.sql', code:`-- 💰 BAÚ 4: TESOURO RECEBIDO
+-- Registra quando o ouro entrou de fato
+
+CREATE TABLE pagamentos (
+  id_pagamento   SERIAL          PRIMARY KEY,
+
+  id_fatura      INTEGER         NOT NULL,
+  -- 🔗 FK: qual fatura foi paga?
+  FOREIGN KEY (id_fatura)
+    REFERENCES faturas(id_fatura),
+
+  ouro_recebido  NUMERIC(10, 2)  NOT NULL,
+  -- Valor que realmente entrou no caixa
+
+  data_pagamento DATE            NOT NULL
+  -- DATE = formato YYYY-MM-DD
+  -- Ex: 2025-01-15
+);`}
+];
+
+function switchSqlTab(i){
+  for(let j=0;j<4;j++){
+    const b=document.getElementById('sqt'+j);
+    if(b) b.className='tab-b'+(j===i?' active':'');
+  }
+  document.getElementById('sql-display').value=SQL_CODES[i].code;
+  document.getElementById('sql-fname').textContent=SQL_CODES[i].name;
+}
+
+// ══════════════════════
+// COL INFO
+// ══════════════════════
+const COL_COLORS={pk:{bg:'rgba(245,200,66,.08)',border:'rgba(245,200,66,.35)',title:' style="color:var(--pk);"'},fk:{bg:'rgba(255,152,0,.08)',border:'rgba(255,152,0,.3)',title:' style="color:var(--orange);"'},reg:{bg:'rgba(64,196,255,.06)',border:'rgba(64,196,255,.25)',title:' style="color:var(--blue);"'}};
+function showColInfo(type,name,dtype,desc){
+  const box=document.getElementById('col-info');
+  const c=COL_COLORS[type];
+  box.style.display='block';
+  box.style.background=c.bg; box.style.borderColor=c.border.replace(/rgba\(|,.*$/g,'').trim();
+  box.style.border=`1px solid ${c.border}`;
+  document.getElementById('ci-title').innerHTML=`<span${c.title}>${name}</span> <span style="font-family:'Fira Code',monospace;font-size:.32rem;color:var(--gray);">${dtype}</span>`;
+  document.getElementById('ci-desc').textContent=desc;
+}
+
+// ══════════════════════
+// QUIZ
+// ══════════════════════
+const QUIZ_DATA = [
+  {
+    stem:'No PostgreSQL, o comando <strong>SERIAL PRIMARY KEY</strong> em uma coluna significa:',
+    opts:['A coluna guarda texto longo, como nomes de heróis.','A coluna é um número automático e único — o CPF do registro!','A coluna é uma Chave Estrangeira que aponta para outra tabela.','A coluna guarda valores monetários com 2 casas decimais.'],
+    answer:1,exp:'SERIAL gera automaticamente 1, 2, 3... PRIMARY KEY garante que seja único. É o ID mágico de cada registro!'
+  },
+  {
+    stem:'Por que a tabela <strong>faturas</strong> usa <code>id_cliente INTEGER</code> em vez de guardar o nome do cliente diretamente?',
+    opts:['Porque o PostgreSQL não suporta texto em faturas.','Porque INTEGER ocupa menos espaço que VARCHAR.','Porque é uma Chave Estrangeira — o número aponta para o cliente correto, sem copiar dados!','Porque nomes podem ter erros de digitação, então usamos apenas endereços.'],
+    answer:2,exp:'FK = código de barras mágico! Em vez de repetir "Rei Artur" em 100 faturas, guardamos apenas o número 1. O servidor busca o nome sozinho!'
+  },
+  {
+    stem:'Qual tipo de dado o PostgreSQL usa para guardar <strong>valores financeiros</strong> (ouro, preços) com precisão?',
+    opts:['INTEGER — números inteiros sem decimais.','VARCHAR(10) — texto numérico.','NUMERIC(10,2) — número com precisão de 2 casas decimais.','BOOLEAN — verdadeiro ou falso.'],
+    answer:2,exp:'NUMERIC(10,2) garante precisão monetária! 10 dígitos no total, 2 após a vírgula. Perfeito para ouro e reais!'
+  },
+  {
+    stem:'Qual é a <strong>ordem correta</strong> para criar as tabelas do cofre? (por causa das FKs)',
+    opts:['faturas → clientes → servicos → pagamentos','pagamentos → faturas → clientes → servicos','clientes + servicos PRIMEIRO, depois faturas, depois pagamentos','Qualquer ordem funciona no PostgreSQL'],
+    answer:2,exp:'Sempre crie as tabelas PAI antes das tabelas FILHO! Faturas precisa que clientes e servicos já existam (FKs). Pagamentos precisa que faturas exista.'
+  }
+];
+
+let quizAnswers = [];
+let quizDone = false;
+
+function buildQuiz(){
+  const c=document.getElementById('quiz-container');
+  c.innerHTML='';
+  QUIZ_DATA.forEach((q,qi)=>{
+    const L=['A','B','C','D'];
+    const opts=q.opts.map((o,i)=>`<button class="q-opt" id="qo${qi}_${i}" onclick="pickQ(${qi},${i})"><span class="ql">${L[i]}</span><span>${o}</span></button>`).join('');
+    c.innerHTML+=`<div class="quiz-wrap" id="qw${qi}">
+      <p class="quiz-title">🧠 QUESTÃO ${qi+1} DE ${QUIZ_DATA.length}</p>
+      <p class="q-stem">${q.stem}</p>
+      <div class="q-opts">${opts}</div>
+      <div class="q-fb" id="qfb${qi}"></div>
+    </div>`;
+  });
+}
+
+function pickQ(qi,oi){
+  if(quizAnswers[qi]!==undefined) return;
+  const q=QUIZ_DATA[qi];
+  const ok=oi===q.answer;
+  quizAnswers[qi]={chosen:oi,correct:ok};
+
+  for(let i=0;i<4;i++){
+    const b=document.getElementById(`qo${qi}_${i}`);
+    if(!b) continue;
+    b.classList.add('locked');
+    if(i===q.answer) b.classList.add('ok');
+    else if(i===oi&&!ok) b.classList.add('nok');
+  }
+  const fb=document.getElementById('qfb'+qi);
+  fb.style.display='block';
+  fb.className='q-fb '+(ok?'ok':'nok');
+  fb.innerHTML=(ok?'✅ Correto! ':'❌ Incorreto. ')+q.exp;
+
+  if(ok){showOv('✅ ACERTOU!','+ 10 XP · '+q.exp.substring(0,55)+'...');setTimeout(()=>hideOv(),1500);}
+
+  if(Object.keys(quizAnswers).length===QUIZ_DATA.length){
+    document.getElementById('quiz-result-btn').style.display='block';
+    quizDone=true; markStepDone(3);
+    spawnConf('conf');
+  }
+}
+
+// ══════════════════════
+// RESULT
+// ══════════════════════
+function buildResult(){
+  const correct=Object.values(quizAnswers).filter(a=>a.correct).length;
+  const total=QUIZ_DATA.length;
+  const pct=Math.round(correct/total*100);
+  const c=document.getElementById('result-content');
+  c.innerHTML=`<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-bottom:14px;">
+    <div style="border:1.5px solid rgba(0,230,118,.3);border-radius:8px;padding:11px;text-align:center;background:rgba(0,230,118,.06);">
+      <div style="font-family:'Press Start 2P',monospace;font-size:.9rem;color:var(--green);">${correct}/${total}</div>
+      <div style="font-size:.7rem;font-weight:700;color:var(--gray);margin-top:3px;">ACERTOS</div>
+    </div>
+    <div style="border:1.5px solid rgba(245,200,66,.35);border-radius:8px;padding:11px;text-align:center;background:rgba(245,200,66,.06);">
+      <div style="font-family:'Press Start 2P',monospace;font-size:.9rem;color:var(--gold);">${pct}%</div>
+      <div style="font-size:.7rem;font-weight:700;color:var(--gray);margin-top:3px;">APROVEIT.</div>
+    </div>
+    <div style="border:1.5px solid rgba(64,196,255,.3);border-radius:8px;padding:11px;text-align:center;background:rgba(64,196,255,.07);">
+      <div style="font-family:'Press Start 2P',monospace;font-size:.9rem;color:var(--blue);">${correct*10}</div>
+      <div style="font-size:.7rem;font-weight:700;color:var(--gray);margin-top:3px;">XP QUIZ</div>
+    </div>
+  </div>`;
+  QUIZ_DATA.forEach((q,i)=>{
+    const a=quizAnswers[i];
+    const ok=a?.correct;
+    c.innerHTML+=`<div class="mod-score ${ok?'ms-ok':'ms-nok'}">
+      <span style="font-size:1.2rem;">${ok?'✅':'❌'}</span>
+      <div style="flex:1;font-size:.82rem;font-weight:700;color:#a0b4cc;">Q${i+1}: ${q.stem.replace(/<[^>]+>/g,'').substring(0,55)}...</div>
+      <span style="font-family:'Press Start 2P',monospace;font-size:.42rem;color:${ok?'var(--green)':'var(--red)'};">${ok?'+10':'0'} XP</span>
+    </div>`;
+  });
+  if(correct===total) spawnConf('conf');
+}
+
+// ══════════════════════
+// TABS + STEPS
+// ══════════════════════
+function switchTab(t){
+  ['planta','relacoes','codigo','quiz'].forEach(id=>{
+    document.getElementById('tab-'+id).className='tab-b'+(id===t?' active':'');
+    document.getElementById('tp-'+id).className='tab-pane'+(id===t?' active':'');
+  });
+  if(t==='codigo') switchSqlTab(0);
+  if(t==='quiz')   { buildQuiz(); }
+}
+
+function unlockAndSwitch(tab, stepIdx){
+  markStepActive(stepIdx);
+  document.getElementById('tab-'+tab).className='tab-b active';
+  switchTab(tab);
+}
+
+function markStepDone(i){const d=document.getElementById('sd'+i);if(d)d.className='sn-dot done';}
+function markStepActive(i){
+  for(let j=0;j<4;j++){
+    const d=document.getElementById('sd'+j);
+    if(!d) continue;
+    if(j<i) d.className='sn-dot done';
+    else if(j===i) d.className='sn-dot active';
+  }
+}
+
+// ══════════════════════
+// OV / CONF
+// ══════════════════════
+function showOv(t,s){document.getElementById('ov').classList.add('on');document.getElementById('ov-t').textContent=t;document.getElementById('ov-s').textContent=s;}
+function hideOv(){document.getElementById('ov').classList.remove('on');}
+function spawnConf(cid){
+  const c=document.getElementById(cid);
+  const cols=['#f5c842','#ffe082','#00e676','#40c4ff','#ff9800','#ce93d8'];
+  for(let i=0;i<70;i++){const el=document.createElement('div');const sz=4+Math.random()*8;el.style.cssText=`position:absolute;width:${sz}px;height:${sz}px;background:${cols[Math.floor(Math.random()*cols.length)]};left:${Math.random()*100}%;top:-10px;border-radius:${Math.random()>.5?'50%':'2px'};animation:cf ${1.5+Math.random()*2}s ease ${Math.random()*.5}s both;`;c.appendChild(el);}
+  setTimeout(()=>c.innerHTML='',5000);
+}
+(()=>{const s=document.createElement('style');s.textContent='@keyframes cf{from{transform:translateY(0) rotate(0deg);opacity:1}to{transform:translateY(100vh) rotate(720deg);opacity:0}}';document.head.appendChild(s);})();
+
+function go(id){document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on'));document.getElementById(id).classList.add('on');window.scrollTo(0,0);}
+
+// INIT
+switchSqlTab(0);
+</script>
+</body>
+</html>

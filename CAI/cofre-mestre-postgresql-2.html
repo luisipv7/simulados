@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Cofre Mestre 2 — Inserindo Loot</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Exo+2:wght@400;600;700;800&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#060a10;--panel:#0a1428;--panel2:#101e38;--border:#1a3050;--border2:#2a4870;
+  --gold:#f5c842;--gold2:#ffe082;--green:#00e676;--green2:#b9f6ca;
+  --red:#ff5252;--red2:#ffd0d0;--blue:#40c4ff;--blue2:#b3e5fc;
+  --teal:#1de9b6;--teal2:#a7ffeb;--orange:#ff9800;--orange2:#ffe0b2;
+  --purple:#ce93d8;--white:#dde8ff;--gray:#5a6fa0;--gray2:#3a4f80;
+  --pk:#f5c842;--fk:#ff9800;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{font-family:'Exo 2',sans-serif;background:var(--bg);color:var(--white);min-height:100vh;overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(29,233,182,.015) 1px,transparent 1px),linear-gradient(90deg,rgba(29,233,182,.015) 1px,transparent 1px);background-size:48px 48px;pointer-events:none;z-index:0;}
+body::after{content:'';position:fixed;inset:0;background-image:radial-gradient(1px 1px at 10% 22%,rgba(255,255,255,.8) 0%,transparent 100%),radial-gradient(1px 1px at 80% 10%,rgba(255,255,255,.6) 0%,transparent 100%),radial-gradient(1px 1px at 50% 88%,rgba(255,255,255,.7) 0%,transparent 100%),radial-gradient(1px 1px at 25% 55%,rgba(255,255,255,.5) 0%,transparent 100%),radial-gradient(1px 1px at 72% 40%,rgba(255,255,255,.6) 0%,transparent 100%);pointer-events:none;z-index:0;}
+
+.scr{display:none;position:relative;z-index:1;min-height:100vh;flex-direction:column;align-items:center;padding:18px 14px 50px;}
+.scr.on{display:flex;}
+.panel{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:24px 28px;max-width:1020px;width:100%;box-shadow:0 0 50px rgba(29,233,182,.04),0 18px 60px rgba(0,0,0,.9);}
+
+.ptitle{font-family:'Press Start 2P',monospace;font-size:clamp(.48rem,1.5vw,.76rem);color:var(--teal);text-shadow:2px 2px 0 rgba(0,0,0,.9),0 0 20px rgba(29,233,182,.4);line-height:2.1;text-align:center;}
+.psub{font-family:'Press Start 2P',monospace;font-size:.35rem;color:var(--gray);letter-spacing:2px;text-align:center;}
+
+.npc-wrap{display:flex;gap:12px;align-items:flex-start;background:rgba(6,10,16,.95);border:1px solid rgba(29,233,182,.18);border-radius:10px;padding:13px 15px;margin-bottom:14px;}
+.npc-av{width:48px;height:48px;border-radius:8px;border:1px solid var(--teal);background:linear-gradient(135deg,#020e0a,#063028);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;animation:fl 3s ease-in-out infinite;box-shadow:0 0 10px rgba(29,233,182,.18);}
+@keyframes fl{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+.npc-name{font-family:'Press Start 2P',monospace;font-size:.38rem;color:var(--teal);margin-bottom:5px;}
+.npc-txt{font-size:.87rem;font-weight:600;color:#b0c8d8;line-height:1.75;}
+.npc-txt strong{color:var(--teal2);}
+.code-tip{font-family:'Fira Code',monospace;font-size:.76rem;color:var(--teal);background:rgba(29,233,182,.08);border:1px solid rgba(29,233,182,.22);border-radius:5px;padding:3px 8px;display:inline-block;margin-top:5px;}
+
+.btn{display:inline-flex;align-items:center;gap:7px;font-family:'Press Start 2P',monospace;font-size:.45rem;border:1px solid transparent;border-radius:7px;padding:10px 18px;cursor:pointer;transition:all .2s;color:white;}
+.btn-teal {background:linear-gradient(135deg,#032820,#065040);border-color:rgba(29,233,182,.4);box-shadow:0 4px 12px rgba(29,233,182,.2);}
+.btn-teal:hover{transform:translateY(-1px);box-shadow:0 6px 18px rgba(29,233,182,.35);}
+.btn-gold {background:linear-gradient(135deg,#4a2c00,#9a6000);border-color:rgba(245,200,66,.4);color:#fef3c7;box-shadow:0 4px 12px rgba(245,200,66,.2);}
+.btn-gold:hover{transform:translateY(-1px);}
+.btn-blue {background:linear-gradient(135deg,#0a2a50,#164080);border-color:rgba(64,196,255,.35);box-shadow:0 4px 12px rgba(64,196,255,.2);}
+.btn-blue:hover{transform:translateY(-1px);}
+.btn-green{background:linear-gradient(135deg,#073a10,#155a20);border-color:rgba(0,230,118,.35);box-shadow:0 4px 12px rgba(0,230,118,.2);}
+.btn-green:hover{transform:translateY(-1px);}
+.btn-ghost{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);font-size:.38rem;}
+.btn-ghost:hover{background:rgba(255,255,255,.1);}
+.btn:disabled{opacity:.3;cursor:not-allowed;transform:none;}
+
+/* STEPS */
+.snav{display:flex;gap:6px;justify-content:center;margin-bottom:14px;flex-wrap:wrap;}
+.sd{font-family:'Press Start 2P',monospace;font-size:.32rem;padding:5px 9px;border-radius:5px;border:1px solid;transition:all .3s;}
+.sd.done  {border-color:var(--teal);background:rgba(29,233,182,.07);color:var(--teal);}
+.sd.active{border-color:var(--gold);background:rgba(245,200,66,.07);color:var(--gold);}
+.sd.locked{border-color:var(--border);color:rgba(255,255,255,.15);}
+
+/* CODE EDITOR */
+.ced{background:rgba(2,5,10,.97);border:1px solid var(--border2);border-radius:10px;overflow:hidden;margin:12px 0;}
+.ced-top{display:flex;align-items:center;gap:10px;padding:8px 14px;background:rgba(0,0,0,.5);border-bottom:1px solid var(--border);}
+.ced-dots{display:flex;gap:5px;}
+.ced-dot{width:10px;height:10px;border-radius:50%;}
+.ced-r{background:#ff5f56;}.ced-y{background:#ffbd2e;}.ced-g{background:#27c93f;}
+.ced-fn{font-family:'Fira Code',monospace;font-size:.7rem;color:var(--gray);}
+.code-ta{width:100%;background:transparent;border:none;outline:none;font-family:'Fira Code',monospace;font-size:.8rem;color:#90c0e8;padding:16px;resize:vertical;caret-color:var(--teal);line-height:1.75;tab-size:2;min-height:180px;}
+.code-ta::placeholder{color:rgba(90,111,160,.4);}
+.ced-hint{font-family:'Press Start 2P',monospace;font-size:.32rem;color:var(--gray);padding:0 14px 10px;}
+
+/* LIVE TABLE */
+.live-table-wrap{border:1px solid var(--border);border-radius:10px;overflow:hidden;margin:12px 0;}
+.lt-header{display:flex;align-items:center;justify-content:space-between;padding:9px 14px;background:rgba(0,0,0,.5);border-bottom:1px solid var(--border);}
+.lt-title{font-family:'Press Start 2P',monospace;font-size:.42rem;}
+.lt-count{font-family:'Fira Code',monospace;font-size:.7rem;color:var(--gray);}
+table.lt{width:100%;border-collapse:collapse;font-size:.82rem;}
+table.lt th{font-family:'Press Start 2P',monospace;font-size:.28rem;padding:8px 11px;text-align:left;letter-spacing:1px;background:rgba(0,0,0,.5);border-bottom:1px solid var(--border2);color:var(--gray);}
+table.lt td{padding:8px 11px;border-bottom:1px solid rgba(26,48,80,.4);color:#9ab0c8;font-weight:600;}
+table.lt tr:hover td{background:rgba(29,233,182,.03);}
+table.lt tr.new-row td{background:rgba(29,233,182,.08);animation:rowIn .5s ease;}
+@keyframes rowIn{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:translateX(0)}}
+.td-pk{color:var(--pk);font-family:'Fira Code',monospace;}
+.td-fk{color:var(--orange);font-family:'Fira Code',monospace;}
+.td-val{color:var(--teal2);}
+.empty-row{font-size:.8rem;font-weight:600;color:rgba(90,111,160,.5);text-align:center;padding:16px;font-style:italic;}
+
+/* INSERT BUILDER */
+.insert-builder{background:rgba(0,0,0,.4);border:1px solid var(--border);border-radius:10px;padding:16px;margin:12px 0;}
+.ib-title{font-family:'Press Start 2P',monospace;font-size:.44rem;color:var(--teal);margin-bottom:12px;}
+.ib-fields{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;margin-bottom:12px;}
+.ib-field{display:flex;flex-direction:column;gap:5px;}
+.ib-label{font-family:'Fira Code',monospace;font-size:.7rem;font-weight:600;display:flex;align-items:center;gap:5px;}
+.ib-label .lk{font-size:.8rem;}
+.ib-inp{background:rgba(0,0,0,.5);border:1.5px solid var(--border2);border-radius:6px;padding:8px 10px;font-family:'Fira Code',monospace;font-size:.8rem;color:var(--teal2);outline:none;transition:border-color .2s;}
+.ib-inp:focus{border-color:var(--teal);box-shadow:0 0 8px rgba(29,233,182,.18);}
+.ib-inp.pk-auto{color:var(--gray);background:rgba(0,0,0,.3);cursor:not-allowed;}
+.ib-inp.err{border-color:var(--red);animation:shake .3s ease;}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+
+/* FB */
+.fb-msg{border-radius:8px;padding:10px 13px;font-size:.85rem;font-weight:700;line-height:1.6;display:none;margin-top:8px;animation:pu .3s ease;}
+@keyframes pu{from{opacity:0;transform:translateY(3px)}to{opacity:1;transform:translateY(0)}}
+.fb-ok {background:rgba(29,233,182,.1);border:1px solid rgba(29,233,182,.3);color:var(--teal2);}
+.fb-nok{background:rgba(255,82,82,.08);border:1px solid rgba(255,82,82,.25);color:var(--red2);}
+
+/* SELECT BUILDER */
+.select-panel{background:rgba(0,0,0,.4);border:1px solid var(--border);border-radius:10px;padding:14px;margin:10px 0;}
+.sp-title{font-family:'Press Start 2P',monospace;font-size:.42rem;color:var(--blue);margin-bottom:10px;}
+.sp-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px;}
+.sp-label{font-family:'Press Start 2P',monospace;font-size:.34rem;color:var(--gray);width:60px;flex-shrink:0;}
+.sp-val{font-family:'Fira Code',monospace;font-size:.8rem;color:var(--blue2);background:rgba(64,196,255,.07);border:1px solid rgba(64,196,255,.2);border-radius:5px;padding:4px 10px;}
+.sp-sel{font-family:'Fira Code',monospace;font-size:.8rem;color:var(--white);background:rgba(0,0,0,.4);border:1px solid var(--border2);border-radius:5px;padding:5px 10px;outline:none;cursor:pointer;}
+.sp-sel:focus{border-color:var(--blue);}
+
+/* QUIZ */
+.quiz-wrap{background:rgba(6,10,16,.9);border:1px solid var(--border);border-radius:10px;padding:16px;margin:12px 0;}
+.q-title{font-family:'Press Start 2P',monospace;font-size:.44rem;color:var(--teal);margin-bottom:10px;}
+.q-stem{font-size:.88rem;font-weight:700;color:#b0c8d8;line-height:1.7;margin-bottom:12px;}
+.q-stem code{font-family:'Fira Code',monospace;font-size:.82rem;color:var(--teal);background:rgba(29,233,182,.08);border-radius:4px;padding:1px 6px;}
+.q-opts{display:flex;flex-direction:column;gap:7px;}
+.q-opt{display:flex;align-items:flex-start;gap:9px;background:rgba(255,255,255,.03);border:1.5px solid var(--border);border-radius:7px;padding:10px 13px;cursor:pointer;font-size:.87rem;font-weight:600;color:#9ab0c8;transition:all .2s;width:100%;}
+.q-opt:hover:not(.locked){border-color:var(--teal2);color:var(--white);background:rgba(29,233,182,.05);}
+.q-opt .ql{font-family:'Press Start 2P',monospace;font-size:.35rem;color:var(--gray2);flex-shrink:0;margin-top:2px;}
+.q-opt.ok {border-color:var(--green)!important;background:rgba(0,230,118,.1)!important;color:var(--green2)!important;}
+.q-opt.nok{border-color:var(--red)!important;  background:rgba(255,82,82,.1)!important; color:var(--red2)!important;}
+.q-opt.rev{border-color:var(--green)!important; background:rgba(0,230,118,.04)!important;}
+.q-opt.locked{cursor:default;}
+.q-fb{border-radius:7px;padding:9px 12px;font-size:.84rem;font-weight:700;line-height:1.6;display:none;margin-top:9px;animation:pu .3s ease;}
+.q-fb.ok{background:rgba(0,230,118,.1);border:1px solid rgba(0,230,118,.28);color:var(--green2);}
+.q-fb.nok{background:rgba(255,82,82,.08);border:1px solid rgba(255,82,82,.22);color:var(--red2);}
+
+/* TABS */
+.tnav{display:flex;gap:5px;margin-bottom:0;flex-wrap:wrap;}
+.tb{font-family:'Press Start 2P',monospace;font-size:.36rem;padding:7px 11px;border-radius:7px 7px 0 0;border:1px solid var(--border);background:rgba(0,0,0,.4);color:var(--gray);cursor:pointer;transition:all .2s;border-bottom-color:transparent;}
+.tb.active{background:var(--panel2);border-color:var(--teal);border-bottom-color:var(--panel2);color:var(--teal);}
+.tcontent{background:var(--panel2);border:1px solid var(--border);border-top-color:var(--teal);border-radius:0 8px 8px 8px;padding:16px;animation:pu .3s ease;}
+.tpane{display:none;}
+.tpane.active{display:block;}
+
+/* RESULT */
+.res-frame{background:linear-gradient(135deg,rgba(29,233,182,.06),rgba(0,230,118,.04));border:2px solid var(--teal);border-radius:12px;padding:20px;margin:12px 0;animation:gf 2.5s ease-in-out infinite;}
+@keyframes gf{0%,100%{box-shadow:0 0 20px rgba(29,233,182,.1)}50%{box-shadow:0 0 40px rgba(29,233,182,.25)}}
+
+.conf{position:fixed;inset:0;pointer-events:none;z-index:400;}
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:500;display:none;align-items:center;justify-content:center;flex-direction:column;}
+.ov.on{display:flex;}
+.ov-t{font-family:'Press Start 2P',monospace;font-size:clamp(.65rem,3vw,1.2rem);text-align:center;animation:bp .5s ease;}
+@keyframes bp{from{transform:scale(.3);opacity:0}70%{transform:scale(1.1)}100%{transform:scale(1);opacity:1}}
+.ov-s{font-size:.88rem;font-weight:700;color:var(--white);text-align:center;margin-top:10px;max-width:380px;line-height:1.7;padding:0 16px;}
+
+@media(max-width:540px){.panel{padding:15px 11px;}.ib-fields{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+<div class="conf" id="conf"></div>
+<div class="ov" id="ov"><div class="ov-t" id="ov-t" style="color:var(--teal);">✅ INSERIDO!</div><div class="ov-s" id="ov-s"></div></div>
+
+<!-- ════ INTRO ════ -->
+<div class="scr on" id="s-intro">
+  <div class="panel" style="max-width:660px;margin-top:16px;">
+    <div style="text-align:center;margin-bottom:14px;">
+      <div style="font-size:3rem;animation:fl 2.5s ease-in-out infinite;margin-bottom:8px;">📥</div>
+      <p class="ptitle">COFRE MESTRE 2<br>INSERINDO LOOT</p>
+      <p class="ptitle" style="color:var(--orange);font-size:clamp(.35rem,1.1vw,.5rem);">INSERT · SELECT · WHERE</p>
+      <p class="psub" style="margin-top:5px;">ABASTECENDO OS BAÚS DO SERVIDOR</p>
+    </div>
+
+    <div class="npc-wrap">
+      <div class="npc-av">🧙</div>
+      <div><p class="npc-name">MESTRE GUARDIÃO</p>
+        <p class="npc-txt">Herói! Os Baús do Cofre foram forjados na missão anterior. Agora precisamos <strong>abastecer esses baús com Loot real</strong>!<br><br>Hoje você aprende os feitiços para <strong>inserir dados</strong> (<code style="color:var(--teal);">INSERT INTO</code>) e <strong>buscar dados</strong> (<code style="color:var(--teal);">SELECT ... FROM ... WHERE</code>)!
+          <span class="code-tip">INSERT = guardar Loot · SELECT = buscar Loot</span>
+        </p>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;">
+      <div style="border:1.5px solid rgba(29,233,182,.3);border-radius:9px;padding:13px;background:rgba(29,233,182,.05);">
+        <p style="font-family:'Press Start 2P',monospace;font-size:.38rem;color:var(--teal);margin-bottom:7px;">📥 INSERT INTO</p>
+        <p style="font-size:.82rem;font-weight:700;color:#b0c8d8;line-height:1.6;">Coloca um item no baú.<br><code style="font-family:'Fira Code';font-size:.75rem;color:var(--teal);">INSERT INTO tabela (col) VALUES (val);</code></p>
+      </div>
+      <div style="border:1.5px solid rgba(64,196,255,.3);border-radius:9px;padding:13px;background:rgba(64,196,255,.05);">
+        <p style="font-family:'Press Start 2P',monospace;font-size:.38rem;color:var(--blue);margin-bottom:7px;">🔍 SELECT ... WHERE</p>
+        <p style="font-size:.82rem;font-weight:700;color:#b0c8d8;line-height:1.6;">Busca itens específicos.<br><code style="font-family:'Fira Code';font-size:.75rem;color:var(--blue);">SELECT * FROM tabela WHERE col = val;</code></p>
+      </div>
+    </div>
+
+    <div style="background:rgba(245,200,66,.05);border:1px solid rgba(245,200,66,.2);border-radius:9px;padding:13px;margin-bottom:18px;">
+      <p style="font-family:'Press Start 2P',monospace;font-size:.38rem;color:var(--gold);margin-bottom:8px;">🗡️ MISSÃO DE HOJE</p>
+      <div style="display:flex;flex-direction:column;gap:7px;font-size:.84rem;font-weight:700;color:#b0c8d8;line-height:1.5;">
+        <div style="display:flex;gap:8px;"><span>1.</span><span>Inserir <strong style="color:var(--teal);">3 aliados</strong> no Baú de Clientes</span></div>
+        <div style="display:flex;gap:8px;"><span>2.</span><span>Inserir <strong style="color:var(--teal);">2 feitiços</strong> no Baú de Serviços</span></div>
+        <div style="display:flex;gap:8px;"><span>3.</span><span>Inserir uma <strong style="color:var(--teal);">fatura</strong> usando as FKs</span></div>
+        <div style="display:flex;gap:8px;"><span>4.</span><span>Usar <strong style="color:var(--blue);">SELECT + WHERE</strong> para buscar dados</span></div>
+      </div>
+    </div>
+
+    <div style="text-align:center;">
+      <button class="btn btn-teal" style="font-size:.5rem;" onclick="go('s-game')">📥 COMEÇAR A INSERIR LOOT</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════ JOGO ════ -->
+<div class="scr" id="s-game">
+  <div class="panel" style="max-width:1020px;margin-top:14px;">
+
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px;">
+      <div><p class="ptitle" style="font-size:.46rem;text-align:left;">📥 ABASTECENDO O COFRE MESTRE</p><p class="psub" style="text-align:left;margin-top:2px;">INSERT · SELECT · WHERE · GUILDA TECHSOLUTIONS</p></div>
+      <div style="display:flex;gap:6px;"><button class="btn btn-ghost" onclick="go('s-intro')">← INTRO</button><button class="btn btn-gold" style="font-size:.36rem;" onclick="go('s-result')">🏆 RESULTADO</button></div>
+    </div>
+
+    <div class="snav">
+      <div class="sd active" id="sd0">📥 INSERT</div>
+      <div class="sd locked" id="sd1">🔗 FK INSERT</div>
+      <div class="sd locked" id="sd2">🔍 SELECT</div>
+      <div class="sd locked" id="sd3">🧠 QUIZ</div>
+    </div>
+
+    <div class="npc-wrap"><div class="npc-av">🧙</div><div><p class="npc-name">MESTRE GUARDIÃO</p><p class="npc-txt" id="npc-g">Preencha os campos abaixo e clique em <strong>INSERIR</strong>. Veja o registro aparecer no baú em tempo real!</p></div></div>
+
+    <div class="tnav">
+      <button class="tb active" id="tab-insert" onclick="swTab('insert')">📥 INSERT</button>
+      <button class="tb" id="tab-fk"     onclick="swTab('fk')">🔗 FK INSERT</button>
+      <button class="tb" id="tab-select" onclick="swTab('select')">🔍 SELECT</button>
+      <button class="tb" id="tab-quiz"   onclick="swTab('quiz')">🧠 QUIZ</button>
+    </div>
+    <div class="tcontent">
+
+      <!-- INSERT -->
+      <div class="tpane active" id="tp-insert">
+        <p style="font-size:.88rem;font-weight:700;color:#b0c8d8;margin-bottom:14px;line-height:1.7;">
+          Insira aliados no <strong style="color:var(--teal);">Baú de Clientes</strong> e serviços no <strong style="color:var(--teal);">Baú de Magias</strong>. O ID é gerado automaticamente (SERIAL)!
+        </p>
+
+        <!-- INSERT CLIENTES -->
+        <div class="insert-builder">
+          <p class="ib-title">👥 INSERIR ALIADO — tabela clientes</p>
+          <div class="ib-fields">
+            <div class="ib-field">
+              <span class="ib-label"><span class="lk">🏅</span><span style="color:var(--pk);font-family:'Fira Code',monospace;font-size:.72rem;">id_cliente</span></span>
+              <input class="ib-inp pk-auto" value="AUTO (SERIAL)" readonly title="Gerado automaticamente!">
+            </div>
+            <div class="ib-field">
+              <span class="ib-label"><span class="lk">📝</span><span style="font-family:'Fira Code',monospace;font-size:.72rem;color:var(--blue2);">nome_heroi</span></span>
+              <input class="ib-inp" id="cli-nome" placeholder="Ex: Rei Artur" maxlength="50">
+            </div>
+            <div class="ib-field">
+              <span class="ib-label"><span class="lk">🗺️</span><span style="font-family:'Fira Code',monospace;font-size:.72rem;color:var(--blue2);">reino</span></span>
+              <input class="ib-inp" id="cli-reino" placeholder="Ex: Reino do Norte" maxlength="50">
+            </div>
+          </div>
+          <button class="btn btn-teal" style="font-size:.4rem;" onclick="insertCliente()">📥 INSERIR ALIADO</button>
+          <div class="fb-msg" id="fb-cli"></div>
+        </div>
+
+        <div class="live-table-wrap" style="margin:10px 0 18px;">
+          <div class="lt-header">
+            <span class="lt-title" style="color:var(--teal);">📦 BAÚ: clientes</span>
+            <span class="lt-count" id="cnt-cli">0 registros</span>
+          </div>
+          <table class="lt"><thead><tr><th>id_cliente</th><th>nome_heroi</th><th>reino</th></tr></thead>
+          <tbody id="tb-cli"><tr><td colspan="3" class="empty-row">Baú vazio — insira o primeiro aliado!</td></tr></tbody></table>
+        </div>
+
+        <!-- INSERT SERVICOS -->
+        <div class="insert-builder">
+          <p class="ib-title">📖 INSERIR FEITIÇO — tabela servicos</p>
+          <div class="ib-fields">
+            <div class="ib-field">
+              <span class="ib-label"><span class="lk">🏅</span><span style="color:var(--pk);font-family:'Fira Code',monospace;font-size:.72rem;">id_servico</span></span>
+              <input class="ib-inp pk-auto" value="AUTO (SERIAL)" readonly>
+            </div>
+            <div class="ib-field">
+              <span class="ib-label"><span class="lk">✨</span><span style="font-family:'Fira Code',monospace;font-size:.72rem;color:var(--blue2);">nome_feitico</span></span>
+              <input class="ib-inp" id="svc-nome" placeholder="Ex: Criar Site" maxlength="50">
+            </div>
+            <div class="ib-field">
+              <span class="ib-label"><span class="lk">💎</span><span style="font-family:'Fira Code',monospace;font-size:.72rem;color:var(--blue2);">custo_mana</span></span>
+              <input class="ib-inp" id="svc-custo" placeholder="Ex: 5000.00" type="number" min="0">
+            </div>
+          </div>
+          <button class="btn btn-blue" style="font-size:.4rem;" onclick="insertServico()">📥 INSERIR FEITIÇO</button>
+          <div class="fb-msg" id="fb-svc"></div>
+        </div>
+
+        <div class="live-table-wrap">
+          <div class="lt-header">
+            <span class="lt-title" style="color:var(--blue);">📦 BAÚ: servicos</span>
+            <span class="lt-count" id="cnt-svc">0 registros</span>
+          </div>
+          <table class="lt"><thead><tr><th>id_servico</th><th>nome_feitico</th><th>custo_mana</th></tr></thead>
+          <tbody id="tb-svc"><tr><td colspan="3" class="empty-row">Baú vazio — insira o primeiro feitiço!</td></tr></tbody></table>
+        </div>
+
+        <div style="text-align:center;margin-top:10px;" id="btn-to-fk" style="display:none;">
+          <button class="btn btn-gold" onclick="unlockSwitch('fk',1)">🔗 INSERIR FATURA →</button>
+        </div>
+      </div>
+
+      <!-- FK INSERT -->
+      <div class="tpane" id="tp-fk">
+        <p style="font-size:.88rem;font-weight:700;color:#b0c8d8;margin-bottom:12px;line-height:1.7;">
+          Agora vamos inserir uma <strong style="color:var(--gold);">Fatura</strong>! Ela usa <strong style="color:var(--orange);">Chaves Estrangeiras</strong> — você precisa informar o ID do aliado e o ID do feitiço. O servidor vai buscar os dados!
+        </p>
+
+        <div class="insert-builder" style="border-color:rgba(245,200,66,.3);">
+          <p class="ib-title" style="color:var(--gold);">📜 INSERIR FATURA — tabela faturas</p>
+
+          <div style="background:rgba(255,152,0,.07);border:1px solid rgba(255,152,0,.25);border-radius:8px;padding:10px;margin-bottom:12px;">
+            <p style="font-family:'Press Start 2P',monospace;font-size:.34rem;color:var(--orange);margin-bottom:5px;">⚠️ REGRA DO FK</p>
+            <p style="font-size:.8rem;font-weight:700;color:var(--orange2);line-height:1.6;">Use os IDs dos aliados e feitiços já inseridos! O servidor <strong>não aceita</strong> IDs que não existem.</p>
+          </div>
+
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin-bottom:12px;">
+            <div class="ib-field">
+              <span class="ib-label"><span class="lk">🏅</span><span style="color:var(--pk);font-family:'Fira Code',monospace;font-size:.7rem;">id_fatura</span></span>
+              <input class="ib-inp pk-auto" value="AUTO (SERIAL)" readonly>
+            </div>
+            <div class="ib-field">
+              <span class="ib-label"><span class="lk">🔗</span><span style="color:var(--fk);font-family:'Fira Code',monospace;font-size:.7rem;">id_cliente (FK)</span></span>
+              <select class="ib-inp" id="fat-cli" style="cursor:pointer;"><option value="">-- Selecione o aliado --</option></select>
+            </div>
+            <div class="ib-field">
+              <span class="ib-label"><span class="lk">🔗</span><span style="color:var(--fk);font-family:'Fira Code',monospace;font-size:.7rem;">id_servico (FK)</span></span>
+              <select class="ib-inp" id="fat-svc" style="cursor:pointer;"><option value="">-- Selecione o feitiço --</option></select>
+            </div>
+            <div class="ib-field">
+              <span class="ib-label"><span class="lk">💰</span><span style="font-family:'Fira Code',monospace;font-size:.7rem;color:var(--blue2);">ouro_cobrado</span></span>
+              <input class="ib-inp" id="fat-ouro" placeholder="Ex: 20000.00" type="number" min="0">
+            </div>
+          </div>
+          <button class="btn btn-gold" style="font-size:.4rem;" onclick="insertFatura()">📜 INSERIR FATURA</button>
+          <div class="fb-msg" id="fb-fat"></div>
+        </div>
+
+        <!-- CODE PREVIEW -->
+        <div class="ced" style="margin-top:10px;">
+          <div class="ced-top"><div class="ced-dots"><div class="ced-dot ced-r"></div><div class="ced-dot ced-y"></div><div class="ced-dot ced-g"></div></div><span class="ced-fn">insert_preview.sql</span></div>
+          <textarea class="code-ta" id="insert-preview" readonly style="min-height:80px;color:#90c8a0;">-- Preencha os campos acima para gerar o SQL!</textarea>
+        </div>
+
+        <div class="live-table-wrap">
+          <div class="lt-header"><span class="lt-title" style="color:var(--gold);">📦 BAÚ: faturas</span><span class="lt-count" id="cnt-fat">0 registros</span></div>
+          <table class="lt"><thead><tr><th>id_fatura</th><th>id_cliente (FK)</th><th>id_servico (FK)</th><th>ouro_cobrado</th></tr></thead>
+          <tbody id="tb-fat"><tr><td colspan="4" class="empty-row">Baú vazio — insira a primeira fatura!</td></tr></tbody></table>
+        </div>
+
+        <div style="text-align:center;margin-top:10px;">
+          <button class="btn btn-blue" onclick="unlockSwitch('select',2)">🔍 APRENDER SELECT →</button>
+        </div>
+      </div>
+
+      <!-- SELECT -->
+      <div class="tpane" id="tp-select">
+        <p style="font-size:.88rem;font-weight:700;color:#b0c8d8;margin-bottom:12px;line-height:1.7;">
+          O feitiço <code style="font-family:'Fira Code';font-size:.85rem;color:var(--teal);">SELECT</code> busca dados do baú. Com <code style="font-family:'Fira Code';font-size:.85rem;color:var(--blue);">WHERE</code>, você filtra só o que quer!
+        </p>
+
+        <div class="select-panel">
+          <p class="sp-title">🔍 CONSTRUTOR DE CONSULTA</p>
+          <div class="sp-row">
+            <span class="sp-label">SELECT</span><span class="sp-val">*</span>
+            <span class="sp-label">FROM</span>
+            <select class="sp-sel" id="sel-from" onchange="buildSelect()">
+              <option value="clientes">clientes</option>
+              <option value="servicos">servicos</option>
+              <option value="faturas">faturas</option>
+            </select>
+          </div>
+          <div class="sp-row">
+            <span class="sp-label">WHERE</span>
+            <select class="sp-sel" id="sel-col" onchange="buildSelect()">
+              <option value="id_cliente">id_cliente</option>
+              <option value="nome_heroi">nome_heroi</option>
+              <option value="reino">reino</option>
+            </select>
+            <span class="sp-val">=</span>
+            <input class="ib-inp" id="sel-val" placeholder="valor..." style="max-width:150px;padding:5px 9px;" oninput="buildSelect()">
+          </div>
+          <div style="margin-top:10px;display:flex;gap:8px;">
+            <button class="btn btn-teal" style="font-size:.38rem;" onclick="runSelect()">▶ EXECUTAR CONSULTA</button>
+            <button class="btn btn-ghost" onclick="runSelectAll()">▶ SELECT * (TUDO)</button>
+          </div>
+        </div>
+
+        <div class="ced">
+          <div class="ced-top"><div class="ced-dots"><div class="ced-dot ced-r"></div><div class="ced-dot ced-y"></div><div class="ced-dot ced-g"></div></div><span class="ced-fn">consulta.sql</span></div>
+          <textarea class="code-ta" id="sel-code" readonly style="min-height:60px;"></textarea>
+        </div>
+
+        <div class="live-table-wrap" id="sel-result-wrap" style="display:none;">
+          <div class="lt-header"><span class="lt-title" style="color:var(--blue);">📊 RESULTADO DA CONSULTA</span><span class="lt-count" id="sel-cnt">0 linhas</span></div>
+          <div id="sel-result-body"></div>
+        </div>
+
+        <div style="text-align:center;margin-top:10px;">
+          <button class="btn btn-green" onclick="unlockSwitch('quiz',3)">🧠 FAZER QUIZ →</button>
+        </div>
+      </div>
+
+      <!-- QUIZ -->
+      <div class="tpane" id="tp-quiz">
+        <div id="quiz-container"></div>
+        <div style="text-align:center;margin-top:12px;display:none;" id="quiz-done-btn">
+          <button class="btn btn-gold" onclick="go('s-result');buildResult()">🏆 VER RESULTADO</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ════ RESULTADO ════ -->
+<div class="scr" id="s-result">
+  <div class="panel" style="max-width:660px;margin-top:16px;">
+    <div style="text-align:center;margin-bottom:12px;">
+      <div style="font-size:3rem;animation:fl 2.5s ease-in-out infinite;">🏆</div>
+      <p class="ptitle" style="color:var(--teal);">LOOT INSERIDO<br>COM SUCESSO!</p>
+      <p class="psub" style="margin-top:4px;margin-bottom:14px;">SQL OPERACIONAL</p>
+    </div>
+
+    <div class="res-frame">
+      <p style="font-family:'Press Start 2P',monospace;font-size:.44rem;color:var(--teal);text-align:center;margin-bottom:12px;">📋 RESUMO DA MISSÃO</p>
+      <div id="result-content"></div>
+    </div>
+
+    <div style="background:rgba(0,0,0,.4);border:1px solid var(--border);border-radius:10px;padding:14px;margin:12px 0;">
+      <p style="font-family:'Press Start 2P',monospace;font-size:.38rem;color:var(--teal);margin-bottom:9px;">🧠 FEITIÇOS DOMINADOS</p>
+      <div style="display:flex;flex-direction:column;gap:7px;font-size:.83rem;font-weight:700;color:#b0c8d8;line-height:1.5;">
+        <div style="display:flex;gap:8px;"><code style="font-family:'Fira Code';color:var(--teal);">INSERT INTO</code><span>= adicionar um registro ao baú</span></div>
+        <div style="display:flex;gap:8px;"><code style="font-family:'Fira Code';color:var(--teal);">VALUES ()</code><span>= os valores que você quer guardar</span></div>
+        <div style="display:flex;gap:8px;"><code style="font-family:'Fira Code';color:var(--blue);">SELECT *</code><span>= buscar TUDO do baú</span></div>
+        <div style="display:flex;gap:8px;"><code style="font-family:'Fira Code';color:var(--blue);">WHERE col = val</code><span>= filtrar só o que você quer</span></div>
+        <div style="display:flex;gap:8px;"><code style="font-family:'Fira Code';color:var(--orange);">FK no INSERT</code><span>= use o ID, não o nome!</span></div>
+      </div>
+    </div>
+
+    <div class="npc-wrap"><div class="npc-av">🧙</div><div><p class="npc-name">MESTRE GUARDIÃO</p><p class="npc-txt"><strong>Parabéns! Os baús estão cheios de Loot!</strong><br><br>Você aprendeu a inserir dados com <strong>INSERT</strong> e buscar com <strong>SELECT + WHERE</strong>. Nas próximas missões, aprenderemos a <strong>atualizar (UPDATE)</strong> e <strong>apagar (DELETE)</strong> registros!<span class="code-tip">SELECT * FROM guilda WHERE nivel = 'mestre';</span></p></div></div>
+
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;">
+      <button class="btn btn-teal" onclick="go('s-game')">← VOLTAR</button>
+      <button class="btn btn-ghost" onclick="fullReset()">↺ RECOMEÇAR</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════
+// DATA STORES
+// ══════════════════════
+let clientes=[], servicos=[], faturas=[];
+let cliId=1, svcId=1, fatId=1;
+let quizAnswers={};
+
+// ══════════════════════
+// INSERT CLIENTES
+// ══════════════════════
+function insertCliente(){
+  const nome=document.getElementById('cli-nome').value.trim();
+  const reino=document.getElementById('cli-reino').value.trim();
+  const fb=document.getElementById('fb-cli');
+  if(!nome){showFb(fb,'nok','❌ O nome do aliado não pode estar vazio!');document.getElementById('cli-nome').classList.add('err');setTimeout(()=>document.getElementById('cli-nome').classList.remove('err'),400);return;}
+  const row={id:cliId++,nome,reino:reino||'(desconhecido)'};
+  clientes.push(row);
+  renderTable('tb-cli','cnt-cli',clientes,['id','nome','reino'],['td-pk','td-val','td-val']);
+  showFb(fb,'ok',`✅ Aliado "${nome}" inserido! ID automático: ${row.id}`);
+  document.getElementById('cli-nome').value=''; document.getElementById('cli-reino').value='';
+  showOv(`✅ Aliado #${row.id} inserido!`,`INSERT INTO clientes ✓ — ID gerado: ${row.id}`);
+  setTimeout(hideOv,1400);
+  spawnConf('conf');
+  updateFkSelects();
+  checkInsertProgress();
+}
+
+// ══════════════════════
+// INSERT SERVICOS
+// ══════════════════════
+function insertServico(){
+  const nome=document.getElementById('svc-nome').value.trim();
+  const custo=parseFloat(document.getElementById('svc-custo').value)||0;
+  const fb=document.getElementById('fb-svc');
+  if(!nome){showFb(fb,'nok','❌ O nome do feitiço não pode estar vazio!');return;}
+  if(custo<=0){showFb(fb,'nok','❌ O custo de mana deve ser maior que zero!');return;}
+  const row={id:svcId++,nome,custo:custo.toFixed(2)};
+  servicos.push(row);
+  renderTable('tb-svc','cnt-svc',servicos,['id','nome','custo'],['td-pk','td-val','td-val']);
+  showFb(fb,'ok',`✅ Feitiço "${nome}" inserido! Custo: ${custo.toFixed(2)} G`);
+  document.getElementById('svc-nome').value=''; document.getElementById('svc-custo').value='';
+  showOv(`✅ Feitiço #${row.id} inserido!`,`INSERT INTO servicos ✓`);
+  setTimeout(hideOv,1400);
+  updateFkSelects();
+  checkInsertProgress();
+}
+
+function checkInsertProgress(){
+  if(clientes.length>=1&&servicos.length>=1){
+    document.getElementById('btn-to-fk').style.display='block';
+    setNpc('Bom trabalho! Você já tem aliados e feitiços no cofre! Agora pode <strong>inserir uma fatura</strong> usando as Chaves Estrangeiras!');
+  }
+}
+
+// ══════════════════════
+// INSERT FATURA (FK)
+// ══════════════════════
+function updateFkSelects(){
+  const sc=document.getElementById('fat-cli');
+  const ss=document.getElementById('fat-svc');
+  if(!sc||!ss) return;
+  sc.innerHTML='<option value="">-- Selecione o aliado --</option>';
+  clientes.forEach(c=>{ const o=document.createElement('option'); o.value=c.id; o.textContent=`#${c.id} — ${c.nome}`; sc.appendChild(o); });
+  ss.innerHTML='<option value="">-- Selecione o feitiço --</option>';
+  servicos.forEach(s=>{ const o=document.createElement('option'); o.value=s.id; o.textContent=`#${s.id} — ${s.nome} (${s.custo} G)`; ss.appendChild(o); });
+  updateInsertPreview();
+}
+
+function updateInsertPreview(){
+  const cliSel=document.getElementById('fat-cli')?.value;
+  const svcSel=document.getElementById('fat-svc')?.value;
+  const ouro=document.getElementById('fat-ouro')?.value||'???';
+  const cliName=clientes.find(c=>c.id==cliSel)?.nome||'???';
+  const svcName=servicos.find(s=>s.id==svcSel)?.nome||'???';
+  const pre=document.getElementById('insert-preview');
+  if(pre) pre.value=`-- Inserindo fatura no servidor\n-- Aliado: ${cliName} (id=${cliSel||'?'})\n-- Feitiço: ${svcName} (id=${svcSel||'?'})\n\nINSERT INTO faturas\n  (id_cliente, id_servico, ouro_cobrado)\nVALUES\n  (${cliSel||'?'}, ${svcSel||'?'}, ${ouro});`;
+}
+['fat-cli','fat-svc','fat-ouro'].forEach(id=>{
+  const el=document.getElementById(id);
+  if(el) el.addEventListener('change',updateInsertPreview);
+  if(el) el.addEventListener('input',updateInsertPreview);
+});
+
+function insertFatura(){
+  const cliId=document.getElementById('fat-cli').value;
+  const svcId=document.getElementById('fat-svc').value;
+  const ouro=parseFloat(document.getElementById('fat-ouro').value)||0;
+  const fb=document.getElementById('fb-fat');
+  if(!cliId){showFb(fb,'nok','❌ Selecione um aliado (FK cliente)!');return;}
+  if(!svcId){showFb(fb,'nok','❌ Selecione um feitiço (FK serviço)!');return;}
+  if(ouro<=0){showFb(fb,'nok','❌ O ouro cobrado deve ser maior que zero!');return;}
+  const row={id:fatId++,cliId,svcId,ouro:ouro.toFixed(2)};
+  faturas.push(row);
+  renderTable('tb-fat','cnt-fat',faturas,['id','cliId','svcId','ouro'],['td-pk','td-fk','td-fk','td-val']);
+  showFb(fb,'ok',`✅ Fatura #${row.id} criada! FK cliente=${cliId}, FK serviço=${svcId}. O servidor sabe quem é e qual serviço!`);
+  document.getElementById('fat-ouro').value='';
+  showOv('✅ FATURA INSERIDA!',`INSERT INTO faturas com FKs ✓ — O servidor conectou tudo!`);
+  setTimeout(hideOv,1600);
+  spawnConf('conf');
+  markDone(1);
+}
+
+// ══════════════════════
+// SELECT BUILDER
+// ══════════════════════
+function buildSelect(){
+  const from=document.getElementById('sel-from').value;
+  const col=document.getElementById('sel-col').value;
+  const val=document.getElementById('sel-val').value;
+  // update col options
+  const colSel=document.getElementById('sel-col');
+  const cols={clientes:['id_cliente','nome_heroi','reino'],servicos:['id_servico','nome_feitico','custo_mana'],faturas:['id_fatura','id_cliente','id_servico','ouro_cobrado']};
+  const curr=colSel.value;
+  colSel.innerHTML='';
+  (cols[from]||[]).forEach(c=>{const o=document.createElement('option');o.value=c;o.textContent=c;if(c===curr)o.selected=true;colSel.appendChild(o);});
+  const newCol=colSel.value;
+  const v=val?`'${val}'`:'...';
+  document.getElementById('sel-code').value=`SELECT *\nFROM ${from}\nWHERE ${newCol} = ${v};`;
+}
+
+function runSelect(){
+  const from=document.getElementById('sel-from').value;
+  const col=document.getElementById('sel-col').value;
+  const val=document.getElementById('sel-val').value.trim();
+  if(!val){showOv('⚠️','Preencha o valor do WHERE!');setTimeout(hideOv,1200);return;}
+  const data={clientes,servicos,faturas}[from]||[];
+  const keyMap={clientes:{id_cliente:'id',nome_heroi:'nome',reino:'reino'},servicos:{id_servico:'id',nome_feitico:'nome',custo_mana:'custo'},faturas:{id_fatura:'id',id_cliente:'cliId',id_servico:'svcId',ouro_cobrado:'ouro'}};
+  const dataKey=keyMap[from][col];
+  const results=data.filter(r=>String(r[dataKey]).toLowerCase()===val.toLowerCase());
+  renderSelectResult(from,results);
+  markDone(2);
+  setNpc(`Consulta executada! Encontrado${results.length===1?'':'s'} <strong>${results.length} registro${results.length===1?'':'s'}</strong> onde ${col} = '${val}'.`);
+}
+
+function runSelectAll(){
+  const from=document.getElementById('sel-from').value;
+  const data={clientes,servicos,faturas}[from]||[];
+  document.getElementById('sel-code').value=`SELECT *\nFROM ${from};`;
+  renderSelectResult(from,data);
+  markDone(2);
+}
+
+function renderSelectResult(from,rows){
+  const wrap=document.getElementById('sel-result-wrap');
+  const body=document.getElementById('sel-result-body');
+  const cnt=document.getElementById('sel-cnt');
+  wrap.style.display='block';
+  cnt.textContent=rows.length+' linha'+(rows.length!==1?'s':'');
+  if(rows.length===0){body.innerHTML='<p class="empty-row">Nenhum registro encontrado para essa condição.</p>';return;}
+  const headers={clientes:['id_cliente','nome_heroi','reino'],servicos:['id_servico','nome_feitico','custo_mana'],faturas:['id_fatura','id_cliente','id_servico','ouro_cobrado']};
+  const keys={clientes:['id','nome','reino'],servicos:['id','nome','custo'],faturas:['id','cliId','svcId','ouro']};
+  const hs=headers[from];const ks=keys[from];
+  let html=`<table class="lt"><thead><tr>${hs.map(h=>`<th>${h}</th>`).join('')}</tr></thead><tbody>`;
+  rows.forEach(r=>{html+=`<tr class="new-row">${ks.map((k,i)=>`<td class="${i===0?'td-pk':ks[i].includes('Id')||ks[i].includes('id')?'td-fk':'td-val'}">${r[k]}</td>`).join('')}</tr>`;});
+  html+='</tbody></table>';
+  body.innerHTML=html;
+  spawnConf('conf');
+}
+
+// ══════════════════════
+// QUIZ
+// ══════════════════════
+const QUIZ=[
+  {stem:'Para inserir um aliado chamado "Elfos" no reino "Floresta", qual feitiço SQL está correto?',
+   opts:['SELECT * FROM clientes WHERE nome_heroi = "Elfos";',`INSERT INTO clientes (nome_heroi, reino) VALUES ('Elfos', 'Floresta');`,'CREATE TABLE clientes (nome_heroi = Elfos);','UPDATE clientes SET nome = Elfos WHERE id = 1;'],
+   answer:1,exp:'INSERT INTO tabela (colunas) VALUES (valores). O id_cliente é SERIAL — gerado automaticamente!'
+  },
+  {stem:'Por que ao inserir uma fatura usamos <code>id_cliente = 2</code> em vez de escrever o nome do cliente?',
+   opts:['Porque nomes são mais difíceis de digitar.','Porque o PostgreSQL não aceita texto em faturas.','Porque é uma Chave Estrangeira — o número aponta para o registro correto no baú de clientes, sem duplicar dados!','Porque os nomes podem mudar e o ID nunca muda.'],
+   answer:2,exp:'FK = código de barras! O ID nunca muda e ocupa menos espaço. O servidor busca o nome quando precisar!'
+  },
+  {stem:'Qual consulta SQL retorna SOMENTE os clientes do reino "Norte"?',
+   opts:['SELECT reino FROM clientes;','SELECT * FROM clientes;',`SELECT * FROM clientes WHERE reino = 'Norte';`,'INSERT INTO clientes WHERE reino = Norte;'],
+   answer:2,exp:'SELECT * = busca tudo. FROM clientes = da tabela clientes. WHERE reino = "Norte" = filtra pelo reino!'
+  },
+  {stem:'O que acontece se tentarmos inserir uma fatura com <code>id_cliente = 99</code> se não existe nenhum cliente com esse ID?',
+   opts:['O servidor cria o cliente automaticamente com ID 99.','O PostgreSQL aceita o valor mas registra como NULL.','O servidor retorna erro — violação de Chave Estrangeira! FK garante integridade!','A fatura é inserida mas o campo fica vazio.'],
+   answer:2,exp:'Integridade referencial! FK impede que você aponte para algo que não existe. É uma proteção do banco relacional!'
+  }
+];
+
+function buildQuiz(){
+  const c=document.getElementById('quiz-container');
+  c.innerHTML='';
+  const L=['A','B','C','D'];
+  QUIZ.forEach((q,qi)=>{
+    c.innerHTML+=`<div class="quiz-wrap" id="qw${qi}">
+      <p class="q-title">🧠 QUESTÃO ${qi+1}</p>
+      <p class="q-stem">${q.stem}</p>
+      <div class="q-opts">${q.opts.map((o,i)=>`<button class="q-opt" id="qo${qi}_${i}" onclick="pickQ(${qi},${i})"><span class="ql">${L[i]}</span><span>${o}</span></button>`).join('')}</div>
+      <div class="q-fb" id="qfb${qi}"></div>
+    </div>`;
+  });
+}
+
+function pickQ(qi,oi){
+  if(quizAnswers[qi]!==undefined) return;
+  const q=QUIZ[qi]; const ok=oi===q.answer;
+  quizAnswers[qi]={chosen:oi,correct:ok};
+  for(let i=0;i<4;i++){const b=document.getElementById(`qo${qi}_${i}`);if(!b)continue;b.classList.add('locked');if(i===q.answer)b.classList.add('ok');else if(i===oi&&!ok)b.classList.add('nok');}
+  const fb=document.getElementById('qfb'+qi);
+  fb.style.display='block'; fb.className='q-fb '+(ok?'ok':'nok');
+  fb.innerHTML=(ok?'✅ Correto! ':'❌ Incorreto. ')+q.exp;
+  if(ok){showOv('✅ ACERTOU!',q.exp.substring(0,55)+'...');setTimeout(hideOv,1400);}
+  if(Object.keys(quizAnswers).length===QUIZ.length){document.getElementById('quiz-done-btn').style.display='block';markDone(3);spawnConf('conf');}
+}
+
+function buildResult(){
+  const correct=Object.values(quizAnswers).filter(a=>a.correct).length;
+  const total=QUIZ.length;
+  const c=document.getElementById('result-content');
+  c.innerHTML=`<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-bottom:14px;">
+    <div style="border:1.5px solid rgba(29,233,182,.3);border-radius:8px;padding:11px;text-align:center;background:rgba(29,233,182,.06);">
+      <div style="font-family:'Press Start 2P',monospace;font-size:.9rem;color:var(--teal);">${correct}/${total}</div>
+      <div style="font-size:.68rem;font-weight:700;color:var(--gray);margin-top:3px;">QUIZ</div>
+    </div>
+    <div style="border:1.5px solid rgba(0,230,118,.3);border-radius:8px;padding:11px;text-align:center;background:rgba(0,230,118,.06);">
+      <div style="font-family:'Press Start 2P',monospace;font-size:.9rem;color:var(--green);">${clientes.length}</div>
+      <div style="font-size:.68rem;font-weight:700;color:var(--gray);margin-top:3px;">CLIENTES</div>
+    </div>
+    <div style="border:1.5px solid rgba(64,196,255,.3);border-radius:8px;padding:11px;text-align:center;background:rgba(64,196,255,.06);">
+      <div style="font-family:'Press Start 2P',monospace;font-size:.9rem;color:var(--blue);">${faturas.length}</div>
+      <div style="font-size:.68rem;font-weight:700;color:var(--gray);margin-top:3px;">FATURAS</div>
+    </div>
+  </div>`;
+  if(correct===total) spawnConf('conf');
+}
+
+// ══════════════════════
+// RENDER TABLE
+// ══════════════════════
+function renderTable(tbodyId,cntId,data,keys,classes){
+  const tb=document.getElementById(tbodyId);
+  const cnt=document.getElementById(cntId);
+  if(!tb||!cnt) return;
+  cnt.textContent=data.length+' registro'+(data.length!==1?'s':'');
+  if(data.length===0){tb.innerHTML=`<tr><td colspan="${keys.length}" class="empty-row">Baú vazio</td></tr>`;return;}
+  tb.innerHTML='';
+  data.forEach((r,ri)=>{
+    const tr=document.createElement('tr');
+    if(ri===data.length-1) tr.className='new-row';
+    keys.forEach((k,i)=>{const td=document.createElement('td');td.className=classes[i]||'';td.textContent=r[k]??'—';tr.appendChild(td);});
+    tb.appendChild(tr);
+  });
+}
+
+// ══════════════════════
+// UTILS
+// ══════════════════════
+function showFb(el,type,msg){el.style.display='block';el.className='fb-msg fb-'+type;el.innerHTML=msg;}
+function setNpc(html){document.getElementById('npc-g').innerHTML=html;}
+function markDone(i){const d=document.getElementById('sd'+i);if(d)d.className='sd done';}
+function unlockSwitch(tab,idx){
+  for(let i=0;i<=idx;i++){const d=document.getElementById('sd'+i);if(d&&d.className.includes('locked'))d.className='sd done';}
+  document.getElementById('sd'+idx).className='sd active';
+  swTab(tab);
+}
+function swTab(t){
+  ['insert','fk','select','quiz'].forEach(id=>{
+    document.getElementById('tab-'+id).className='tb'+(id===t?' active':'');
+    document.getElementById('tp-'+id).className='tpane'+(id===t?' active':'');
+  });
+  if(t==='fk')     { updateFkSelects(); updateInsertPreview(); }
+  if(t==='select') { buildSelect(); }
+  if(t==='quiz')   { buildQuiz(); }
+}
+function showOv(t,s){document.getElementById('ov').classList.add('on');document.getElementById('ov-t').textContent=t;document.getElementById('ov-s').textContent=s;}
+function hideOv(){document.getElementById('ov').classList.remove('on');}
+function spawnConf(cid){const c=document.getElementById(cid);if(!c)return;const cols=['#1de9b6','#f5c842','#00e676','#40c4ff','#ff9800','#ce93d8'];for(let i=0;i<60;i++){const el=document.createElement('div');const sz=4+Math.random()*7;el.style.cssText=`position:absolute;width:${sz}px;height:${sz}px;background:${cols[Math.floor(Math.random()*cols.length)]};left:${Math.random()*100}%;top:-10px;border-radius:${Math.random()>.5?'50%':'2px'};animation:cf ${1.5+Math.random()*2}s ease ${Math.random()*.5}s both;`;c.appendChild(el);}setTimeout(()=>c.innerHTML='',5000);}
+(()=>{const s=document.createElement('style');s.textContent='@keyframes cf{from{transform:translateY(0) rotate(0deg);opacity:1}to{transform:translateY(100vh) rotate(720deg);opacity:0}}';document.head.appendChild(s);})();
+function go(id){document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on'));document.getElementById(id).classList.add('on');window.scrollTo(0,0);}
+function fullReset(){clientes=[];servicos=[];faturas=[];cliId=1;svcId=1;fatId=1;quizAnswers={};go('s-intro');}
+// INIT
+buildSelect();
+</script>
+</body>
+</html>

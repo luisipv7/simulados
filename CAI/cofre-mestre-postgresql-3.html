@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Cofre Mestre 3 — Atualizar e Unir Baús</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Exo+2:wght@400;600;700;800&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#080610;--panel:#0e0b24;--panel2:#161030;--border:#241848;--border2:#362a68;
+  --gold:#f5c842;--gold2:#ffe082;--green:#00e676;--green2:#b9f6ca;
+  --red:#ff5252;--red2:#ffd0d0;--blue:#40c4ff;--blue2:#b3e5fc;
+  --purple:#ce93d8;--purple2:#f3d9ff;--orange:#ff9800;--orange2:#ffe0b2;
+  --pink:#f06292;--white:#e8ddff;--gray:#6a5a90;--gray2:#42306a;
+  --pk:#f5c842;--fk:#ff9800;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{font-family:'Exo 2',sans-serif;background:var(--bg);color:var(--white);min-height:100vh;overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;background-image:radial-gradient(circle at 30% 20%,rgba(206,147,216,.04) 0%,transparent 60%),radial-gradient(circle at 70% 80%,rgba(64,196,255,.04) 0%,transparent 60%),linear-gradient(rgba(206,147,216,.015) 1px,transparent 1px),linear-gradient(90deg,rgba(206,147,216,.015) 1px,transparent 1px);background-size:100% 100%,100% 100%,46px 46px,46px 46px;pointer-events:none;z-index:0;}
+body::after{content:'';position:fixed;inset:0;background-image:radial-gradient(1px 1px at 12% 25%,rgba(255,255,255,.9) 0%,transparent 100%),radial-gradient(1px 1px at 80% 15%,rgba(255,255,255,.7) 0%,transparent 100%),radial-gradient(1px 1px at 50% 85%,rgba(255,255,255,.8) 0%,transparent 100%),radial-gradient(1px 1px at 28% 60%,rgba(255,255,255,.6) 0%,transparent 100%),radial-gradient(1px 1px at 75% 42%,rgba(255,255,255,.7) 0%,transparent 100%);pointer-events:none;z-index:0;}
+
+.scr{display:none;position:relative;z-index:1;min-height:100vh;flex-direction:column;align-items:center;padding:18px 14px 50px;}
+.scr.on{display:flex;}
+.panel{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:24px 28px;max-width:1020px;width:100%;box-shadow:0 0 50px rgba(206,147,216,.04),0 18px 60px rgba(0,0,0,.9);}
+
+.ptitle{font-family:'Press Start 2P',monospace;font-size:clamp(.48rem,1.5vw,.76rem);color:var(--purple);text-shadow:2px 2px 0 rgba(0,0,0,.9),0 0 20px rgba(206,147,216,.4);line-height:2.1;text-align:center;}
+.psub{font-family:'Press Start 2P',monospace;font-size:.35rem;color:var(--gray);letter-spacing:2px;text-align:center;}
+
+.npc-wrap{display:flex;gap:12px;align-items:flex-start;background:rgba(8,6,16,.95);border:1px solid rgba(206,147,216,.18);border-radius:10px;padding:13px 15px;margin-bottom:14px;}
+.npc-av{width:48px;height:48px;border-radius:8px;border:1px solid var(--purple);background:linear-gradient(135deg,#0e0420,#281040);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;animation:fl 3s ease-in-out infinite;box-shadow:0 0 10px rgba(206,147,216,.18);}
+@keyframes fl{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+.npc-name{font-family:'Press Start 2P',monospace;font-size:.38rem;color:var(--purple);margin-bottom:5px;}
+.npc-txt{font-size:.87rem;font-weight:600;color:#c8b8e0;line-height:1.75;}
+.npc-txt strong{color:var(--purple2);}
+.code-tip{font-family:'Fira Code',monospace;font-size:.76rem;color:var(--purple);background:rgba(206,147,216,.08);border:1px solid rgba(206,147,216,.22);border-radius:5px;padding:3px 8px;display:inline-block;margin-top:5px;}
+
+.btn{display:inline-flex;align-items:center;gap:7px;font-family:'Press Start 2P',monospace;font-size:.45rem;border:1px solid transparent;border-radius:7px;padding:10px 18px;cursor:pointer;transition:all .2s;color:white;}
+.btn-purple{background:linear-gradient(135deg,#200840,#4a1880);border-color:rgba(206,147,216,.4);box-shadow:0 4px 12px rgba(206,147,216,.2);}
+.btn-purple:hover{transform:translateY(-1px);box-shadow:0 6px 18px rgba(206,147,216,.35);}
+.btn-gold{background:linear-gradient(135deg,#4a2c00,#9a6000);border-color:rgba(245,200,66,.4);color:#fef3c7;box-shadow:0 4px 12px rgba(245,200,66,.2);}
+.btn-gold:hover{transform:translateY(-1px);}
+.btn-red{background:linear-gradient(135deg,#3a0808,#700000);border-color:rgba(255,82,82,.4);box-shadow:0 4px 12px rgba(255,82,82,.18);}
+.btn-red:hover{transform:translateY(-1px);}
+.btn-blue{background:linear-gradient(135deg,#0a2a50,#164080);border-color:rgba(64,196,255,.35);box-shadow:0 4px 12px rgba(64,196,255,.2);}
+.btn-blue:hover{transform:translateY(-1px);}
+.btn-ghost{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);font-size:.38rem;}
+.btn-ghost:hover{background:rgba(255,255,255,.1);}
+.btn:disabled{opacity:.3;cursor:not-allowed;transform:none;}
+
+/* STEPS */
+.snav{display:flex;gap:6px;justify-content:center;margin-bottom:14px;flex-wrap:wrap;}
+.sd{font-family:'Press Start 2P',monospace;font-size:.32rem;padding:5px 9px;border-radius:5px;border:1px solid;transition:all .3s;}
+.sd.done  {border-color:var(--purple);background:rgba(206,147,216,.07);color:var(--purple);}
+.sd.active{border-color:var(--gold);background:rgba(245,200,66,.07);color:var(--gold);}
+.sd.locked{border-color:var(--border);color:rgba(255,255,255,.15);}
+
+/* CODE EDITOR */
+.ced{background:rgba(2,1,8,.97);border:1px solid var(--border2);border-radius:10px;overflow:hidden;margin:12px 0;}
+.ced-top{display:flex;align-items:center;gap:10px;padding:8px 14px;background:rgba(0,0,0,.5);border-bottom:1px solid var(--border);}
+.ced-dots{display:flex;gap:5px;}
+.ced-dot{width:10px;height:10px;border-radius:50%;}
+.ced-r{background:#ff5f56;}.ced-y{background:#ffbd2e;}.ced-g{background:#27c93f;}
+.ced-fn{font-family:'Fira Code',monospace;font-size:.7rem;color:var(--gray);}
+.code-ta{width:100%;background:transparent;border:none;outline:none;font-family:'Fira Code',monospace;font-size:.8rem;color:#b090e8;padding:16px;resize:vertical;caret-color:var(--purple);line-height:1.75;tab-size:2;min-height:140px;}
+.code-ta.readonly-ta{color:#9090c0;}
+
+/* LIVE TABLE */
+.lt-wrap{border:1px solid var(--border);border-radius:10px;overflow:hidden;margin:10px 0;}
+.lt-hdr{display:flex;align-items:center;justify-content:space-between;padding:9px 14px;background:rgba(0,0,0,.5);border-bottom:1px solid var(--border);}
+.lt-ttl{font-family:'Press Start 2P',monospace;font-size:.4rem;}
+.lt-cnt{font-family:'Fira Code',monospace;font-size:.68rem;color:var(--gray);}
+table.lt{width:100%;border-collapse:collapse;font-size:.82rem;}
+table.lt th{font-family:'Press Start 2P',monospace;font-size:.28rem;padding:8px 11px;text-align:left;letter-spacing:1px;background:rgba(0,0,0,.5);border-bottom:1px solid var(--border2);color:var(--gray);}
+table.lt td{padding:8px 11px;border-bottom:1px solid rgba(36,24,72,.4);color:#9890b8;font-weight:600;}
+table.lt tr:hover td{background:rgba(206,147,216,.03);}
+table.lt tr.updated td{background:rgba(255,152,0,.08);animation:rowUp .6s ease;}
+table.lt tr.deleted td{background:rgba(255,82,82,.08);text-decoration:line-through;opacity:.5;animation:rowDel .4s ease forwards;}
+table.lt tr.new-row td{background:rgba(206,147,216,.06);animation:rowIn .4s ease;}
+@keyframes rowIn{from{opacity:0;transform:translateX(-6px)}to{opacity:1;transform:translateX(0)}}
+@keyframes rowUp{from{background:rgba(255,152,0,.25)}to{background:rgba(255,152,0,.08)}}
+@keyframes rowDel{0%{opacity:1}100%{opacity:0;transform:translateX(20px)}}
+.td-pk{color:var(--pk);font-family:'Fira Code',monospace;}
+.td-fk{color:var(--orange);font-family:'Fira Code',monospace;}
+.td-val{color:var(--purple2);}
+.empty-r{font-size:.8rem;font-weight:600;color:rgba(106,90,144,.5);text-align:center;padding:14px;font-style:italic;}
+
+/* COMMAND BUILDER */
+.cmd-panel{background:rgba(0,0,0,.4);border:1px solid var(--border);border-radius:10px;padding:15px;margin:10px 0;}
+.cmd-title{font-family:'Press Start 2P',monospace;font-size:.42rem;margin-bottom:11px;}
+.cmd-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:9px;}
+.cmd-lbl{font-family:'Fira Code',monospace;font-size:.7rem;color:var(--gray);width:72px;flex-shrink:0;}
+.cmd-sel{font-family:'Fira Code',monospace;font-size:.8rem;color:var(--white);background:rgba(0,0,0,.4);border:1.5px solid var(--border2);border-radius:6px;padding:6px 10px;outline:none;cursor:pointer;}
+.cmd-sel:focus{border-color:var(--purple);}
+.cmd-inp{font-family:'Fira Code',monospace;font-size:.8rem;color:var(--purple2);background:rgba(0,0,0,.4);border:1.5px solid var(--border2);border-radius:6px;padding:6px 10px;outline:none;max-width:200px;transition:border-color .2s;}
+.cmd-inp:focus{border-color:var(--purple);}
+.cmd-inp.err{border-color:var(--red);animation:shk .3s ease;}
+@keyframes shk{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+
+/* FB */
+.fb{border-radius:8px;padding:10px 13px;font-size:.84rem;font-weight:700;line-height:1.6;display:none;margin-top:8px;animation:pu .3s ease;}
+@keyframes pu{from{opacity:0;transform:translateY(3px)}to{opacity:1;transform:translateY(0)}}
+.fb-ok {background:rgba(206,147,216,.1);border:1px solid rgba(206,147,216,.3);color:var(--purple2);}
+.fb-nok{background:rgba(255,82,82,.08);border:1px solid rgba(255,82,82,.22);color:var(--red2);}
+
+/* JOIN VISUAL */
+.join-viz{display:flex;align-items:center;justify-content:center;gap:0;margin:14px 0;flex-wrap:wrap;}
+.join-circle{width:120px;height:120px;border-radius:50%;border:2px solid;display:flex;align-items:center;justify-content:center;text-align:center;font-size:.7rem;font-weight:700;line-height:1.4;flex-shrink:0;position:relative;}
+.jc-a{border-color:var(--green);background:rgba(0,230,118,.1);color:var(--green2);margin-right:-30px;z-index:1;}
+.jc-b{border-color:var(--blue);background:rgba(64,196,255,.1);color:var(--blue2);margin-left:-30px;z-index:1;}
+.join-center{width:60px;height:60px;background:rgba(245,200,66,.15);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.6rem;font-weight:800;color:var(--gold);z-index:2;border:1.5px solid rgba(245,200,66,.3);}
+
+/* QUIZ */
+.quiz-wrap{background:rgba(8,6,16,.9);border:1px solid var(--border);border-radius:10px;padding:16px;margin:12px 0;}
+.q-ttl{font-family:'Press Start 2P',monospace;font-size:.42rem;color:var(--purple);margin-bottom:10px;}
+.q-stem{font-size:.87rem;font-weight:700;color:#c8b8e0;line-height:1.7;margin-bottom:12px;}
+.q-stem code{font-family:'Fira Code',monospace;font-size:.82rem;color:var(--purple);background:rgba(206,147,216,.08);border-radius:4px;padding:1px 6px;}
+.q-opts{display:flex;flex-direction:column;gap:7px;}
+.q-opt{display:flex;align-items:flex-start;gap:9px;background:rgba(255,255,255,.03);border:1.5px solid var(--border);border-radius:7px;padding:10px 13px;cursor:pointer;font-size:.86rem;font-weight:600;color:#9890b8;transition:all .2s;width:100%;}
+.q-opt:hover:not(.locked){border-color:var(--purple2);color:var(--white);background:rgba(206,147,216,.06);}
+.q-opt .ql{font-family:'Press Start 2P',monospace;font-size:.35rem;color:var(--gray2);flex-shrink:0;margin-top:2px;}
+.q-opt.ok {border-color:var(--green)!important;background:rgba(0,230,118,.1)!important;color:var(--green2)!important;}
+.q-opt.nok{border-color:var(--red)!important;  background:rgba(255,82,82,.1)!important; color:var(--red2)!important;}
+.q-opt.locked{cursor:default;}
+.q-fb{border-radius:7px;padding:9px 12px;font-size:.83rem;font-weight:700;line-height:1.6;display:none;margin-top:9px;animation:pu .3s ease;}
+.q-fb.ok{background:rgba(0,230,118,.1);border:1px solid rgba(0,230,118,.28);color:var(--green2);}
+.q-fb.nok{background:rgba(255,82,82,.08);border:1px solid rgba(255,82,82,.22);color:var(--red2);}
+
+/* TABS */
+.tnav{display:flex;gap:5px;margin-bottom:0;flex-wrap:wrap;}
+.tb{font-family:'Press Start 2P',monospace;font-size:.35rem;padding:7px 11px;border-radius:7px 7px 0 0;border:1px solid var(--border);background:rgba(0,0,0,.4);color:var(--gray);cursor:pointer;transition:all .2s;border-bottom-color:transparent;}
+.tb.active{background:var(--panel2);border-color:var(--purple);border-bottom-color:var(--panel2);color:var(--purple);}
+.tcontent{background:var(--panel2);border:1px solid var(--border);border-top-color:var(--purple);border-radius:0 8px 8px 8px;padding:16px;animation:pu .3s ease;}
+.tpane{display:none;}
+.tpane.active{display:block;}
+
+/* RESULT */
+.res-frame{background:linear-gradient(135deg,rgba(206,147,216,.06),rgba(245,200,66,.04));border:2px solid var(--purple);border-radius:12px;padding:20px;margin:12px 0;animation:gf 2.5s ease-in-out infinite;}
+@keyframes gf{0%,100%{box-shadow:0 0 20px rgba(206,147,216,.1)}50%{box-shadow:0 0 40px rgba(206,147,216,.25)}}
+
+.conf{position:fixed;inset:0;pointer-events:none;z-index:400;}
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:500;display:none;align-items:center;justify-content:center;flex-direction:column;}
+.ov.on{display:flex;}
+.ov-t{font-family:'Press Start 2P',monospace;font-size:clamp(.65rem,3vw,1.2rem);text-align:center;animation:bp .5s ease;}
+@keyframes bp{from{transform:scale(.3);opacity:0}70%{transform:scale(1.1)}100%{transform:scale(1);opacity:1}}
+.ov-s{font-size:.88rem;font-weight:700;color:var(--white);text-align:center;margin-top:10px;max-width:380px;line-height:1.7;padding:0 16px;}
+
+@media(max-width:540px){.panel{padding:14px 10px;}.join-viz{flex-direction:column;}}
+</style>
+</head>
+<body>
+<div class="conf" id="conf"></div>
+<div class="ov" id="ov"><div class="ov-t" id="ov-t" style="color:var(--purple);">✨ FEITIÇO LANÇADO!</div><div class="ov-s" id="ov-s"></div></div>
+
+<!-- ════ INTRO ════ -->
+<div class="scr on" id="s-intro">
+  <div class="panel" style="max-width:660px;margin-top:16px;">
+    <div style="text-align:center;margin-bottom:14px;">
+      <div style="font-size:3rem;animation:fl 2.5s ease-in-out infinite;margin-bottom:8px;">⚡</div>
+      <p class="ptitle">COFRE MESTRE 3<br>FEITIÇOS AVANÇADOS</p>
+      <p class="ptitle" style="color:var(--orange);font-size:clamp(.35rem,1.1vw,.5rem);">UPDATE · DELETE · JOIN</p>
+      <p class="psub" style="margin-top:5px;">DOMINANDO O SERVIDOR DE DADOS</p>
+    </div>
+
+    <div class="npc-wrap">
+      <div class="npc-av">🧙</div>
+      <div><p class="npc-name">MESTRE GUARDIÃO</p>
+        <p class="npc-txt">Herói! Você já sabe forjar baús (CREATE) e abastecer com Loot (INSERT). Agora chegou a hora dos <strong>feitiços avançados</strong>:<br><br>
+        <strong>UPDATE</strong> para corrigir dados, <strong>DELETE</strong> para remover registros e <strong>JOIN</strong> para unir dois baús numa só consulta!
+          <span class="code-tip">UPDATE = editar · DELETE = apagar · JOIN = fundir baús</span>
+        </p>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-bottom:16px;">
+      <div style="border:1.5px solid rgba(255,152,0,.3);border-radius:9px;padding:12px;background:rgba(255,152,0,.06);text-align:center;">
+        <div style="font-size:1.5rem;margin-bottom:6px;">✏️</div>
+        <p style="font-family:'Press Start 2P',monospace;font-size:.38rem;color:var(--orange);margin-bottom:5px;">UPDATE</p>
+        <p style="font-size:.78rem;font-weight:700;color:#c8b8e0;line-height:1.5;">Corrige um dado já guardado no baú</p>
+      </div>
+      <div style="border:1.5px solid rgba(255,82,82,.3);border-radius:9px;padding:12px;background:rgba(255,82,82,.06);text-align:center;">
+        <div style="font-size:1.5rem;margin-bottom:6px;">🗑️</div>
+        <p style="font-family:'Press Start 2P',monospace;font-size:.38rem;color:var(--red);margin-bottom:5px;">DELETE</p>
+        <p style="font-size:.78rem;font-weight:700;color:#c8b8e0;line-height:1.5;">Remove um registro do baú permanentemente</p>
+      </div>
+      <div style="border:1.5px solid rgba(64,196,255,.3);border-radius:9px;padding:12px;background:rgba(64,196,255,.06);text-align:center;">
+        <div style="font-size:1.5rem;margin-bottom:6px;">🔗</div>
+        <p style="font-family:'Press Start 2P',monospace;font-size:.38rem;color:var(--blue);margin-bottom:5px;">JOIN</p>
+        <p style="font-size:.78rem;font-weight:700;color:#c8b8e0;line-height:1.5;">Une dois baús mostrando dados de ambos</p>
+      </div>
+    </div>
+
+    <div style="background:rgba(255,82,82,.06);border:1px solid rgba(255,82,82,.22);border-radius:9px;padding:12px;margin-bottom:18px;">
+      <p style="font-family:'Press Start 2P',monospace;font-size:.36rem;color:var(--red);margin-bottom:6px;">⚠️ AVISO DO SERVIDOR</p>
+      <p style="font-size:.84rem;font-weight:700;color:#f0b0b0;line-height:1.6;">UPDATE e DELETE <strong>sem WHERE</strong> afetam TODOS os registros! Sempre use WHERE para especificar qual registro alterar.</p>
+    </div>
+
+    <div style="text-align:center;">
+      <button class="btn btn-purple" style="font-size:.5rem;" onclick="go('s-game')">⚡ APRENDER FEITIÇOS AVANÇADOS</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════ JOGO ════ -->
+<div class="scr" id="s-game">
+  <div class="panel" style="max-width:1020px;margin-top:14px;">
+
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px;">
+      <div><p class="ptitle" style="font-size:.46rem;text-align:left;">⚡ FEITIÇOS AVANÇADOS DO COFRE</p><p class="psub" style="text-align:left;margin-top:2px;">UPDATE · DELETE · JOIN · GUILDA TECHSOLUTIONS</p></div>
+      <div style="display:flex;gap:6px;"><button class="btn btn-ghost" onclick="go('s-intro')">← INTRO</button><button class="btn btn-gold" style="font-size:.36rem;" onclick="go('s-result')">🏆 RESULTADO</button></div>
+    </div>
+
+    <div class="snav">
+      <div class="sd active" id="sd0">✏️ UPDATE</div>
+      <div class="sd locked" id="sd1">🗑️ DELETE</div>
+      <div class="sd locked" id="sd2">🔗 JOIN</div>
+      <div class="sd locked" id="sd3">🧠 QUIZ</div>
+    </div>
+
+    <div class="npc-wrap"><div class="npc-av">🧙</div><div><p class="npc-name">MESTRE GUARDIÃO</p><p class="npc-txt" id="npc-g">Aqui estão os aliados já cadastrados. Use o <strong>feitiço UPDATE</strong> para corrigir o reino de um aliado que mudou de endereço!</p></div></div>
+
+    <div class="tnav">
+      <button class="tb active" id="tab-update" onclick="swTab('update')">✏️ UPDATE</button>
+      <button class="tb" id="tab-delete" onclick="swTab('delete')">🗑️ DELETE</button>
+      <button class="tb" id="tab-join"   onclick="swTab('join')">🔗 JOIN</button>
+      <button class="tb" id="tab-quiz"   onclick="swTab('quiz')">🧠 QUIZ</button>
+    </div>
+    <div class="tcontent">
+
+      <!-- UPDATE -->
+      <div class="tpane active" id="tp-update">
+        <p style="font-size:.88rem;font-weight:700;color:#c8b8e0;margin-bottom:12px;line-height:1.7;">
+          O feitiço <code style="font-family:'Fira Code';font-size:.85rem;color:var(--orange);">UPDATE</code> corrige um dado já guardado. Sempre com <code style="font-family:'Fira Code';color:var(--red);">WHERE</code> para não mudar tudo!
+        </p>
+
+        <div class="ced" style="border-color:rgba(255,152,0,.3);">
+          <div class="ced-top"><div class="ced-dots"><div class="ced-dot ced-r"></div><div class="ced-dot ced-y"></div><div class="ced-dot ced-g"></div></div><span class="ced-fn">update_syntax.sql</span></div>
+          <textarea class="code-ta readonly-ta" readonly style="min-height:80px;color:#e0a060;">UPDATE clientes
+SET    reino = 'Novo Valor'
+WHERE  id_cliente = 1;
+-- ⚠️ Sem WHERE = muda TODOS os registros!</textarea>
+        </div>
+
+        <div class="lt-wrap">
+          <div class="lt-hdr"><span class="lt-ttl" style="color:var(--orange);">📦 BAÚ: clientes (estado atual)</span><span class="lt-cnt" id="cnt-upd">5 registros</span></div>
+          <table class="lt"><thead><tr><th>id_cliente</th><th>nome_heroi</th><th>reino</th></tr></thead>
+          <tbody id="tb-upd"></tbody></table>
+        </div>
+
+        <div class="cmd-panel" style="border-color:rgba(255,152,0,.25);">
+          <p class="cmd-title" style="color:var(--orange);">✏️ CONSTRUTOR DE UPDATE</p>
+          <div class="cmd-row">
+            <span class="cmd-lbl">UPDATE</span><span style="font-family:'Fira Code',monospace;font-size:.8rem;color:var(--orange2);">clientes</span>
+          </div>
+          <div class="cmd-row">
+            <span class="cmd-lbl">SET reino =</span>
+            <input class="cmd-inp" id="upd-val" placeholder="Novo reino..." maxlength="40">
+          </div>
+          <div class="cmd-row">
+            <span class="cmd-lbl">WHERE id =</span>
+            <select class="cmd-sel" id="upd-id">
+              <option value="">-- Selecione o ID --</option>
+            </select>
+          </div>
+          <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;">
+            <button class="btn btn-purple" style="font-size:.38rem;" onclick="runUpdate()">✏️ EXECUTAR UPDATE</button>
+          </div>
+          <div class="fb" id="fb-upd"></div>
+        </div>
+
+        <div class="ced">
+          <div class="ced-top"><div class="ced-dots"><div class="ced-dot ced-r"></div><div class="ced-dot ced-y"></div><div class="ced-dot ced-g"></div></div><span class="ced-fn">update_preview.sql</span></div>
+          <textarea class="code-ta" id="upd-preview" readonly style="min-height:60px;">-- Preencha os campos acima!</textarea>
+        </div>
+
+        <div style="text-align:center;margin-top:10px;">
+          <button class="btn btn-red" onclick="unlockSwitch('delete',1)">🗑️ APRENDER DELETE →</button>
+        </div>
+      </div>
+
+      <!-- DELETE -->
+      <div class="tpane" id="tp-delete">
+        <p style="font-size:.88rem;font-weight:700;color:#c8b8e0;margin-bottom:12px;line-height:1.7;">
+          O feitiço <code style="font-family:'Fira Code';font-size:.85rem;color:var(--red);">DELETE</code> remove um registro para sempre! Uma vez apagado, não volta mais. <strong style="color:var(--red);">Use WHERE obrigatoriamente!</strong>
+        </p>
+
+        <div style="background:rgba(255,82,82,.08);border:2px solid rgba(255,82,82,.3);border-radius:9px;padding:13px;margin-bottom:13px;display:flex;gap:10px;align-items:flex-start;">
+          <span style="font-size:1.5rem;flex-shrink:0;">⚠️</span>
+          <p style="font-size:.85rem;font-weight:700;color:var(--red2);line-height:1.65;"><strong>ALERTA DO SERVIDOR:</strong> DELETE sem WHERE apaga TUDO. É como esvaziar o baú inteiro! Abaixo você tem um botão de CONFIRMAÇÃO obrigatória para evitar acidentes.</p>
+        </div>
+
+        <div class="lt-wrap">
+          <div class="lt-hdr"><span class="lt-ttl" style="color:var(--red);">📦 BAÚ: clientes</span><span class="lt-cnt" id="cnt-del">5 registros</span></div>
+          <table class="lt"><thead><tr><th>id_cliente</th><th>nome_heroi</th><th>reino</th></tr></thead>
+          <tbody id="tb-del"></tbody></table>
+        </div>
+
+        <div class="cmd-panel" style="border-color:rgba(255,82,82,.25);">
+          <p class="cmd-title" style="color:var(--red);">🗑️ CONSTRUTOR DE DELETE</p>
+          <div class="cmd-row">
+            <span class="cmd-lbl">DELETE FROM</span>
+            <span style="font-family:'Fira Code',monospace;font-size:.8rem;color:var(--red2);">clientes</span>
+          </div>
+          <div class="cmd-row">
+            <span class="cmd-lbl">WHERE id =</span>
+            <select class="cmd-sel" id="del-id" onchange="buildDeletePreview()">
+              <option value="">-- Selecione o ID --</option>
+            </select>
+          </div>
+          <div style="margin-top:10px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+            <label style="display:flex;align-items:center;gap:7px;font-size:.82rem;font-weight:700;color:var(--red2);cursor:pointer;">
+              <input type="checkbox" id="del-confirm" style="width:16px;height:16px;cursor:pointer;accent-color:var(--red);">
+              Confirmo que quero apagar este registro permanentemente
+            </label>
+          </div>
+          <div style="margin-top:10px;">
+            <button class="btn btn-red" style="font-size:.38rem;" onclick="runDelete()">🗑️ EXECUTAR DELETE</button>
+          </div>
+          <div class="fb" id="fb-del"></div>
+        </div>
+
+        <div class="ced">
+          <div class="ced-top"><div class="ced-dots"><div class="ced-dot ced-r"></div><div class="ced-dot ced-y"></div><div class="ced-dot ced-g"></div></div><span class="ced-fn">delete_preview.sql</span></div>
+          <textarea class="code-ta" id="del-preview" readonly style="min-height:55px;color:#e08080;">-- Selecione o ID acima para gerar o SQL!</textarea>
+        </div>
+
+        <div style="text-align:center;margin-top:10px;">
+          <button class="btn btn-blue" onclick="unlockSwitch('join',2)">🔗 APRENDER JOIN →</button>
+        </div>
+      </div>
+
+      <!-- JOIN -->
+      <div class="tpane" id="tp-join">
+        <p style="font-size:.88rem;font-weight:700;color:#c8b8e0;margin-bottom:14px;line-height:1.7;">
+          O feitiço <code style="font-family:'Fira Code';font-size:.85rem;color:var(--blue);">JOIN</code> une dois baús numa só consulta! É como ver o nome do aliado E o valor da fatura ao mesmo tempo!
+        </p>
+
+        <!-- JOIN VISUAL -->
+        <div class="join-viz">
+          <div class="join-circle jc-a">
+            <span>👥 clientes<br><span style="font-size:.65rem;opacity:.8;">id, nome, reino</span></span>
+          </div>
+          <div class="join-center">JOIN</div>
+          <div class="join-circle jc-b">
+            <span>📜 faturas<br><span style="font-size:.65rem;opacity:.8;">id, id_cliente, ouro</span></span>
+          </div>
+        </div>
+
+        <div class="ced" style="border-color:rgba(64,196,255,.3);">
+          <div class="ced-top"><div class="ced-dots"><div class="ced-dot ced-r"></div><div class="ced-dot ced-y"></div><div class="ced-dot ced-g"></div></div><span class="ced-fn">join_example.sql</span></div>
+          <textarea class="code-ta readonly-ta" readonly style="min-height:130px;color:#80c0e8;">-- Feitiço JOIN: une clientes + faturas numa consulta
+-- Mostra: nome do aliado + valor de cada fatura
+
+SELECT
+  c.nome_heroi,       -- do baú clientes
+  c.reino,
+  f.id_fatura,        -- do baú faturas
+  f.ouro_cobrado
+FROM clientes c
+  INNER JOIN faturas f
+    ON c.id_cliente = f.id_cliente;
+-- ON = a chave que conecta os dois baús!</textarea>
+        </div>
+
+        <p style="font-family:'Press Start 2P',monospace;font-size:.4rem;color:var(--blue);margin-bottom:10px;">📊 RESULTADO DO JOIN (dados de exemplo)</p>
+        <div class="lt-wrap">
+          <div class="lt-hdr"><span class="lt-ttl" style="color:var(--blue);">🔗 clientes + faturas (JOIN)</span><span class="lt-cnt">4 linhas</span></div>
+          <table class="lt">
+            <thead><tr><th>nome_heroi</th><th>reino</th><th>id_fatura</th><th>ouro_cobrado</th></tr></thead>
+            <tbody>
+              <tr><td class="td-val">Rei Artur</td><td class="td-val">Norte</td><td class="td-pk">1</td><td class="td-val" style="color:var(--green2);">20.000,00</td></tr>
+              <tr><td class="td-val">Rei Artur</td><td class="td-val">Norte</td><td class="td-pk">4</td><td class="td-val" style="color:var(--green2);">8.000,00</td></tr>
+              <tr><td class="td-val">Elfos Prateados</td><td class="td-val">Floresta</td><td class="td-pk">2</td><td class="td-val" style="color:var(--green2);">5.000,00</td></tr>
+              <tr><td class="td-val">Forja Ironforge</td><td class="td-val">Montanhas</td><td class="td-pk">3</td><td class="td-val" style="color:var(--green2);">3.000,00</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div style="background:rgba(64,196,255,.06);border:1px solid rgba(64,196,255,.2);border-radius:8px;padding:12px;margin-top:8px;">
+          <p style="font-size:.84rem;font-weight:700;color:var(--blue2);line-height:1.65;">
+            ⚡ <strong>O que o JOIN fez?</strong> Em vez de duas consultas separadas, um único feitiço buscou o nome do aliado no Baú de Clientes E o valor da fatura no Baú de Faturas — tudo de uma vez! A chave <code style="font-family:'Fira Code';color:var(--orange);">id_cliente</code> conectou os dois baús!
+          </p>
+        </div>
+
+        <div style="text-align:center;margin-top:12px;">
+          <button class="btn btn-purple" onclick="unlockSwitch('quiz',3)">🧠 FAZER QUIZ →</button>
+        </div>
+      </div>
+
+      <!-- QUIZ -->
+      <div class="tpane" id="tp-quiz">
+        <div id="quiz-container"></div>
+        <div style="text-align:center;margin-top:12px;display:none;" id="quiz-done-btn">
+          <button class="btn btn-gold" onclick="go('s-result');buildResult()">🏆 VER RESULTADO FINAL</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ════ RESULTADO ════ -->
+<div class="scr" id="s-result">
+  <div class="panel" style="max-width:660px;margin-top:16px;">
+    <div style="text-align:center;margin-bottom:12px;">
+      <div style="font-size:3rem;animation:fl 2.5s ease-in-out infinite;">🏆</div>
+      <p class="ptitle">MESTRE DO<br>COFRE!</p>
+      <p class="psub" style="margin-top:4px;margin-bottom:14px;">TODOS OS FEITIÇOS SQL DOMINADOS</p>
+    </div>
+
+    <div class="res-frame">
+      <p style="font-family:'Press Start 2P',monospace;font-size:.44rem;color:var(--purple);text-align:center;margin-bottom:12px;">📋 MISSÃO COMPLETA</p>
+      <div id="result-content"></div>
+    </div>
+
+    <!-- ALL 3 MODULES SUMMARY -->
+    <div style="background:rgba(0,0,0,.4);border:1px solid var(--border);border-radius:10px;padding:14px;margin:12px 0;">
+      <p style="font-family:'Press Start 2P',monospace;font-size:.38rem;color:var(--purple);margin-bottom:10px;">⚔️ TODOS OS FEITIÇOS DESBLOQUEADOS</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:.82rem;font-weight:700;color:#c8b8e0;line-height:1.5;">
+        <div style="display:flex;gap:7px;"><code style="font-family:'Fira Code';color:var(--gold);">CREATE TABLE</code></div>
+        <div style="color:var(--gray);">Forjar o baú</div>
+        <div style="display:flex;gap:7px;"><code style="font-family:'Fira Code';color:var(--teal,#1de9b6);">INSERT INTO</code></div>
+        <div style="color:var(--gray);">Colocar Loot</div>
+        <div style="display:flex;gap:7px;"><code style="font-family:'Fira Code';color:var(--blue);">SELECT ... WHERE</code></div>
+        <div style="color:var(--gray);">Buscar Loot</div>
+        <div style="display:flex;gap:7px;"><code style="font-family:'Fira Code';color:var(--orange);">UPDATE ... SET</code></div>
+        <div style="color:var(--gray);">Corrigir dado</div>
+        <div style="display:flex;gap:7px;"><code style="font-family:'Fira Code';color:var(--red);">DELETE ... WHERE</code></div>
+        <div style="color:var(--gray);">Apagar registro</div>
+        <div style="display:flex;gap:7px;"><code style="font-family:'Fira Code';color:var(--blue);">JOIN ... ON</code></div>
+        <div style="color:var(--gray);">Unir dois baús</div>
+      </div>
+    </div>
+
+    <div class="npc-wrap"><div class="npc-av">🧙</div><div><p class="npc-name">MESTRE GUARDIÃO</p><p class="npc-txt"><strong>Parabéns, Guardião do Cofre!</strong><br><br>Você dominou todos os feitiços SQL! Com CREATE, INSERT, SELECT, UPDATE, DELETE e JOIN você consegue <strong>construir e operar qualquer banco de dados relacional</strong>!<span class="code-tip">SELECT * FROM herois WHERE nivel = 'mestre' ✓</span></p></div></div>
+
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;">
+      <button class="btn btn-purple" onclick="go('s-game')">← VOLTAR</button>
+      <button class="btn btn-ghost" onclick="fullReset()">↺ RECOMEÇAR</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════
+// DATA
+// ══════════════════════
+let clientes=[
+  {id:1,nome:'Rei Artur',reino:'Reino do Norte'},
+  {id:2,nome:'Elfos Prateados',reino:'Floresta Mágica'},
+  {id:3,nome:'Forja Ironforge',reino:'Montanhas'},
+  {id:4,nome:'Guarda dos Dragões',reino:'Sul'},
+  {id:5,nome:'Academia dos Magos',reino:'Capital'}
+];
+let quizAnswers={};
+
+function renderUpdTable(){
+  const tb=document.getElementById('tb-upd');
+  if(!tb) return;
+  tb.innerHTML='';
+  clientes.forEach(c=>{const tr=document.createElement('tr');tr.innerHTML=`<td class="td-pk">${c.id}</td><td class="td-val">${c.nome}</td><td class="td-val">${c.reino}</td>`;tb.appendChild(tr);});
+  document.getElementById('cnt-upd').textContent=clientes.length+' registros';
+  // populate select
+  const sel=document.getElementById('upd-id');
+  if(sel){sel.innerHTML='<option value="">-- Selecione o ID --</option>';clientes.forEach(c=>{const o=document.createElement('option');o.value=c.id;o.textContent=`#${c.id} — ${c.nome}`;sel.appendChild(o);});}
+}
+
+function renderDelTable(){
+  const tb=document.getElementById('tb-del');
+  if(!tb) return;
+  tb.innerHTML='';
+  clientes.forEach(c=>{const tr=document.createElement('tr');tr.innerHTML=`<td class="td-pk">${c.id}</td><td class="td-val">${c.nome}</td><td class="td-val">${c.reino}</td>`;tb.appendChild(tr);});
+  document.getElementById('cnt-del').textContent=clientes.length+' registros';
+  const sel=document.getElementById('del-id');
+  if(sel){sel.innerHTML='<option value="">-- Selecione o ID --</option>';clientes.forEach(c=>{const o=document.createElement('option');o.value=c.id;o.textContent=`#${c.id} — ${c.nome}`;sel.appendChild(o);});}
+}
+
+['upd-id','upd-val'].forEach(id=>{
+  const el=document.getElementById(id);
+  if(el) el.addEventListener('input',buildUpdatePreview);
+  if(el) el.addEventListener('change',buildUpdatePreview);
+});
+
+function buildUpdatePreview(){
+  const id=document.getElementById('upd-id').value;
+  const val=document.getElementById('upd-val').value||'???';
+  const nome=clientes.find(c=>c.id==id)?.nome||'???';
+  const pre=document.getElementById('upd-preview');
+  if(pre) pre.value=`-- Corrigindo o reino do aliado: ${nome}\nUPDATE clientes\nSET    reino = '${val}'\nWHERE  id_cliente = ${id||'?'};`;
+}
+
+function runUpdate(){
+  const id=parseInt(document.getElementById('upd-id').value);
+  const val=document.getElementById('upd-val').value.trim();
+  const fb=document.getElementById('fb-upd');
+  if(!id){showFb(fb,'nok','❌ Selecione um aliado primeiro!');return;}
+  if(!val){showFb(fb,'nok','❌ Digite o novo reino!');return;}
+  const idx=clientes.findIndex(c=>c.id===id);
+  if(idx===-1){showFb(fb,'nok','❌ ID não encontrado!');return;}
+  const old=clientes[idx].reino;
+  clientes[idx].reino=val;
+  renderUpdTable();
+  // highlight updated row
+  const rows=document.getElementById('tb-upd').querySelectorAll('tr');
+  rows.forEach((r,i)=>{if(clientes[i]?.id===id)r.className='updated';});
+  showFb(fb,'ok',`✅ UPDATE executado! Reino de ${clientes[idx].nome}: "${old}" → "${val}"`);
+  showOv('✏️ DADO ATUALIZADO!',`UPDATE clientes WHERE id=${id} — reino alterado com sucesso!`);
+  setTimeout(hideOv,1500);
+  markDone(0);
+  setNpc(`Feitiço UPDATE funcionou! O reino de <strong>${clientes[idx].nome}</strong> foi atualizado de "${old}" para "${val}" sem apagar o registro!`);
+}
+
+function buildDeletePreview(){
+  const id=document.getElementById('del-id').value;
+  const nome=clientes.find(c=>c.id==id)?.nome||'???';
+  const pre=document.getElementById('del-preview');
+  if(pre) pre.value=`-- ⚠️ ATENÇÃO: esta ação é irreversível!\nDELETE FROM clientes\nWHERE  id_cliente = ${id||'?'};\n-- Aliado: ${nome}`;
+}
+document.getElementById('del-id').addEventListener('change',buildDeletePreview);
+
+function runDelete(){
+  const id=parseInt(document.getElementById('del-id').value);
+  const confirmed=document.getElementById('del-confirm').checked;
+  const fb=document.getElementById('fb-del');
+  if(!id){showFb(fb,'nok','❌ Selecione um aliado!');return;}
+  if(!confirmed){showFb(fb,'nok','❌ Marque a caixa de confirmação antes de deletar!');return;}
+  const idx=clientes.findIndex(c=>c.id===id);
+  if(idx===-1){showFb(fb,'nok','❌ ID não encontrado!');return;}
+  const nome=clientes[idx].nome;
+  // animate delete
+  const rows=document.getElementById('tb-del').querySelectorAll('tr');
+  rows.forEach((r,i)=>{if(clientes[i]?.id===id)r.className='deleted';});
+  setTimeout(()=>{
+    clientes.splice(idx,1);
+    renderDelTable(); buildDeletePreview();
+    document.getElementById('del-confirm').checked=false;
+  },500);
+  showFb(fb,'ok',`✅ DELETE executado! Aliado "${nome}" (ID=${id}) removido permanentemente!`);
+  showOv('🗑️ REGISTRO DELETADO!',`DELETE FROM clientes WHERE id=${id} — ${nome} removido!`);
+  setTimeout(hideOv,1500);
+  markDone(1);
+  setNpc(`Feitiço DELETE executado! <strong>${nome}</strong> foi removido permanentemente do baú. Essa ação não tem volta — por isso o WHERE é obrigatório!`);
+}
+
+// ══════════════════════
+// QUIZ
+// ══════════════════════
+const QUIZ=[
+  {stem:'Para corrigir o nome de um aliado cujo ID é 3, qual feitiço SQL está CORRETO?',
+   opts:[`DELETE FROM clientes WHERE id_cliente = 3;`,`UPDATE clientes SET nome_heroi = 'Novo Nome' WHERE id_cliente = 3;`,`SELECT * FROM clientes WHERE id_cliente = 3;`,'INSERT INTO clientes VALUES (3, "Novo Nome");'],
+   answer:1,exp:'UPDATE tabela SET coluna = novo_valor WHERE condição. Sem WHERE, mudaria o nome de TODOS os aliados!'
+  },
+  {stem:'O que acontece se executarmos <code>DELETE FROM clientes;</code> sem a cláusula WHERE?',
+   opts:['Apenas o último registro inserido é apagado.','O banco retorna erro e nada acontece.','Todos os registros da tabela clientes são apagados permanentemente!','Apenas os registros sem FK são removidos.'],
+   answer:2,exp:'Sem WHERE, DELETE apaga TODOS os registros! É como esvaziar o baú completamente. SEMPRE use WHERE!'
+  },
+  {stem:'O feitiço <code>JOIN</code> no PostgreSQL serve para:',
+   opts:['Criar um backup de todas as tabelas do banco.','Unir dois ou mais baús (tabelas) numa única consulta, mostrando dados de ambos.','Duplicar todos os registros de uma tabela.','Mesclar dois bancos de dados diferentes.'],
+   answer:1,exp:'JOIN une tabelas numa consulta. Com INNER JOIN e ON definimos qual chave conecta os dois baús — normalmente FK e PK!'
+  },
+  {stem:'Qual é o papel do <code>ON</code> em um comando <code>JOIN</code>?',
+   opts:['Define a tabela principal da consulta.','Filtra os resultados após o JOIN ser feito.','Especifica qual coluna conecta as duas tabelas (geralmente PK = FK).','Ordena os resultados em ordem crescente.'],
+   answer:2,exp:'ON define a condição de junção: ON clientes.id_cliente = faturas.id_cliente. É o "portal mágico" que conecta os dois baús!'
+  }
+];
+
+function buildQuiz(){
+  const c=document.getElementById('quiz-container');
+  c.innerHTML='';
+  const L=['A','B','C','D'];
+  QUIZ.forEach((q,qi)=>{
+    c.innerHTML+=`<div class="quiz-wrap" id="qw${qi}">
+      <p class="q-ttl">🧠 QUESTÃO ${qi+1}</p>
+      <p class="q-stem">${q.stem}</p>
+      <div class="q-opts">${q.opts.map((o,i)=>`<button class="q-opt" id="qo${qi}_${i}" onclick="pickQ(${qi},${i})"><span class="ql">${L[i]}</span><span>${o}</span></button>`).join('')}</div>
+      <div class="q-fb" id="qfb${qi}"></div>
+    </div>`;
+  });
+}
+
+function pickQ(qi,oi){
+  if(quizAnswers[qi]!==undefined) return;
+  const q=QUIZ[qi]; const ok=oi===q.answer;
+  quizAnswers[qi]={chosen:oi,correct:ok};
+  for(let i=0;i<4;i++){const b=document.getElementById(`qo${qi}_${i}`);if(!b)continue;b.classList.add('locked');if(i===q.answer)b.classList.add('ok');else if(i===oi&&!ok)b.classList.add('nok');}
+  const fb=document.getElementById('qfb'+qi);
+  fb.style.display='block'; fb.className='q-fb '+(ok?'ok':'nok');
+  fb.innerHTML=(ok?'✅ Correto! ':'❌ Incorreto. ')+q.exp;
+  if(ok){showOv('✅ ACERTOU!',q.exp.substring(0,55)+'...');setTimeout(hideOv,1400);}
+  if(Object.keys(quizAnswers).length===QUIZ.length){document.getElementById('quiz-done-btn').style.display='block';markDone(3);spawnConf('conf');}
+}
+
+function buildResult(){
+  const correct=Object.values(quizAnswers).filter(a=>a.correct).length;
+  const total=QUIZ.length;
+  const c=document.getElementById('result-content');
+  c.innerHTML=`<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-bottom:14px;">
+    <div style="border:1.5px solid rgba(206,147,216,.35);border-radius:8px;padding:11px;text-align:center;background:rgba(206,147,216,.07);">
+      <div style="font-family:'Press Start 2P',monospace;font-size:.9rem;color:var(--purple);">${correct}/${total}</div>
+      <div style="font-size:.68rem;font-weight:700;color:var(--gray);margin-top:3px;">QUIZ</div>
+    </div>
+    <div style="border:1.5px solid rgba(255,152,0,.3);border-radius:8px;padding:11px;text-align:center;background:rgba(255,152,0,.07);">
+      <div style="font-family:'Press Start 2P',monospace;font-size:.9rem;color:var(--orange);">✏️</div>
+      <div style="font-size:.68rem;font-weight:700;color:var(--gray);margin-top:3px;">UPDATE ✓</div>
+    </div>
+    <div style="border:1.5px solid rgba(64,196,255,.3);border-radius:8px;padding:11px;text-align:center;background:rgba(64,196,255,.07);">
+      <div style="font-family:'Press Start 2P',monospace;font-size:.9rem;color:var(--blue);">🔗</div>
+      <div style="font-size:.68rem;font-weight:700;color:var(--gray);margin-top:3px;">JOIN ✓</div>
+    </div>
+  </div>`;
+  if(correct===total) spawnConf('conf');
+}
+
+// ══════════════════════
+// UTILS
+// ══════════════════════
+function showFb(el,type,msg){el.style.display='block';el.className='fb fb-'+type;el.innerHTML=msg;}
+function setNpc(html){document.getElementById('npc-g').innerHTML=html;}
+function markDone(i){const d=document.getElementById('sd'+i);if(d)d.className='sd done';}
+function unlockSwitch(tab,idx){
+  for(let i=0;i<=idx;i++){const d=document.getElementById('sd'+i);if(d&&d.className.includes('locked'))d.className='sd done';}
+  document.getElementById('sd'+idx).className='sd active';
+  swTab(tab);
+}
+function swTab(t){
+  ['update','delete','join','quiz'].forEach(id=>{
+    document.getElementById('tab-'+id).className='tb'+(id===t?' active':'');
+    document.getElementById('tp-'+id).className='tpane'+(id===t?' active':'');
+  });
+  if(t==='delete') renderDelTable();
+  if(t==='quiz') buildQuiz();
+}
+function showOv(t,s){document.getElementById('ov').classList.add('on');document.getElementById('ov-t').textContent=t;document.getElementById('ov-s').textContent=s;}
+function hideOv(){document.getElementById('ov').classList.remove('on');}
+function spawnConf(cid){const c=document.getElementById(cid);if(!c)return;const cols=['#ce93d8','#f5c842','#00e676','#40c4ff','#ff9800','#ff5252'];for(let i=0;i<70;i++){const el=document.createElement('div');const sz=4+Math.random()*8;el.style.cssText=`position:absolute;width:${sz}px;height:${sz}px;background:${cols[Math.floor(Math.random()*cols.length)]};left:${Math.random()*100}%;top:-10px;border-radius:${Math.random()>.5?'50%':'2px'};animation:cf ${1.5+Math.random()*2}s ease ${Math.random()*.5}s both;`;c.appendChild(el);}setTimeout(()=>c.innerHTML='',5500);}
+(()=>{const s=document.createElement('style');s.textContent='@keyframes cf{from{transform:translateY(0) rotate(0deg);opacity:1}to{transform:translateY(100vh) rotate(720deg);opacity:0}}';document.head.appendChild(s);})();
+function go(id){document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on'));document.getElementById(id).classList.add('on');window.scrollTo(0,0);}
+function fullReset(){clientes=[{id:1,nome:'Rei Artur',reino:'Reino do Norte'},{id:2,nome:'Elfos Prateados',reino:'Floresta Mágica'},{id:3,nome:'Forja Ironforge',reino:'Montanhas'},{id:4,nome:'Guarda dos Dragões',reino:'Sul'},{id:5,nome:'Academia dos Magos',reino:'Capital'}];quizAnswers={};go('s-intro');}
+// INIT
+renderUpdTable(); buildUpdatePreview();
+</script>
+</body>
+</html>
