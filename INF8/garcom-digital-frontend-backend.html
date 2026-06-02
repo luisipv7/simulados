@@ -1,0 +1,895 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>O Garçom Digital — Frontend e Backend</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&family=Press+Start+2P&family=Fira+Code:wght@500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:       #f0f4ff;
+  --white:    #ffffff;
+  --navy:     #1e3a5f;
+  --navy2:    #2d5f9e;
+  --blue:     #3b82f6;
+  --blue-pale:#dbeafe;
+  --green:    #16a34a;
+  --green-pale:#dcfce7;
+  --red:      #dc2626;
+  --red-pale: #fee2e2;
+  --gold:     #d97706;
+  --gold-pale:#fef3c7;
+  --orange:   #ea580c;
+  --orange-pale:#ffedd5;
+  --purple:   #7c3aed;
+  --purple-pale:#ede9fe;
+  --gray:     #6b7280;
+  --gray-light:#f3f4f6;
+  --border:   #e5e7eb;
+  --text:     #111827;
+  --text2:    #374151;
+
+  --step-fetch:  #2563eb;
+  --step-api:    #7c3aed;
+  --step-json:   #16a34a;
+  --step-screen: #d97706;
+}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+
+body {
+  font-family:'Nunito',sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  min-height:100vh;
+  overflow-x:hidden;
+  font-size:16px;
+  line-height:1.6;
+}
+
+/* ── SCREENS ── */
+.scr{display:none;min-height:100vh;flex-direction:column;align-items:center;padding:24px 16px 60px;position:relative;z-index:1;}
+.scr.on{display:flex;}
+
+/* ── CARD ── */
+.card{background:var(--white);border-radius:16px;box-shadow:0 2px 16px rgba(0,0,0,.08),0 0 0 1px rgba(0,0,0,.04);padding:32px 36px;max-width:840px;width:100%;}
+
+/* ── SCHOOL HEADER ── */
+.school-header{display:flex;align-items:center;gap:14px;padding-bottom:16px;margin-bottom:16px;border-bottom:3px solid var(--navy);}
+.school-logo{width:52px;height:52px;background:var(--navy);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;}
+.school-name{font-size:.95rem;font-weight:900;color:var(--navy);line-height:1.3;}
+.school-sub{font-size:.74rem;color:var(--gray);margin-top:2px;}
+.school-badge{background:var(--navy);color:white;font-size:.65rem;font-weight:800;padding:4px 10px;border-radius:20px;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;margin-left:auto;}
+
+/* ── TYPOGRAPHY ── */
+h1.main-title{font-size:clamp(1.3rem,3.5vw,2rem);font-weight:900;color:var(--navy);margin-bottom:4px;}
+.subtitle{font-size:.85rem;font-weight:700;color:var(--gray);margin-bottom:20px;}
+h2.sec{font-size:1.1rem;font-weight:900;color:var(--navy);margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+.divider{height:2px;background:var(--gray-light);margin:20px 0;}
+
+/* ── NPC SPEECH ── */
+.npc-box{display:flex;gap:14px;align-items:flex-start;background:var(--navy);border-radius:12px;padding:16px 18px;margin-bottom:18px;}
+.npc-av{width:52px;height:52px;border-radius:50%;background:rgba(255,255,255,.15);border:2px solid rgba(255,255,255,.3);display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;animation:bob 3s ease-in-out infinite;}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+.npc-text{font-size:.92rem;font-weight:700;color:rgba(255,255,255,.95);line-height:1.7;}
+.npc-text strong{color:#fde68a;}
+
+/* ── STEP PROGRESS ── */
+.step-bar{display:flex;gap:6px;margin-bottom:18px;flex-wrap:wrap;}
+.step-dot{font-weight:800;font-size:.72rem;padding:5px 12px;border-radius:20px;border:2px solid;transition:all .3s;}
+.step-dot.done  {border-color:var(--green);background:var(--green-pale);color:var(--green);}
+.step-dot.active{border-color:var(--blue);background:var(--blue-pale);color:var(--blue);}
+.step-dot.wait  {border-color:var(--border);color:var(--gray);background:var(--gray-light);}
+
+/* ── RESTAURANT DIAGRAM ── */
+.restaurant-diagram{
+  display:grid;grid-template-columns:repeat(4,1fr);
+  gap:10px;margin:16px 0;
+}
+@media(max-width:600px){.restaurant-diagram{grid-template-columns:1fr 1fr;}}
+
+.rest-node{
+  border-radius:12px;padding:14px 10px;text-align:center;
+  border:2px solid;transition:all .3s;cursor:default;
+  position:relative;
+}
+.rest-node .rn-icon{font-size:2.2rem;display:block;margin-bottom:6px;}
+.rest-node .rn-name{font-size:.72rem;font-weight:900;text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px;}
+.rest-node .rn-desc{font-size:.78rem;font-weight:700;line-height:1.4;}
+.rest-node .rn-tag{font-size:.62rem;font-weight:800;padding:2px 7px;border-radius:20px;margin-top:6px;display:inline-block;}
+
+.rn-screen {border-color:var(--step-screen);background:#fffbeb;}
+.rn-screen .rn-name{color:var(--step-screen);}
+.rn-screen .rn-tag{background:var(--gold-pale);color:var(--gold);}
+
+.rn-fetch  {border-color:var(--step-fetch);background:#eff6ff;}
+.rn-fetch  .rn-name{color:var(--step-fetch);}
+.rn-fetch  .rn-tag{background:var(--blue-pale);color:var(--step-fetch);}
+
+.rn-api    {border-color:var(--step-api);background:#f5f3ff;}
+.rn-api    .rn-name{color:var(--step-api);}
+.rn-api    .rn-tag{background:var(--purple-pale);color:var(--purple);}
+
+.rn-json   {border-color:var(--step-json);background:#f0fdf4;}
+.rn-json   .rn-name{color:var(--step-json);}
+.rn-json   .rn-tag{background:var(--green-pale);color:var(--green);}
+
+.rest-node.active-node{transform:scale(1.05);box-shadow:0 4px 16px rgba(0,0,0,.12);}
+
+/* FLOW ARROWS */
+.flow-arrows{display:flex;align-items:center;justify-content:center;gap:4px;margin:6px 0 14px;flex-wrap:wrap;}
+.fa-item{display:flex;align-items:center;gap:4px;font-size:.72rem;font-weight:800;}
+.fa-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0;}
+.fa-arr{font-size:1rem;color:var(--gray);}
+
+/* ── CODE BLOCK ── */
+.code-block{
+  background:#1e293b;border-radius:10px;padding:16px;margin:10px 0;
+  overflow-x:auto;position:relative;
+}
+.code-top{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
+.code-dot{width:10px;height:10px;border-radius:50%;}
+.code-lang{font-size:.68rem;font-weight:800;color:#94a3b8;margin-left:auto;font-family:'Fira Code',monospace;}
+.code-block pre{font-family:'Fira Code',monospace;font-size:.82rem;color:#e2e8f0;line-height:1.75;margin:0;}
+.code-block .c-gray{color:#64748b;}
+.code-block .c-blue{color:#93c5fd;}
+.code-block .c-green{color:#86efac;}
+.code-block .c-yellow{color:#fde68a;}
+.code-block .c-orange{color:#fdba74;}
+.code-block .c-pink{color:#f9a8d4;}
+.code-block .c-teal{color:#5eead4;}
+
+/* ── STEP CARDS ── */
+.step-cards{display:flex;flex-direction:column;gap:14px;margin:14px 0;}
+.step-card{
+  border-radius:12px;border:2px solid;
+  overflow:hidden;transition:all .3s;
+}
+.sc-header{display:flex;align-items:center;gap:12px;padding:12px 16px;}
+.sc-num{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Press Start 2P',monospace;font-size:.5rem;font-weight:700;flex-shrink:0;color:white;}
+.sc-title{font-size:.95rem;font-weight:900;}
+.sc-body{padding:0 16px 14px;}
+.sc-analogy{font-size:.85rem;font-weight:700;padding:8px 12px;border-radius:8px;margin-bottom:8px;line-height:1.5;}
+.sc-emoji{font-size:1rem;margin-right:4px;}
+
+.sc-step1{border-color:rgba(37,99,235,.3);}
+.sc-step1 .sc-header{background:#eff6ff;}
+.sc-step1 .sc-num{background:var(--step-fetch);}
+.sc-step1 .sc-title{color:var(--step-fetch);}
+.sc-step1 .sc-analogy{background:var(--blue-pale);color:#1d4ed8;}
+
+.sc-step2{border-color:rgba(124,58,237,.3);}
+.sc-step2 .sc-header{background:#f5f3ff;}
+.sc-step2 .sc-num{background:var(--step-api);}
+.sc-step2 .sc-title{color:var(--step-api);}
+.sc-step2 .sc-analogy{background:var(--purple-pale);color:#5b21b6;}
+
+.sc-step3{border-color:rgba(22,163,74,.3);}
+.sc-step3 .sc-header{background:#f0fdf4;}
+.sc-step3 .sc-num{background:var(--step-json);}
+.sc-step3 .sc-title{color:var(--step-json);}
+.sc-step3 .sc-analogy{background:var(--green-pale);color:#15803d;}
+
+/* ── FILL-IN GAME ── */
+.word-bank{
+  background:var(--gold-pale);border:2px solid var(--gold);
+  border-radius:12px;padding:16px 18px;margin-bottom:16px;
+}
+.wb-title{font-weight:900;font-size:.88rem;color:var(--gold);margin-bottom:10px;display:flex;align-items:center;gap:6px;}
+.wb-chips{display:flex;gap:10px;flex-wrap:wrap;}
+.word-chip{
+  background:white;border:2px solid var(--gold);border-radius:8px;
+  padding:8px 16px;font-family:'Fira Code',monospace;font-size:.88rem;
+  font-weight:700;color:var(--navy);cursor:pointer;transition:all .2s;
+  user-select:none;
+}
+.word-chip:hover:not(.used){background:var(--gold-pale);transform:translateY(-2px);box-shadow:0 3px 8px rgba(0,0,0,.1);}
+.word-chip.selected{background:var(--navy);color:white;border-color:var(--navy);box-shadow:0 3px 10px rgba(30,58,95,.3);}
+.word-chip.used{opacity:.35;cursor:not-allowed;text-decoration:line-through;}
+
+/* STORY SENTENCES */
+.story-wrap{display:flex;flex-direction:column;gap:14px;}
+.story-item{
+  background:var(--gray-light);border:2px solid var(--border);
+  border-radius:12px;padding:16px;transition:border-color .3s;
+}
+.story-num{font-family:'Press Start 2P',monospace;font-size:.48rem;color:var(--gray);margin-bottom:6px;}
+.story-text{font-size:.95rem;font-weight:700;color:var(--text2);line-height:1.75;}
+
+.blank{
+  display:inline-block;min-width:120px;
+  border-bottom:3px solid var(--blue);
+  background:rgba(59,130,246,.08);border-radius:6px 6px 0 0;
+  padding:2px 10px;font-family:'Fira Code',monospace;
+  font-size:.88rem;font-weight:700;cursor:pointer;
+  transition:all .2s;vertical-align:middle;text-align:center;
+  color:var(--navy);
+}
+.blank:hover:not(.filled){background:var(--blue-pale);}
+.blank.filled{border-color:var(--green);background:var(--green-pale);color:var(--green);}
+.blank.wrong-fill{border-color:var(--red);background:var(--red-pale);color:var(--red);}
+.blank.correct-fill{border-color:var(--green);background:var(--green-pale);color:var(--green);}
+
+/* STORY ITEM states */
+.story-item.correct{border-color:var(--green);background:var(--green-pale);}
+.story-item.wrong  {border-color:var(--red);background:var(--red-pale);}
+
+/* ── FEEDBACK ── */
+.fb-box{border-radius:10px;padding:12px 16px;font-size:.88rem;font-weight:800;line-height:1.6;display:none;margin-top:10px;animation:popUp .3s ease;}
+@keyframes popUp{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+.fb-ok {background:var(--green-pale);border:2px solid var(--green);color:var(--green);}
+.fb-nok{background:var(--red-pale);border:2px solid var(--red);color:var(--red);}
+.fb-info{background:var(--blue-pale);border:2px solid var(--blue);color:#1d4ed8;}
+
+/* ── BUTTONS ── */
+.btn{display:inline-flex;align-items:center;gap:7px;font-weight:900;font-size:.82rem;border:none;border-radius:10px;padding:11px 22px;cursor:pointer;transition:all .18s;letter-spacing:.3px;}
+.btn-navy{background:var(--navy);color:white;}
+.btn-navy:hover{background:var(--navy2);transform:translateY(-1px);box-shadow:0 4px 12px rgba(30,58,95,.3);}
+.btn-green{background:var(--green);color:white;}
+.btn-green:hover{background:#15803d;transform:translateY(-1px);}
+.btn-blue{background:var(--blue);color:white;}
+.btn-blue:hover{background:#2563eb;transform:translateY(-1px);}
+.btn-outline{background:transparent;border:2px solid var(--navy);color:var(--navy);font-size:.74rem;}
+.btn-outline:hover{background:var(--navy);color:white;}
+.btn:disabled{opacity:.35;cursor:not-allowed;transform:none;}
+
+/* ── RESULT ── */
+.result-ring{
+  width:120px;height:120px;border-radius:50%;margin:0 auto 16px;
+  background:radial-gradient(circle,#fef9c3,#fffbeb);
+  border:4px solid var(--gold);display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  box-shadow:0 0 24px rgba(217,119,6,.25);
+  animation:ring-pulse 2.5s ease-in-out infinite;
+}
+@keyframes ring-pulse{0%,100%{box-shadow:0 0 18px rgba(217,119,6,.2)}50%{box-shadow:0 0 36px rgba(217,119,6,.4)}}
+.rr-num{font-family:'Press Start 2P',monospace;font-size:1.3rem;font-weight:900;color:var(--gold);line-height:1;}
+.rr-lbl{font-size:.62rem;font-weight:800;color:var(--gray);margin-top:4px;}
+
+.res-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin:16px 0;}
+.res-box{border-radius:10px;padding:14px;text-align:center;border:2px solid;}
+.res-box .rv{font-family:'Press Start 2P',monospace;font-size:.95rem;line-height:1;margin-bottom:4px;}
+.res-box .rl{font-size:.68rem;font-weight:800;color:var(--gray);}
+.res-box.hi{border-color:var(--green);background:var(--green-pale);}
+.res-box.hi .rv{color:var(--green);}
+.res-box.md{border-color:var(--gold);background:var(--gold-pale);}
+.res-box.md .rv{color:var(--gold);}
+.res-box.lo{border-color:var(--red);background:var(--red-pale);}
+.res-box.lo .rv{color:var(--red);}
+.res-box.info{border-color:var(--blue);background:var(--blue-pale);}
+.res-box.info .rv{color:var(--blue);}
+
+.answer-review{display:flex;align-items:flex-start;gap:10px;padding:12px 14px;border-radius:10px;border:2px solid;margin-bottom:8px;}
+.ar-ok {border-color:var(--green);background:var(--green-pale);}
+.ar-nok{border-color:var(--red);background:var(--red-pale);}
+.ar-icon{font-size:1.3rem;flex-shrink:0;}
+.ar-text{flex:1;}
+.ar-label{font-size:.8rem;font-weight:800;margin-bottom:2px;}
+.ar-ok .ar-label{color:var(--green);}
+.ar-nok .ar-label{color:var(--red);}
+.ar-detail{font-size:.8rem;font-weight:700;color:var(--text2);}
+
+/* ── NOTICE BOX ── */
+.notice{border-radius:10px;padding:12px 16px;font-size:.85rem;font-weight:700;line-height:1.6;margin:10px 0;display:flex;gap:10px;align-items:flex-start;}
+.notice-blue{background:var(--blue-pale);border:2px solid rgba(59,130,246,.4);color:#1e40af;}
+.notice-yellow{background:var(--gold-pale);border:2px solid rgba(217,119,6,.35);color:#92400e;}
+.notice-icon{font-size:1.2rem;flex-shrink:0;margin-top:1px;}
+
+/* ── CONFETTI ── */
+.conf{position:fixed;inset:0;pointer-events:none;z-index:400;}
+
+/* ── OV ── */
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:500;display:none;align-items:center;justify-content:center;flex-direction:column;}
+.ov.on{display:flex;}
+.ov-t{font-family:'Press Start 2P',monospace;font-size:clamp(.7rem,3vw,1.3rem);text-align:center;animation:bigPop .5s ease;}
+@keyframes bigPop{0%{transform:scale(.3);opacity:0}70%{transform:scale(1.1)}100%{transform:scale(1);opacity:1}}
+.ov-s{font-size:.95rem;font-weight:800;color:white;text-align:center;margin-top:12px;max-width:360px;line-height:1.7;padding:0 16px;}
+
+@media(max-width:540px){
+  .card{padding:20px 14px;}
+  .restaurant-diagram{grid-template-columns:1fr 1fr;}
+  .code-block pre{font-size:.72rem;}
+}
+</style>
+</head>
+<body>
+<div class="conf" id="conf"></div>
+<div class="ov" id="ov">
+  <div class="ov-t" id="ov-t" style="color:#fde68a;">✅ CORRETO!</div>
+  <div class="ov-s" id="ov-s"></div>
+</div>
+
+<!-- ═══════ TELA 1: INTRODUÇÃO ═══════ -->
+<div class="scr on" id="s-intro">
+  <div class="card" style="max-width:760px;margin-top:16px;">
+
+    <div class="school-header">
+      <div class="school-logo">🎓</div>
+      <div>
+        <div class="school-name">Escola Técnica Estadual<br>Marechal Mascarenhas de Moraes</div>
+        <div class="school-sub">Desenvolvimento Web · Módulo 1</div>
+      </div>
+      <div class="school-badge">Aula</div>
+    </div>
+
+    <h1 class="main-title">🍽️ O Garçom Digital</h1>
+    <p class="subtitle">Como a Tela conversa com o Servidor — Frontend + Backend</p>
+
+    <div class="npc-box">
+      <div class="npc-av">👨‍🏫</div>
+      <p class="npc-text">Olá! Hoje vamos aprender como a <strong>tela do computador</strong> pede informações para o <strong>servidor</strong>.<br><br>
+      Para ficar mais fácil, vamos usar a <strong>analogia do restaurante</strong> — você vai entender tudo!</p>
+    </div>
+
+    <!-- DIAGRAMA RESTAURANTE -->
+    <h2 class="sec">🍴 A Analogia do Restaurante</h2>
+    <div class="restaurant-diagram">
+      <div class="rest-node rn-screen">
+        <span class="rn-icon">🪑</span>
+        <div class="rn-name">Frontend</div>
+        <div class="rn-desc">Você sentado na mesa olhando o cardápio</div>
+        <span class="rn-tag">A Tela</span>
+      </div>
+      <div class="rest-node rn-fetch">
+        <span class="rn-icon">🧑‍🍳</span>
+        <div class="rn-name">fetch()</div>
+        <div class="rn-desc">O garçom que leva o pedido até a cozinha</div>
+        <span class="rn-tag">JavaScript</span>
+      </div>
+      <div class="rest-node rn-api">
+        <span class="rn-icon">👨‍🍳</span>
+        <div class="rn-name">API Python</div>
+        <div class="rn-desc">A cozinha que prepara a resposta certa</div>
+        <span class="rn-tag">Servidor</span>
+      </div>
+      <div class="rest-node rn-json">
+        <span class="rn-icon">🍱</span>
+        <div class="rn-name">JSON</div>
+        <div class="rn-desc">A bandeja com a comida trazida de volta</div>
+        <span class="rn-tag">Os Dados</span>
+      </div>
+    </div>
+
+    <!-- FLOW ARROWS -->
+    <div class="flow-arrows">
+      <div class="fa-item"><div class="fa-dot" style="background:var(--step-screen);"></div><span style="color:var(--step-screen);">Tela</span></div>
+      <span class="fa-arr">→</span>
+      <div class="fa-item"><div class="fa-dot" style="background:var(--step-fetch);"></div><span style="color:var(--step-fetch);">fetch()</span></div>
+      <span class="fa-arr">→</span>
+      <div class="fa-item"><div class="fa-dot" style="background:var(--step-api);"></div><span style="color:var(--step-api);">API</span></div>
+      <span class="fa-arr">→</span>
+      <div class="fa-item"><div class="fa-dot" style="background:var(--step-json);"></div><span style="color:var(--step-json);">JSON</span></div>
+      <span class="fa-arr">→</span>
+      <div class="fa-item"><div class="fa-dot" style="background:var(--step-screen);"></div><span style="color:var(--step-screen);">Tela</span></div>
+    </div>
+
+    <div class="notice notice-yellow">
+      <span class="notice-icon">📌</span>
+      <span>Esta aula tem <strong>2 partes</strong>: primeiro você vai ler e entender a prática guiada, depois vai fazer o exercício de fixação com as lacunas.</span>
+    </div>
+
+    <div style="text-align:center;margin-top:18px;">
+      <button class="btn btn-navy" onclick="go('s-pratica')">📖 COMEÇAR A PRÁTICA GUIADA →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ TELA 2: PRÁTICA GUIADA ═══════ -->
+<div class="scr" id="s-pratica">
+  <div class="card" style="max-width:840px;margin-top:16px;">
+
+    <div class="school-header" style="padding-bottom:12px;margin-bottom:12px;">
+      <div class="school-logo" style="width:42px;height:42px;font-size:18px;">🎓</div>
+      <div>
+        <div class="school-name" style="font-size:.88rem;">Prática Guiada</div>
+        <div class="school-sub">O Passo a Passo do Garçom</div>
+      </div>
+    </div>
+
+    <div class="step-bar">
+      <div class="step-dot active">📖 Prática</div>
+      <div class="step-dot wait">✏️ Exercício</div>
+      <div class="step-dot wait">🏆 Resultado</div>
+    </div>
+
+    <div class="npc-box">
+      <div class="npc-av">👨‍🏫</div>
+      <p class="npc-text">Veja o código completo do Garçom Digital. Cada passo tem uma explicação simples e a analogia do restaurante para você lembrar o que está acontecendo!</p>
+    </div>
+
+    <!-- 3 STEPS -->
+    <div class="step-cards">
+
+      <!-- PASSO 1 -->
+      <div class="step-card sc-step1">
+        <div class="sc-header">
+          <div class="sc-num" style="background:var(--step-fetch);">1</div>
+          <div class="sc-title">Chamar o Garçom — o comando fetch()</div>
+        </div>
+        <div class="sc-body">
+          <div class="sc-analogy">
+            <span class="sc-emoji">🧑‍🍳</span>
+            <strong>No restaurante:</strong> você levanta a mão e chama o garçom, dizendo o que você quer.<br>
+            <strong>No código:</strong> o JavaScript usa <code style="font-family:'Fira Code',monospace;font-size:.85rem;">fetch()</code> e passa o endereço da cozinha (a URL da API).
+          </div>
+          <div class="code-block">
+            <div class="code-top">
+              <div class="code-dot" style="background:#ff5f56;"></div>
+              <div class="code-dot" style="background:#ffbd2e;"></div>
+              <div class="code-dot" style="background:#27c93f;"></div>
+              <span class="code-lang">javascript</span>
+            </div>
+<pre><span class="c-gray">// Passo 1: Chamar o garçom</span>
+<span class="c-blue">fetch</span>(<span class="c-yellow">'http://127.0.0.1:8000/usuarios'</span>)</pre>
+          </div>
+          <div class="notice notice-blue">
+            <span class="notice-icon">💡</span>
+            <span><strong>O que é a URL?</strong> É o endereço da cozinha (o servidor). Assim como um restaurante tem um endereço, a API tem uma URL.</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- PASSO 2 -->
+      <div class="step-card sc-step2">
+        <div class="sc-header">
+          <div class="sc-num" style="background:var(--step-api);">2</div>
+          <div class="sc-title">Pedir a comida no formato certo — .then(resposta)</div>
+        </div>
+        <div class="sc-body">
+          <div class="sc-analogy">
+            <span class="sc-emoji">🍱</span>
+            <strong>No restaurante:</strong> o garçom volta com a bandeja e você pede para ele colocar no prato certo.<br>
+            <strong>No código:</strong> o <code style="font-family:'Fira Code',monospace;font-size:.85rem;">.then()</code> pega a resposta do servidor e converte para JSON (o formato que o JavaScript entende).
+          </div>
+          <div class="code-block">
+            <div class="code-top"><div class="code-dot" style="background:#ff5f56;"></div><div class="code-dot" style="background:#ffbd2e;"></div><div class="code-dot" style="background:#27c93f;"></div><span class="code-lang">javascript</span></div>
+<pre><span class="c-blue">fetch</span>(<span class="c-yellow">'http://127.0.0.1:8000/usuarios'</span>)
+  .<span class="c-blue">then</span>(<span class="c-orange">resposta</span> <span class="c-pink">=></span> <span class="c-orange">resposta</span>.<span class="c-teal">json</span>())</pre>
+          </div>
+          <div class="notice notice-blue">
+            <span class="notice-icon">💡</span>
+            <span><strong>O que é JSON?</strong> É um formato de texto organizado que o JavaScript consegue ler facilmente. É como a "bandeja padronizada" do restaurante.</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- PASSO 3 -->
+      <div class="step-card sc-step3">
+        <div class="sc-header">
+          <div class="sc-num" style="background:var(--step-json);">3</div>
+          <div class="sc-title">Colocar a comida na mesa — mostrar na tela</div>
+        </div>
+        <div class="sc-body">
+          <div class="sc-analogy">
+            <span class="sc-emoji">🍽️</span>
+            <strong>No restaurante:</strong> o garçom finalmente coloca a comida na sua mesa e você pode comer!<br>
+            <strong>No código:</strong> o segundo <code style="font-family:'Fira Code',monospace;font-size:.85rem;">.then()</code> pega os dados JSON e exibe na tela.
+          </div>
+          <div class="code-block">
+            <div class="code-top"><div class="code-dot" style="background:#ff5f56;"></div><div class="code-dot" style="background:#ffbd2e;"></div><div class="code-dot" style="background:#27c93f;"></div><span class="code-lang">javascript</span></div>
+<pre><span class="c-blue">fetch</span>(<span class="c-yellow">'http://127.0.0.1:8000/usuarios'</span>)
+  .<span class="c-blue">then</span>(<span class="c-orange">resposta</span> <span class="c-pink">=></span> <span class="c-orange">resposta</span>.<span class="c-teal">json</span>())
+  .<span class="c-blue">then</span>(<span class="c-orange">dados</span> <span class="c-pink">=></span> {
+      <span class="c-green">document</span>.<span class="c-teal">getElementById</span>(<span class="c-yellow">"texto-da-tela"</span>)
+        .<span class="c-blue">innerText</span> <span class="c-pink">=</span> <span class="c-orange">dados</span>.<span class="c-green">nome</span>;
+  });</pre>
+          </div>
+          <div class="notice notice-blue">
+            <span class="notice-icon">💡</span>
+            <span><strong>getElementById</strong> encontra um elemento na tela pelo ID e <strong>innerText</strong> coloca o texto dentro dele. É como etiquetar a mesa e colocar o prato lá!</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FULL CODE -->
+    <h2 class="sec" style="margin-top:18px;">💻 O Código Completo do Garçom</h2>
+    <div class="code-block">
+      <div class="code-top"><div class="code-dot" style="background:#ff5f56;"></div><div class="code-dot" style="background:#ffbd2e;"></div><div class="code-dot" style="background:#27c93f;"></div><span class="code-lang">javascript · garcom-digital.js</span></div>
+<pre><span class="c-gray">// 🧑‍🍳 Passo 1: Chamar o garçom (fetch) e dizer o endereço da cozinha</span>
+<span class="c-blue">fetch</span>(<span class="c-yellow">'http://127.0.0.1:8000/usuarios'</span>)
+
+  <span class="c-gray">// 🍱 Passo 2: Pedir a comida no formato JSON</span>
+  .<span class="c-blue">then</span>(<span class="c-orange">resposta</span> <span class="c-pink">=></span> <span class="c-orange">resposta</span>.<span class="c-teal">json</span>())
+
+  <span class="c-gray">// 🍽️ Passo 3: Colocar a comida na mesa (na tela)</span>
+  .<span class="c-blue">then</span>(<span class="c-orange">dados</span> <span class="c-pink">=></span> {
+      <span class="c-green">document</span>.<span class="c-teal">getElementById</span>(<span class="c-yellow">"texto-da-tela"</span>)
+        .<span class="c-blue">innerText</span> <span class="c-pink">=</span> <span class="c-orange">dados</span>.<span class="c-green">nome</span>;
+  });</pre>
+    </div>
+
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:18px;justify-content:space-between;">
+      <button class="btn btn-outline" onclick="go('s-intro')">← Voltar</button>
+      <button class="btn btn-navy" onclick="go('s-exercicio')">✏️ FAZER O EXERCÍCIO →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ TELA 3: EXERCÍCIO ═══════ -->
+<div class="scr" id="s-exercicio">
+  <div class="card" style="max-width:760px;margin-top:16px;">
+
+    <div class="school-header" style="padding-bottom:12px;margin-bottom:12px;">
+      <div class="school-logo" style="width:42px;height:42px;font-size:18px;">🎓</div>
+      <div><div class="school-name" style="font-size:.88rem;">Exercício de Fixação</div><div class="school-sub">Preencha as Lacunas</div></div>
+    </div>
+
+    <div class="step-bar">
+      <div class="step-dot done">📖 Prática</div>
+      <div class="step-dot active">✏️ Exercício</div>
+      <div class="step-dot wait">🏆 Resultado</div>
+    </div>
+
+    <div class="npc-box">
+      <div class="npc-av">👨‍🏫</div>
+      <p class="npc-text">Agora é sua vez! <strong>Como funciona:</strong><br>
+      1. Clique em uma palavra da caixa dourada para selecioná-la.<br>
+      2. Depois clique no traço <strong>____</strong> onde você quer colocar a palavra.<br>
+      3. Se errar, clique no traço preenchido para <strong>devolver</strong> a palavra!</p>
+    </div>
+
+    <!-- CAIXA DE PALAVRAS -->
+    <div class="word-bank">
+      <div class="wb-title">📦 CAIXA DE PALAVRAS</div>
+      <div class="wb-chips" id="word-bank">
+        <div class="word-chip" id="wc-FETCH" onclick="selectWord('FETCH')">FETCH</div>
+        <div class="word-chip" id="wc-API" onclick="selectWord('API (Backend)')">API (Backend)</div>
+        <div class="word-chip" id="wc-JSON" onclick="selectWord('JSON')">JSON</div>
+      </div>
+    </div>
+
+    <!-- HOW TO -->
+    <div class="notice notice-blue" style="margin-bottom:14px;">
+      <span class="notice-icon">💡</span>
+      <span><strong>Se travar:</strong> você pode voltar para a Prática Guiada e ler de novo. Não há problema algum — é para isso que ela está lá!</span>
+    </div>
+
+    <!-- HISTÓRIA COM LACUNAS -->
+    <div class="story-wrap" id="story-wrap">
+
+      <!-- FRASE 1 -->
+      <div class="story-item" id="si-0">
+        <div class="story-num">FRASE 1 DE 3</div>
+        <p class="story-text">
+          🖱️ Quando clicamos em um botão na tela, o JavaScript usa o comando
+          <span class="blank" id="blank-0" onclick="fillBlank(0)">__________</span>
+          para buscar a informação.
+        </p>
+        <div class="fb-box" id="fb-0"></div>
+      </div>
+
+      <!-- FRASE 2 -->
+      <div class="story-item" id="si-1">
+        <div class="story-num">FRASE 2 DE 3</div>
+        <p class="story-text">
+          🌐 O nosso pedido viaja pela internet e chega até a nossa
+          <span class="blank" id="blank-1" onclick="fillBlank(1)">__________</span>,
+          que foi feita em linguagem Python.
+        </p>
+        <div class="fb-box" id="fb-1"></div>
+      </div>
+
+      <!-- FRASE 3 -->
+      <div class="story-item" id="si-2">
+        <div class="story-num">FRASE 3 DE 3</div>
+        <p class="story-text">
+          📦 O servidor responde entregando os dados estruturados em um formato leve de texto chamado
+          <span class="blank" id="blank-2" onclick="fillBlank(2)">__________</span>.
+        </p>
+        <div class="fb-box" id="fb-2"></div>
+      </div>
+
+    </div>
+
+    <!-- VERIFY -->
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:18px;justify-content:space-between;align-items:center;">
+      <button class="btn btn-outline" onclick="go('s-pratica')">← Rever Prática</button>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-outline" onclick="resetExercise()" style="font-size:.72rem;">↺ Recomeçar</button>
+        <button class="btn btn-green" id="btn-verificar" onclick="checkAll()" disabled>✅ VERIFICAR RESPOSTAS</button>
+      </div>
+    </div>
+    <div class="fb-box" id="fb-geral" style="margin-top:12px;"></div>
+  </div>
+</div>
+
+<!-- ═══════ TELA 4: RESULTADO ═══════ -->
+<div class="scr" id="s-result">
+  <div class="card" style="max-width:720px;margin-top:16px;">
+
+    <div class="school-header" style="padding-bottom:12px;margin-bottom:12px;">
+      <div class="school-logo" style="width:42px;height:42px;font-size:18px;">🎓</div>
+      <div><div class="school-name" style="font-size:.88rem;">Resultado Final</div><div class="school-sub">Exercício de Fixação — Frontend + Backend</div></div>
+    </div>
+
+    <div class="step-bar">
+      <div class="step-dot done">📖 Prática</div>
+      <div class="step-dot done">✏️ Exercício</div>
+      <div class="step-dot active">🏆 Resultado</div>
+    </div>
+
+    <div style="text-align:center;margin-bottom:14px;">
+      <div class="result-ring">
+        <span class="rr-num" id="r-score">0/3</span>
+        <span class="rr-lbl">ACERTOS</span>
+      </div>
+    </div>
+
+    <div class="res-grid" id="r-grid"></div>
+
+    <div class="divider"></div>
+    <h2 class="sec">📋 Revisão das Respostas</h2>
+    <div id="r-review"></div>
+
+    <div class="divider"></div>
+
+    <!-- REMINDER DIAGRAM -->
+    <h2 class="sec">🍴 Lembre-se: A Analogia do Restaurante</h2>
+    <div class="restaurant-diagram">
+      <div class="rest-node rn-screen"><span class="rn-icon">🪑</span><div class="rn-name">Tela</div><div class="rn-desc">Você na mesa</div><span class="rn-tag">Frontend</span></div>
+      <div class="rest-node rn-fetch"><span class="rn-icon">🧑‍🍳</span><div class="rn-name">FETCH</div><div class="rn-desc">O garçom</div><span class="rn-tag">JavaScript</span></div>
+      <div class="rest-node rn-api"><span class="rn-icon">👨‍🍳</span><div class="rn-name">API</div><div class="rn-desc">A cozinha</div><span class="rn-tag">Backend</span></div>
+      <div class="rest-node rn-json"><span class="rn-icon">🍱</span><div class="rn-name">JSON</div><div class="rn-desc">A bandeja</div><span class="rn-tag">Dados</span></div>
+    </div>
+
+    <div class="npc-box" style="margin-top:16px;">
+      <div class="npc-av">👨‍🏫</div>
+      <p class="npc-text" id="r-npc-msg">—</p>
+    </div>
+
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;">
+      <button class="btn btn-navy" onclick="downloadCSV()">⬇ Baixar Resultado (CSV)</button>
+      <button class="btn btn-outline" onclick="fullReset()">↺ Tentar Novamente</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════
+// FILL-IN-THE-BLANK LOGIC
+// ══════════════════════════════════
+const ANSWERS = ['FETCH', 'API (Backend)', 'JSON'];
+const WORD_IDS = { 'FETCH':'wc-FETCH', 'API (Backend)':'wc-API', 'JSON':'wc-JSON' };
+const EXPLANATIONS = [
+  'FETCH é o comando JavaScript que "chama o garçom" para buscar dados de uma API!',
+  'A API (Backend) é a "cozinha" — feita em Python — que recebe o pedido e prepara a resposta.',
+  'JSON é o formato "bandeja" que traz os dados estruturados do servidor para o navegador!'
+];
+
+let fillState = [null, null, null]; // what's in each blank
+let selectedWord = null;
+
+function selectWord(word) {
+  // if already selected, deselect
+  if (selectedWord === word) {
+    selectedWord = null;
+    document.querySelectorAll('.word-chip').forEach(c => c.classList.remove('selected'));
+    return;
+  }
+  selectedWord = word;
+  document.querySelectorAll('.word-chip').forEach(c => c.classList.remove('selected'));
+  const chip = document.getElementById(WORD_IDS[word]);
+  if (chip && !chip.classList.contains('used')) chip.classList.add('selected');
+}
+
+function fillBlank(idx) {
+  const blank = document.getElementById('blank-' + idx);
+  if (!blank) return;
+
+  // if blank is already filled — return the word
+  if (fillState[idx]) {
+    const returned = fillState[idx];
+    fillState[idx] = null;
+    blank.textContent = '__________';
+    blank.className = 'blank';
+    // unuse chip
+    const chip = document.getElementById(WORD_IDS[returned]);
+    if (chip) { chip.classList.remove('used'); chip.style.opacity = ''; }
+    selectedWord = null;
+    document.querySelectorAll('.word-chip').forEach(c => c.classList.remove('selected'));
+    updateVerifyBtn();
+    return;
+  }
+
+  if (!selectedWord) return;
+
+  // if word already placed elsewhere, remove from there
+  const prevIdx = fillState.findIndex(v => v === selectedWord);
+  if (prevIdx !== -1 && prevIdx !== idx) {
+    fillState[prevIdx] = null;
+    const prevBlank = document.getElementById('blank-' + prevIdx);
+    if (prevBlank) { prevBlank.textContent = '__________'; prevBlank.className = 'blank'; }
+  }
+
+  fillState[idx] = selectedWord;
+  blank.textContent = selectedWord;
+  blank.className = 'blank filled';
+
+  // mark chip used
+  const chip = document.getElementById(WORD_IDS[selectedWord]);
+  if (chip) { chip.classList.add('used'); chip.classList.remove('selected'); }
+  selectedWord = null;
+
+  updateVerifyBtn();
+}
+
+function updateVerifyBtn() {
+  const allFilled = fillState.every(v => v !== null);
+  document.getElementById('btn-verificar').disabled = !allFilled;
+}
+
+function resetExercise() {
+  fillState = [null, null, null];
+  selectedWord = null;
+  for (let i = 0; i < 3; i++) {
+    const b = document.getElementById('blank-' + i);
+    if (b) { b.textContent = '__________'; b.className = 'blank'; }
+    const fb = document.getElementById('fb-' + i);
+    if (fb) fb.style.display = 'none';
+    const si = document.getElementById('si-' + i);
+    if (si) si.className = 'story-item';
+  }
+  document.querySelectorAll('.word-chip').forEach(c => {
+    c.classList.remove('used', 'selected');
+    c.style.opacity = '';
+  });
+  document.getElementById('btn-verificar').disabled = true;
+  const geral = document.getElementById('fb-geral');
+  if (geral) geral.style.display = 'none';
+}
+
+// ══════════════════════════════════
+// CHECK
+// ══════════════════════════════════
+let exerciseResults = [];
+
+function checkAll() {
+  let correct = 0;
+  exerciseResults = [];
+
+  for (let i = 0; i < 3; i++) {
+    const given = fillState[i];
+    const ok = given === ANSWERS[i];
+    if (ok) correct++;
+    exerciseResults.push({ idx: i, given, correct: ok });
+
+    // mark blank
+    const b = document.getElementById('blank-' + i);
+    if (b) b.className = 'blank ' + (ok ? 'correct-fill' : 'wrong-fill');
+
+    // mark story item
+    const si = document.getElementById('si-' + i);
+    if (si) si.className = 'story-item ' + (ok ? 'correct' : 'wrong');
+
+    // show feedback per item
+    const fb = document.getElementById('fb-' + i);
+    if (fb) {
+      fb.style.display = 'block';
+      fb.className = 'fb-box ' + (ok ? 'fb-ok' : 'fb-nok');
+      fb.innerHTML = ok
+        ? `✅ Correto! ${EXPLANATIONS[i]}`
+        : `❌ Não é esta. A resposta certa é <strong>${ANSWERS[i]}</strong>. ${EXPLANATIONS[i]}`;
+    }
+  }
+
+  // Lock word chips
+  document.querySelectorAll('.word-chip').forEach(c => { c.style.pointerEvents = 'none'; });
+  document.getElementById('btn-verificar').disabled = true;
+
+  // Global feedback
+  const geral = document.getElementById('fb-geral');
+  if (geral) {
+    geral.style.display = 'block';
+    if (correct === 3) {
+      geral.className = 'fb-box fb-ok';
+      geral.innerHTML = '🎉 Parabéns! Você acertou as 3 lacunas! O Garçom Digital está funcionando!';
+      spawnConf();
+    } else {
+      geral.className = 'fb-box fb-nok';
+      geral.innerHTML = `Você acertou ${correct} de 3. Leia o feedback de cada frase e tente de novo!`;
+    }
+  }
+
+  setTimeout(() => { buildResultScreen(correct); go('s-result'); }, 2200);
+}
+
+// ══════════════════════════════════
+// RESULT
+// ══════════════════════════════════
+function buildResultScreen(correct) {
+  // score ring
+  document.getElementById('r-score').textContent = correct + '/3';
+
+  const cls = correct === 3 ? 'hi' : correct >= 2 ? 'md' : 'lo';
+  document.getElementById('r-grid').innerHTML = `
+    <div class="res-box ${cls}"><div class="rv">${correct}/3</div><div class="rl">ACERTOS</div></div>
+    <div class="res-box ${cls}"><div class="rv">${Math.round(correct/3*100)}%</div><div class="rl">APROVEIT.</div></div>
+    <div class="res-box info"><div class="rv">3</div><div class="rl">CONCEITOS</div></div>`;
+
+  // review
+  const labels = [
+    'Frase 1: Comando para buscar dados',
+    'Frase 2: Onde o pedido chega',
+    'Frase 3: Formato da resposta'
+  ];
+  let rev = '';
+  exerciseResults.forEach((r, i) => {
+    rev += `<div class="answer-review ${r.correct ? 'ar-ok' : 'ar-nok'}">
+      <span class="ar-icon">${r.correct ? '✅' : '❌'}</span>
+      <div class="ar-text">
+        <div class="ar-label">${labels[i]}</div>
+        <div class="ar-detail">Sua resposta: <strong>${r.given || '—'}</strong> · Correta: <strong>${ANSWERS[i]}</strong></div>
+        <div style="font-size:.76rem;color:var(--gray);margin-top:2px;">${EXPLANATIONS[i]}</div>
+      </div>
+    </div>`;
+  });
+  document.getElementById('r-review').innerHTML = rev;
+
+  // NPC message
+  let msg;
+  if (correct === 3) msg = 'Excelente! Você dominou o Garçom Digital! Agora você sabe que o <strong>FETCH</strong> chama o garçom, a <strong>API</strong> é a cozinha e o <strong>JSON</strong> é a bandeja com os dados!';
+  else if (correct >= 2) msg = 'Muito bom! Você acertou quase tudo. Releia as explicações das que erraste e tente de novo — você está quase lá!';
+  else msg = 'Boa tentativa! Releia a Prática Guiada com calma e tente o exercício de novo. Use as analogias do restaurante para ajudar!';
+  document.getElementById('r-npc-msg').innerHTML = msg;
+
+  if (correct === 3) spawnConf();
+}
+
+// ══════════════════════════════════
+// CSV
+// ══════════════════════════════════
+function downloadCSV() {
+  const correct = exerciseResults.filter(r => r.correct).length;
+  const now = new Date();
+  let csv = 'sep=;\nEXERCÍCIO: O GARÇOM DIGITAL — FRONTEND + BACKEND\n';
+  csv += `Data;${now.toLocaleDateString('pt-BR')}\nHora;${now.toLocaleTimeString('pt-BR')}\n`;
+  csv += `Acertos;${correct}\nTotal;3\nAproveitamento;${Math.round(correct/3*100)}%\n\n`;
+  csv += 'Frase;Resposta do Aluno;Resposta Correta;Resultado\n';
+  const labs = ['Comando para buscar dados','Onde o pedido chega','Formato da resposta'];
+  exerciseResults.forEach((r, i) => {
+    csv += `${labs[i]};${r.given||'(vazio)'};${ANSWERS[i]};${r.correct?'CORRETO':'INCORRETO'}\n`;
+  });
+  csv += '\nCONCEITOS APRENDIDOS\n';
+  csv += 'FETCH;Comando JavaScript que busca dados de uma API (o garçom)\n';
+  csv += 'API (Backend);Servidor feito em Python que recebe e responde os pedidos (a cozinha)\n';
+  csv += 'JSON;Formato leve de texto para enviar dados estruturados (a bandeja)\n';
+  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `garcom_digital_${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}.csv`;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+}
+
+// ══════════════════════════════════
+// UTILS
+// ══════════════════════════════════
+function go(id) {
+  document.querySelectorAll('.scr').forEach(s => s.classList.remove('on'));
+  document.getElementById(id).classList.add('on');
+  window.scrollTo(0, 0);
+}
+
+function fullReset() {
+  exerciseResults = [];
+  resetExercise();
+  go('s-intro');
+}
+
+function spawnConf() {
+  const c = document.getElementById('conf');
+  const cols = ['#f5c842','#3b82f6','#16a34a','#ea580c','#7c3aed','#dc2626','#0ea5e9'];
+  for (let i = 0; i < 80; i++) {
+    const el = document.createElement('div');
+    const sz = 4 + Math.random() * 9;
+    el.style.cssText = `position:absolute;width:${sz}px;height:${sz}px;background:${cols[Math.floor(Math.random()*cols.length)]};left:${Math.random()*100}%;top:-10px;border-radius:${Math.random()>.5?'50%':'2px'};animation:cf ${1.5+Math.random()*2}s ease ${Math.random()*.5}s both;`;
+    c.appendChild(el);
+  }
+  setTimeout(() => c.innerHTML = '', 5500);
+}
+(()=>{ const s=document.createElement('style'); s.textContent='@keyframes cf{from{transform:translateY(0) rotate(0deg);opacity:1}to{transform:translateY(100vh) rotate(720deg);opacity:0}}'; document.head.appendChild(s); })();
+</script>
+</body>
+</html>
