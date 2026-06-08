@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>O Restaurante Digital — Caminho Completo</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&family=Press+Start+2P&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:         #f0f4ff;
+  --white:      #ffffff;
+  --navy:       #1e3a5f;
+  --navy2:      #2d5f9e;
+  --border:     #e5e7eb;
+  --text:       #111827;
+  --text2:      #374151;
+  --gray:       #6b7280;
+  --gray-light: #f3f4f6;
+
+  /* per-technology colors — consistent everywhere */
+  --c-tela:    #d97706; /* amber  */
+  --c-fetch:   #2563eb; /* blue   */
+  --c-api:     #7c3aed; /* violet */
+  --c-pg:      #0d9488; /* teal   */
+  --c-json:    #16a34a; /* green  */
+
+  --p-tela:    #fef3c7;
+  --p-fetch:   #dbeafe;
+  --p-api:     #ede9fe;
+  --p-pg:      #ccfbf1;
+  --p-json:    #dcfce7;
+
+  --green:     #16a34a; --green-pale:#dcfce7;
+  --red:       #dc2626; --red-pale:  #fee2e2;
+  --blue:      #2563eb; --blue-pale: #dbeafe;
+  --gold:      #d97706; --gold-pale: #fef3c7;
+}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;font-size:16px;line-height:1.6;}
+
+.scr{display:none;min-height:100vh;flex-direction:column;align-items:center;padding:24px 16px 60px;}
+.scr.on{display:flex;}
+
+/* CARD */
+.card{background:var(--white);border-radius:16px;box-shadow:0 2px 16px rgba(0,0,0,.08),0 0 0 1px rgba(0,0,0,.04);padding:30px 34px;max-width:840px;width:100%;}
+
+/* SCHOOL HEADER */
+.school-header{display:flex;align-items:center;gap:14px;padding-bottom:14px;margin-bottom:14px;border-bottom:3px solid var(--navy);}
+.school-logo{width:50px;height:50px;background:var(--navy);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+.school-name{font-size:.93rem;font-weight:900;color:var(--navy);line-height:1.3;}
+.school-sub{font-size:.73rem;color:var(--gray);margin-top:2px;}
+.badge{background:var(--navy);color:white;font-size:.62rem;font-weight:800;padding:4px 10px;border-radius:20px;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;margin-left:auto;}
+
+h1.main-title{font-size:clamp(1.2rem,3.5vw,1.9rem);font-weight:900;color:var(--navy);margin-bottom:3px;}
+.subtitle{font-size:.83rem;font-weight:700;color:var(--gray);margin-bottom:18px;}
+h2.sec{font-size:1.05rem;font-weight:900;color:var(--navy);margin-bottom:10px;display:flex;align-items:center;gap:8px;}
+.divider{height:2px;background:var(--gray-light);margin:18px 0;}
+
+/* STEPS PROGRESS */
+.step-bar{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap;}
+.sp{font-weight:800;font-size:.7rem;padding:5px 12px;border-radius:20px;border:2px solid;transition:all .3s;}
+.sp.done  {border-color:var(--green);background:var(--green-pale);color:var(--green);}
+.sp.active{border-color:var(--blue);background:var(--blue-pale);color:var(--blue);}
+.sp.wait  {border-color:var(--border);color:var(--gray);background:var(--gray-light);}
+
+/* NPC */
+.npc-box{display:flex;gap:13px;align-items:flex-start;background:var(--navy);border-radius:12px;padding:15px 17px;margin-bottom:16px;}
+.npc-av{width:50px;height:50px;border-radius:50%;background:rgba(255,255,255,.15);border:2px solid rgba(255,255,255,.28);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;animation:bob 3s ease-in-out infinite;}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+.npc-text{font-size:.9rem;font-weight:700;color:rgba(255,255,255,.95);line-height:1.7;}
+.npc-text strong{color:#fde68a;}
+
+/* NOTICE */
+.notice{border-radius:10px;padding:11px 15px;font-size:.84rem;font-weight:700;line-height:1.6;margin:10px 0;display:flex;gap:10px;align-items:flex-start;}
+.notice-icon{font-size:1.1rem;flex-shrink:0;margin-top:1px;}
+.nt-blue{background:var(--blue-pale);border:2px solid rgba(37,99,235,.3);color:#1e40af;}
+.nt-gold{background:var(--gold-pale);border:2px solid rgba(217,119,6,.3);color:#92400e;}
+.nt-green{background:var(--green-pale);border:2px solid rgba(22,163,74,.3);color:#14532d;}
+
+/* ════ RESTAURANT FLOW ════ */
+.rest-flow{display:flex;flex-direction:column;gap:0;margin:14px 0;}
+.flow-step{display:flex;align-items:stretch;gap:0;}
+
+/* Vertical connector */
+.flow-connector{display:flex;flex-direction:column;align-items:center;width:50px;flex-shrink:0;}
+.fc-dot{width:18px;height:18px;border-radius:50%;flex-shrink:0;border:3px solid white;box-shadow:0 0 0 2px currentColor;}
+.fc-line{width:3px;flex:1;background:var(--border);}
+
+/* Step card */
+.flow-card{
+  flex:1;border-radius:12px;border:2px solid;padding:14px 16px;
+  margin:0 0 14px 10px;transition:all .25s;cursor:default;
+}
+.flow-card:hover{transform:translateX(3px);box-shadow:0 3px 12px rgba(0,0,0,.1);}
+
+.flow-card .fc-header{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+.flow-card .fc-icon{font-size:1.8rem;flex-shrink:0;}
+.flow-card .fc-tech{font-size:.68rem;font-weight:900;text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px;}
+.flow-card .fc-role{font-size:.75rem;font-weight:800;opacity:.65;}
+.flow-card .fc-analogy{font-size:.88rem;font-weight:700;line-height:1.5;color:var(--text2);}
+.flow-card .fc-analogy em{font-style:normal;font-weight:900;}
+
+/* per-tech card colors */
+.fc-tela {border-color:rgba(217,119,6,.35);background:#fffbeb;}
+.fc-tela .fc-dot{color:var(--c-tela);}
+.fc-tela .fc-tech{color:var(--c-tela);}
+
+.fc-fetch{border-color:rgba(37,99,235,.3);background:#eff6ff;}
+.fc-fetch .fc-dot{color:var(--c-fetch);}
+.fc-fetch .fc-tech{color:var(--c-fetch);}
+
+.fc-api  {border-color:rgba(124,58,237,.3);background:#f5f3ff;}
+.fc-api  .fc-dot{color:var(--c-api);}
+.fc-api  .fc-tech{color:var(--c-api);}
+
+.fc-pg   {border-color:rgba(13,148,136,.35);background:#f0fdfa;}
+.fc-pg   .fc-dot{color:var(--c-pg);}
+.fc-pg   .fc-tech{color:var(--c-pg);}
+
+.fc-json {border-color:rgba(22,163,74,.35);background:#f0fdf4;}
+.fc-json .fc-dot{color:var(--c-json);}
+.fc-json .fc-tech{color:var(--c-json);}
+
+/* ANIMATED FLOW */
+.flow-card.highlight{animation:flowHighlight .6s ease;}
+@keyframes flowHighlight{0%{transform:scale(1) translateX(0)}40%{transform:scale(1.03) translateX(6px)}100%{transform:scale(1) translateX(3px)}}
+
+/* ════ MATCHING GAME ════ */
+.match-layout{display:grid;grid-template-columns:1fr auto 1fr;gap:12px;align-items:start;margin:14px 0;}
+@media(max-width:580px){.match-layout{grid-template-columns:1fr;}.match-sep{display:none;}}
+
+/* TECHNOLOGY COLUMN */
+.match-col-title{font-size:.7rem;font-weight:900;text-transform:uppercase;letter-spacing:1px;color:var(--gray);margin-bottom:8px;}
+
+.tech-card{
+  border-radius:10px;border:2px solid;padding:11px 14px;
+  margin-bottom:8px;cursor:pointer;transition:all .22s;
+  display:flex;align-items:center;gap:10px;
+}
+.tech-card .tc-icon{font-size:1.5rem;flex-shrink:0;}
+.tech-card .tc-name{font-size:.9rem;font-weight:900;line-height:1.3;}
+.tech-card .tc-hint{font-size:.72rem;font-weight:700;opacity:.6;margin-top:1px;}
+
+.tc-tela {border-color:rgba(217,119,6,.4); background:#fffbeb;}
+.tc-tela  .tc-name{color:var(--c-tela);}
+.tc-fetch {border-color:rgba(37,99,235,.35);background:#eff6ff;}
+.tc-fetch .tc-name{color:var(--c-fetch);}
+.tc-api   {border-color:rgba(124,58,237,.3);background:#f5f3ff;}
+.tc-api   .tc-name{color:var(--c-api);}
+.tc-pg    {border-color:rgba(13,148,136,.35);background:#f0fdfa;}
+.tc-pg    .tc-name{color:var(--c-pg);}
+.tc-json  {border-color:rgba(22,163,74,.35); background:#f0fdf4;}
+.tc-json  .tc-name{color:var(--c-json);}
+
+.tech-card:hover:not(.locked):not(.matched){transform:translateX(4px);box-shadow:0 3px 10px rgba(0,0,0,.1);}
+.tech-card.selected{box-shadow:0 0 0 3px var(--navy),0 4px 14px rgba(30,58,95,.25);transform:scale(1.03);}
+.tech-card.matched{opacity:.5;cursor:default;pointer-events:none;}
+.tech-card.matched-ok{opacity:1;border-color:var(--green)!important;}
+
+/* FUNCTION COLUMN */
+.func-card{
+  border-radius:10px;border:2px dashed var(--border);padding:11px 14px;
+  margin-bottom:8px;cursor:pointer;transition:all .22s;
+  background:var(--gray-light);
+  display:flex;align-items:flex-start;gap:10px;
+  min-height:64px;
+}
+.func-card:hover:not(.locked){border-color:var(--navy);background:var(--blue-pale);}
+.func-card .fc-num{font-family:'Press Start 2P',monospace;font-size:.42rem;color:var(--gray);flex-shrink:0;margin-top:3px;}
+.func-card .fc-text{font-size:.87rem;font-weight:700;color:var(--text2);line-height:1.55;}
+.func-card.has-chip{background:var(--white);border-style:solid;}
+.func-card.match-ok {border-color:var(--green)!important;background:var(--green-pale)!important;}
+.func-card.match-nok{border-color:var(--red)!important;background:var(--red-pale)!important;animation:shk .3s ease;}
+@keyframes shk{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+.func-card.locked{pointer-events:none;}
+
+/* CHIP on func card */
+.match-chip{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:4px 10px;border-radius:7px;border:1.5px solid;
+  font-size:.8rem;font-weight:900;margin-bottom:5px;
+  cursor:pointer;
+}
+.match-chip:hover{opacity:.75;}
+
+/* SEPARATOR */
+.match-sep{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 4px;gap:4px;}
+.sep-dot{width:6px;height:6px;border-radius:50%;background:var(--border);}
+
+/* FEEDBACK */
+.fb-box{border-radius:10px;padding:12px 16px;font-size:.88rem;font-weight:800;line-height:1.6;display:none;margin-top:10px;animation:popUp .3s ease;}
+@keyframes popUp{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+.fb-ok {background:var(--green-pale);border:2px solid var(--green);color:var(--green);}
+.fb-nok{background:var(--red-pale);  border:2px solid var(--red);  color:var(--red);}
+.fb-info{background:var(--blue-pale);border:2px solid var(--blue); color:#1d4ed8;}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:7px;font-weight:900;font-size:.82rem;border:none;border-radius:10px;padding:11px 22px;cursor:pointer;transition:all .18s;letter-spacing:.3px;}
+.btn-navy{background:var(--navy);color:white;}
+.btn-navy:hover{background:var(--navy2);transform:translateY(-1px);box-shadow:0 4px 12px rgba(30,58,95,.3);}
+.btn-green{background:var(--green);color:white;}
+.btn-green:hover{background:#15803d;transform:translateY(-1px);}
+.btn-outline{background:transparent;border:2px solid var(--navy);color:var(--navy);font-size:.74rem;}
+.btn-outline:hover{background:var(--navy);color:white;}
+.btn-red-outline{background:transparent;border:2px solid var(--red);color:var(--red);font-size:.74rem;}
+.btn-red-outline:hover{background:var(--red);color:white;}
+.btn:disabled{opacity:.35;cursor:not-allowed;transform:none;}
+
+/* RESULT */
+.result-ring{width:120px;height:120px;border-radius:50%;margin:0 auto 14px;background:radial-gradient(circle,#fef9c3,#fffbeb);border:4px solid var(--gold);display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:0 0 24px rgba(217,119,6,.22);animation:rp 2.5s ease-in-out infinite;}
+@keyframes rp{0%,100%{box-shadow:0 0 18px rgba(217,119,6,.18)}50%{box-shadow:0 0 34px rgba(217,119,6,.38)}}
+.rr-num{font-family:'Press Start 2P',monospace;font-size:1.3rem;color:var(--gold);line-height:1;}
+.rr-lbl{font-size:.6rem;font-weight:800;color:var(--gray);margin-top:4px;}
+.res-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin:14px 0;}
+.res-box{border-radius:10px;padding:13px;text-align:center;border:2px solid;}
+.res-box .rv{font-family:'Press Start 2P',monospace;font-size:.9rem;line-height:1;margin-bottom:4px;}
+.res-box .rl{font-size:.66rem;font-weight:800;color:var(--gray);}
+.res-box.hi{border-color:var(--green);background:var(--green-pale);}.res-box.hi .rv{color:var(--green);}
+.res-box.md{border-color:var(--gold);background:var(--gold-pale);}.res-box.md .rv{color:var(--gold);}
+.res-box.lo{border-color:var(--red);background:var(--red-pale);}.res-box.lo .rv{color:var(--red);}
+.res-box.info{border-color:var(--blue);background:var(--blue-pale);}.res-box.info .rv{color:var(--blue);}
+
+.rev-item{display:flex;align-items:flex-start;gap:10px;padding:11px 13px;border-radius:10px;border:2px solid;margin-bottom:8px;}
+.rev-ok {border-color:var(--green);background:var(--green-pale);}
+.rev-nok{border-color:var(--red);  background:var(--red-pale);}
+.rev-icon{font-size:1.2rem;flex-shrink:0;}
+.rev-body{}
+.rev-label{font-size:.82rem;font-weight:900;margin-bottom:2px;}
+.rev-ok  .rev-label{color:var(--green);}
+.rev-nok .rev-label{color:var(--red);}
+.rev-detail{font-size:.8rem;font-weight:700;color:var(--text2);}
+.rev-expl{font-size:.76rem;color:var(--gray);margin-top:2px;}
+
+/* CONF */
+.conf{position:fixed;inset:0;pointer-events:none;z-index:400;}
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:500;display:none;align-items:center;justify-content:center;flex-direction:column;}
+.ov.on{display:flex;}
+.ov-t{font-family:'Press Start 2P',monospace;font-size:clamp(.65rem,3vw,1.2rem);text-align:center;animation:bigP .45s ease;}
+@keyframes bigP{0%{transform:scale(.3);opacity:0}70%{transform:scale(1.1)}100%{transform:scale(1);opacity:1}}
+.ov-s{font-size:.9rem;font-weight:800;color:white;text-align:center;margin-top:10px;max-width:360px;line-height:1.7;padding:0 16px;}
+
+@media(max-width:540px){.card{padding:18px 13px;}.match-layout{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+<div class="conf" id="conf"></div>
+<div class="ov" id="ov"><div class="ov-t" id="ov-t" style="color:#fde68a;">✅ CORRETO!</div><div class="ov-s" id="ov-s"></div></div>
+
+<!-- ════════ TELA 1: INTRODUÇÃO ════════ -->
+<div class="scr on" id="s-intro">
+  <div class="card" style="max-width:760px;margin-top:16px;">
+
+    <div class="school-header">
+      <div class="school-logo">🎓</div>
+      <div>
+        <div class="school-name">Escola Técnica Estadual<br>Marechal Mascarenhas de Moraes</div>
+        <div class="school-sub">Desenvolvimento Web · Módulo 1 — Aula 14</div>
+      </div>
+      <div class="badge">Aula</div>
+    </div>
+
+    <h1 class="main-title">🍽️ O Restaurante Digital</h1>
+    <p class="subtitle">O caminho completo da informação — Tela até o Banco de Dados</p>
+
+    <div class="npc-box">
+      <div class="npc-av">👨‍🏫</div>
+      <p class="npc-text">Olá! Na aula passada aprendemos que o <strong>JavaScript (fetch)</strong> é o garçom.<br><br>
+      Hoje vamos ver o <strong>caminho completo</strong> — desde você sentar na mesa até o prato chegar. Tem 5 partes nesse caminho. Vamos conhecer cada uma!</p>
+    </div>
+
+    <!-- FLUXO VISUAL -->
+    <h2 class="sec">🗺️ O Caminho Completo da Informação</h2>
+
+    <div class="rest-flow" id="rest-flow">
+
+      <div class="flow-step">
+        <div class="flow-connector"><div class="fc-dot" style="color:var(--c-tela);"></div><div class="fc-line"></div></div>
+        <div class="flow-card fc-tela">
+          <div class="fc-header">
+            <span class="fc-icon">💻</span>
+            <div><div class="fc-tech">Tela (Frontend)</div><div class="fc-role">HTML + CSS + JavaScript</div></div>
+          </div>
+          <p class="fc-analogy">🪑 <em>Você sentado na mesa olhando o cardápio.</em> Você clica em um botão — é como chamar o garçom.</p>
+        </div>
+      </div>
+
+      <div class="flow-step">
+        <div class="flow-connector"><div class="fc-dot" style="color:var(--c-fetch);"></div><div class="fc-line"></div></div>
+        <div class="flow-card fc-fetch">
+          <div class="fc-header">
+            <span class="fc-icon">🏃</span>
+            <div><div class="fc-tech">JavaScript / Fetch</div><div class="fc-role">Requisição HTTP</div></div>
+          </div>
+          <p class="fc-analogy">🧑‍🍳 <em>O garçom que anota o pedido e corre até a cozinha.</em> O fetch envia uma mensagem para a API com o que você quer.</p>
+        </div>
+      </div>
+
+      <div class="flow-step">
+        <div class="flow-connector"><div class="fc-dot" style="color:var(--c-api);"></div><div class="fc-line"></div></div>
+        <div class="flow-card fc-api">
+          <div class="fc-header">
+            <span class="fc-icon">⚙️</span>
+            <div><div class="fc-tech">FastAPI (Python)</div><div class="fc-role">Servidor / Backend</div></div>
+          </div>
+          <p class="fc-analogy">👨‍🍳 <em>O cozinheiro.</em> Ele recebe o pedido, verifica se está certo e vai buscar os ingredientes na despensa.</p>
+        </div>
+      </div>
+
+      <div class="flow-step">
+        <div class="flow-connector"><div class="fc-dot" style="color:var(--c-pg);"></div><div class="fc-line"></div></div>
+        <div class="flow-card fc-pg">
+          <div class="fc-header">
+            <span class="fc-icon">🗄️</span>
+            <div><div class="fc-tech">PostgreSQL</div><div class="fc-role">Banco de Dados</div></div>
+          </div>
+          <p class="fc-analogy">🏪 <em>A despensa / estoque.</em> É onde todos os ingredientes (dados) ficam guardados com segurança. O cozinheiro vai até lá buscar o que precisa.</p>
+        </div>
+      </div>
+
+      <div class="flow-step">
+        <div class="flow-connector"><div class="fc-dot" style="color:var(--c-json);"></div></div>
+        <div class="flow-card fc-json">
+          <div class="fc-header">
+            <span class="fc-icon">📦</span>
+            <div><div class="fc-tech">JSON</div><div class="fc-role">Formato da Resposta</div></div>
+          </div>
+          <p class="fc-analogy">🍱 <em>A bandeja com o prato pronto.</em> O cozinheiro coloca a comida na bandeja (JSON) e o garçom traz de volta para você na mesa (tela).</p>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- COLOR LEGEND -->
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin:8px 0 16px;">
+      <div style="display:flex;align-items:center;gap:5px;font-size:.76rem;font-weight:800;color:var(--c-tela);">💻 Tela</div>
+      <span style="color:var(--border);">→</span>
+      <div style="display:flex;align-items:center;gap:5px;font-size:.76rem;font-weight:800;color:var(--c-fetch);">🏃 Fetch</div>
+      <span style="color:var(--border);">→</span>
+      <div style="display:flex;align-items:center;gap:5px;font-size:.76rem;font-weight:800;color:var(--c-api);">⚙️ FastAPI</div>
+      <span style="color:var(--border);">→</span>
+      <div style="display:flex;align-items:center;gap:5px;font-size:.76rem;font-weight:800;color:var(--c-pg);">🗄️ PostgreSQL</div>
+      <span style="color:var(--border);">→</span>
+      <div style="display:flex;align-items:center;gap:5px;font-size:.76rem;font-weight:800;color:var(--c-json);">📦 JSON</div>
+    </div>
+
+    <div class="notice nt-gold">
+      <span class="notice-icon">📌</span>
+      <span>Esta aula tem <strong>2 partes</strong>: primeiro você lê e entende o caminho, depois faz a <strong>atividade de ligar</strong> as tecnologias às funções.</span>
+    </div>
+
+    <div style="text-align:center;margin-top:18px;">
+      <button class="btn btn-navy" onclick="go('s-jogo')">🎮 FAZER A ATIVIDADE DE LIGAR →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════ TELA 2: JOGO DE LIGAR ════════ -->
+<div class="scr" id="s-jogo">
+  <div class="card" style="max-width:840px;margin-top:16px;">
+
+    <div class="school-header" style="padding-bottom:12px;margin-bottom:12px;">
+      <div class="school-logo" style="width:42px;height:42px;font-size:17px;">🎓</div>
+      <div><div class="school-name" style="font-size:.88rem;">Atividade Visual</div><div class="school-sub">Ligue a tecnologia à sua função</div></div>
+    </div>
+
+    <div class="step-bar">
+      <div class="sp done">📖 Leitura</div>
+      <div class="sp active">🎮 Atividade</div>
+      <div class="sp wait">🏆 Resultado</div>
+    </div>
+
+    <div class="npc-box">
+      <div class="npc-av">👨‍🏫</div>
+      <p class="npc-text"><strong>Como funciona:</strong><br>
+      1. Clique em uma tecnologia do lado esquerdo para <strong>selecioná-la</strong>.<br>
+      2. Depois clique na <strong>função</strong> do lado direito onde você acha que ela pertence.<br>
+      3. Se errar, você pode <strong>tentar de novo</strong> — não tem problema!</p>
+    </div>
+
+    <div class="notice nt-blue" style="margin-bottom:14px;">
+      <span class="notice-icon">💡</span>
+      <span>Lembrete: cada cor é de uma tecnologia. As mesmas cores do caminho que você leu!</span>
+    </div>
+
+    <div class="match-layout">
+
+      <!-- LEFT: Technologies -->
+      <div>
+        <div class="match-col-title">🔧 TECNOLOGIA</div>
+
+        <div class="tech-card tc-fetch" id="tc-fetch" onclick="selectTech('fetch')">
+          <span class="tc-icon">🏃</span>
+          <div>
+            <div class="tc-name">JavaScript (fetch)</div>
+            <div class="tc-hint">Frontend · Requisição HTTP</div>
+          </div>
+        </div>
+
+        <div class="tech-card tc-api" id="tc-api" onclick="selectTech('api')">
+          <span class="tc-icon">⚙️</span>
+          <div>
+            <div class="tc-name">FastAPI (Python)</div>
+            <div class="tc-hint">Backend · Servidor</div>
+          </div>
+        </div>
+
+        <div class="tech-card tc-pg" id="tc-pg" onclick="selectTech('pg')">
+          <span class="tc-icon">🗄️</span>
+          <div>
+            <div class="tc-name">PostgreSQL</div>
+            <div class="tc-hint">Banco de Dados</div>
+          </div>
+        </div>
+
+        <div class="tech-card tc-json" id="tc-json" onclick="selectTech('json')">
+          <span class="tc-icon">📦</span>
+          <div>
+            <div class="tc-name">JSON</div>
+            <div class="tc-hint">Formato de Dados</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SEPARATOR -->
+      <div class="match-sep">
+        <div class="sep-dot"></div><div class="sep-dot"></div><div class="sep-dot"></div>
+        <div class="sep-dot"></div><div class="sep-dot"></div><div class="sep-dot"></div>
+        <div class="sep-dot"></div><div class="sep-dot"></div>
+      </div>
+
+      <!-- RIGHT: Functions -->
+      <div>
+        <div class="match-col-title">📋 FUNÇÃO NO SISTEMA</div>
+
+        <div class="func-card" id="fc-despensa" onclick="fillFunc('despensa')">
+          <span class="fc-num">A</span>
+          <p class="fc-text">É a <strong>Despensa</strong>, o Banco de Dados que guarda todas as informações com segurança.</p>
+        </div>
+
+        <div class="func-card" id="fc-mensageiro" onclick="fillFunc('mensageiro')">
+          <span class="fc-num">B</span>
+          <p class="fc-text">É o <strong>Mensageiro</strong> (garçom), que leva o pedido da tela até o servidor.</p>
+        </div>
+
+        <div class="func-card" id="fc-formato" onclick="fillFunc('formato')">
+          <span class="fc-num">C</span>
+          <p class="fc-text">É o <strong>formato da Resposta</strong> (a bandeja), como os dados viajam pela internet.</p>
+        </div>
+
+        <div class="func-card" id="fc-cozinha" onclick="fillFunc('cozinha')">
+          <span class="fc-num">D</span>
+          <p class="fc-text">É a <strong>Cozinha</strong>, que recebe o pedido, processa as regras e busca os dados.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- FEEDBACK + BUTTONS -->
+    <div class="fb-box" id="fb-match"></div>
+
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:16px;justify-content:space-between;align-items:center;">
+      <button class="btn btn-outline" onclick="go('s-intro')">← Rever o Caminho</button>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-red-outline" onclick="resetMatch()" style="font-size:.72rem;">↺ Recomeçar</button>
+        <button class="btn btn-green" id="btn-verificar" onclick="checkMatch()" disabled>✅ VERIFICAR</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════ TELA 3: RESULTADO ════════ -->
+<div class="scr" id="s-result">
+  <div class="card" style="max-width:740px;margin-top:16px;">
+
+    <div class="school-header" style="padding-bottom:12px;margin-bottom:12px;">
+      <div class="school-logo" style="width:42px;height:42px;font-size:17px;">🎓</div>
+      <div><div class="school-name" style="font-size:.88rem;">Resultado Final</div><div class="school-sub">Atividade de Ligar — Caminho Completo</div></div>
+    </div>
+
+    <div class="step-bar">
+      <div class="sp done">📖 Leitura</div>
+      <div class="sp done">🎮 Atividade</div>
+      <div class="sp active">🏆 Resultado</div>
+    </div>
+
+    <div style="text-align:center;margin-bottom:12px;">
+      <div class="result-ring"><span class="rr-num" id="r-score">0/4</span><span class="rr-lbl">ACERTOS</span></div>
+    </div>
+
+    <div class="res-grid" id="r-grid"></div>
+
+    <div class="divider"></div>
+    <h2 class="sec">📋 Gabarito com Explicações</h2>
+    <div id="r-review"></div>
+
+    <div class="divider"></div>
+
+    <!-- MINI FLOW REMINDER -->
+    <h2 class="sec">🔄 Lembre-se: O Caminho Completo</h2>
+    <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:6px;padding:14px;background:var(--gray-light);border-radius:12px;margin-bottom:14px;">
+      <div style="text-align:center;font-size:.8rem;font-weight:800;color:var(--c-tela);">💻<br>Tela</div>
+      <span style="color:var(--gray);font-size:1.2rem;">→</span>
+      <div style="text-align:center;font-size:.8rem;font-weight:800;color:var(--c-fetch);">🏃<br>Fetch</div>
+      <span style="color:var(--gray);font-size:1.2rem;">→</span>
+      <div style="text-align:center;font-size:.8rem;font-weight:800;color:var(--c-api);">⚙️<br>FastAPI</div>
+      <span style="color:var(--gray);font-size:1.2rem;">→</span>
+      <div style="text-align:center;font-size:.8rem;font-weight:800;color:var(--c-pg);">🗄️<br>PostgreSQL</div>
+      <span style="color:var(--gray);font-size:1.2rem;">→</span>
+      <div style="text-align:center;font-size:.8rem;font-weight:800;color:var(--c-json);">📦<br>JSON</div>
+      <span style="color:var(--gray);font-size:1.2rem;">→</span>
+      <div style="text-align:center;font-size:.8rem;font-weight:800;color:var(--c-tela);">💻<br>Tela</div>
+    </div>
+
+    <div class="npc-box">
+      <div class="npc-av">👨‍🏫</div>
+      <p class="npc-text" id="r-npc">—</p>
+    </div>
+
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;">
+      <button class="btn btn-navy" onclick="downloadCSV()">⬇ Baixar Resultado (CSV)</button>
+      <button class="btn btn-outline" onclick="fullReset()">↺ Tentar Novamente</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════
+// GAME DATA
+// ══════════════════════════════════
+// Correct mapping: tech → func-id
+const CORRECT_MAP = {
+  fetch:  'mensageiro',
+  api:    'cozinha',
+  pg:     'despensa',
+  json:   'formato'
+};
+
+const TECH_INFO = {
+  fetch: { icon:'🏃', name:'JavaScript (fetch)', color:'var(--c-fetch)', pale:'var(--p-fetch)' },
+  api:   { icon:'⚙️', name:'FastAPI (Python)',    color:'var(--c-api)',   pale:'var(--p-api)' },
+  pg:    { icon:'🗄️', name:'PostgreSQL',          color:'var(--c-pg)',    pale:'var(--p-pg)' },
+  json:  { icon:'📦', name:'JSON',               color:'var(--c-json)',  pale:'var(--p-json)' }
+};
+
+const FUNC_INFO = {
+  despensa:   { label:'A — A Despensa (Banco de Dados)',     expl:'PostgreSQL guarda todos os dados com segurança — é a despensa do restaurante!'},
+  mensageiro: { label:'B — O Mensageiro (Garçom)',           expl:'O fetch() do JavaScript leva o pedido da tela até o servidor — ele é o garçom!'},
+  formato:    { label:'C — O Formato da Resposta (Bandeja)', expl:'JSON é o formato que os dados usam para viajar pela internet — é a bandeja com o prato pronto!'},
+  cozinha:    { label:'D — A Cozinha (Servidor)',            expl:'FastAPI/Python recebe o pedido, processa as regras e busca os dados no banco — é o cozinheiro!'}
+};
+
+// STATE
+let selectedTech = null;          // tech key currently selected
+let placement = {};               // funcId → techKey
+let matchResults = [];
+let gameChecked = false;
+
+// ══════════════════════════════════
+// SELECT TECH
+// ══════════════════════════════════
+function selectTech(key) {
+  if (gameChecked) return;
+  const tc = document.getElementById('tc-' + key);
+  if (tc.classList.contains('matched')) return;
+
+  if (selectedTech === key) {
+    selectedTech = null;
+    document.querySelectorAll('.tech-card').forEach(c => c.classList.remove('selected'));
+    return;
+  }
+  selectedTech = key;
+  document.querySelectorAll('.tech-card').forEach(c => c.classList.remove('selected'));
+  tc.classList.add('selected');
+}
+
+// ══════════════════════════════════
+// FILL FUNCTION CARD
+// ══════════════════════════════════
+function fillFunc(funcId) {
+  if (gameChecked) return;
+  if (!selectedTech) return;
+
+  const fc = document.getElementById('fc-' + funcId);
+
+  // If func already has this tech — remove it
+  if (placement[funcId] === selectedTech) {
+    delete placement[funcId];
+    renderFuncCard(funcId, null);
+    const tcEl = document.getElementById('tc-' + selectedTech);
+    if (tcEl) { tcEl.classList.remove('matched'); }
+    selectedTech = null;
+    document.querySelectorAll('.tech-card').forEach(c => c.classList.remove('selected'));
+    updateVerify();
+    return;
+  }
+
+  // If func already occupied — remove old tech from there
+  if (placement[funcId]) {
+    const oldTech = placement[funcId];
+    const oldTcEl = document.getElementById('tc-' + oldTech);
+    if (oldTcEl) oldTcEl.classList.remove('matched');
+  }
+
+  // If selected tech already placed elsewhere — remove
+  const prevFunc = Object.keys(placement).find(k => placement[k] === selectedTech);
+  if (prevFunc) {
+    delete placement[prevFunc];
+    renderFuncCard(prevFunc, null);
+  }
+
+  placement[funcId] = selectedTech;
+  renderFuncCard(funcId, selectedTech);
+
+  const tcEl = document.getElementById('tc-' + selectedTech);
+  if (tcEl) { tcEl.classList.add('matched'); tcEl.classList.remove('selected'); }
+
+  selectedTech = null;
+  document.querySelectorAll('.tech-card').forEach(c => c.classList.remove('selected'));
+  updateVerify();
+}
+
+function renderFuncCard(funcId, techKey) {
+  const fc = document.getElementById('fc-' + funcId);
+  if (!fc) return;
+
+  const texts = {
+    despensa:   'É a <strong>Despensa</strong>, o Banco de Dados que guarda todas as informações com segurança.',
+    mensageiro: 'É o <strong>Mensageiro</strong> (garçom), que leva o pedido da tela até o servidor.',
+    formato:    'É o <strong>formato da Resposta</strong> (a bandeja), como os dados viajam pela internet.',
+    cozinha:    'É a <strong>Cozinha</strong>, que recebe o pedido, processa as regras e busca os dados.'
+  };
+  const labels = { despensa:'A', mensageiro:'B', formato:'C', cozinha:'D' };
+
+  if (!techKey) {
+    fc.className = 'func-card';
+    fc.innerHTML = `<span class="fc-num">${labels[funcId]}</span><p class="fc-text">${texts[funcId]}</p>`;
+  } else {
+    const info = TECH_INFO[techKey];
+    fc.className = 'func-card has-chip';
+    fc.style.borderColor = info.color;
+    fc.style.background = info.pale;
+    fc.innerHTML = `
+      <span class="fc-num">${labels[funcId]}</span>
+      <div style="flex:1;">
+        <div class="match-chip" style="border-color:${info.color};color:${info.color};background:white;" onclick="removeFromFunc('${funcId}')">
+          ${info.icon} ${info.name} <span style="font-size:.65rem;opacity:.6;">✕</span>
+        </div>
+        <p class="fc-text" style="margin-top:4px;">${texts[funcId]}</p>
+      </div>`;
+  }
+}
+
+function removeFromFunc(funcId) {
+  if (gameChecked) return;
+  const tech = placement[funcId];
+  if (!tech) return;
+  delete placement[funcId];
+  renderFuncCard(funcId, null);
+  const tcEl = document.getElementById('tc-' + tech);
+  if (tcEl) tcEl.classList.remove('matched');
+  updateVerify();
+}
+
+function updateVerify() {
+  const count = Object.keys(placement).length;
+  document.getElementById('btn-verificar').disabled = count < 4;
+}
+
+// ══════════════════════════════════
+// CHECK
+// ══════════════════════════════════
+function checkMatch() {
+  gameChecked = true;
+  matchResults = [];
+  let correct = 0;
+
+  Object.keys(CORRECT_MAP).forEach(tech => {
+    // find where this tech was placed
+    const placedFunc = Object.keys(placement).find(k => placement[k] === tech);
+    const correctFunc = CORRECT_MAP[tech];
+    const ok = placedFunc === correctFunc;
+    if (ok) correct++;
+    matchResults.push({ tech, placedFunc, correctFunc, ok });
+
+    // mark func cards
+    if (placedFunc) {
+      const fc = document.getElementById('fc-' + placedFunc);
+      if (fc) fc.classList.add(ok ? 'match-ok' : 'match-nok');
+    }
+
+    // mark tech cards
+    const tc = document.getElementById('tc-' + tech);
+    if (tc) {
+      tc.classList.add('locked');
+      if (ok) tc.classList.add('matched-ok');
+    }
+  });
+
+  // Highlight correct answers for wrongs
+  Object.keys(CORRECT_MAP).forEach(tech => {
+    const correctFunc = CORRECT_MAP[tech];
+    const fcEl = document.getElementById('fc-' + correctFunc);
+    if (fcEl && !fcEl.classList.contains('match-ok')) {
+      fcEl.style.borderColor = 'var(--green)';
+      const num = { despensa:'A', mensageiro:'B', formato:'C', cozinha:'D' }[correctFunc];
+      const t = TECH_INFO[tech];
+      const texts = {
+        despensa: 'É a <strong>Despensa</strong>, o Banco de Dados que guarda todas as informações com segurança.',
+        mensageiro:'É o <strong>Mensageiro</strong> (garçom), que leva o pedido da tela até o servidor.',
+        formato:  'É o <strong>formato da Resposta</strong> (a bandeja), como os dados viajam pela internet.',
+        cozinha:  'É a <strong>Cozinha</strong>, que recebe o pedido, processa as regras e busca os dados.'
+      };
+      fcEl.innerHTML = `<span class="fc-num">${num}</span><div style="flex:1;"><div class="match-chip" style="border-color:${t.color};color:${t.color};background:white;">${t.icon} ${t.name}</div><p class="fc-text" style="margin-top:4px;">${texts[correctFunc]}</p></div>`;
+    }
+  });
+
+  document.getElementById('btn-verificar').disabled = true;
+
+  const fb = document.getElementById('fb-match');
+  fb.style.display = 'block';
+  if (correct === 4) {
+    fb.className = 'fb-box fb-ok';
+    fb.innerHTML = '🎉 Perfeito! Você ligou as 4 tecnologias corretamente! O caminho completo está dominado!';
+    spawnConf();
+    showOv('🎉 TUDO CERTO!', 'Você dominou o caminho completo do Restaurante Digital!');
+    setTimeout(() => hideOv(), 2000);
+  } else {
+    fb.className = 'fb-box fb-nok';
+    fb.innerHTML = `Você acertou ${correct} de 4. Veja as explicações abaixo e tente de novo!`;
+  }
+
+  setTimeout(() => { buildResultScreen(correct); go('s-result'); }, 2400);
+}
+
+// ══════════════════════════════════
+// RESET
+// ══════════════════════════════════
+function resetMatch() {
+  selectedTech = null;
+  placement = {};
+  matchResults = [];
+  gameChecked = false;
+
+  const funcIds = ['despensa','mensageiro','formato','cozinha'];
+  funcIds.forEach(id => renderFuncCard(id, null));
+
+  document.querySelectorAll('.tech-card').forEach(tc => {
+    tc.classList.remove('selected','matched','matched-ok','locked');
+    tc.style.borderColor = '';
+  });
+  document.querySelectorAll('.func-card').forEach(fc => {
+    fc.classList.remove('match-ok','match-nok');
+    fc.style.borderColor = '';
+    fc.style.background = '';
+  });
+
+  document.getElementById('btn-verificar').disabled = true;
+  const fb = document.getElementById('fb-match');
+  if (fb) fb.style.display = 'none';
+}
+
+// ══════════════════════════════════
+// RESULT SCREEN
+// ══════════════════════════════════
+function buildResultScreen(correct) {
+  document.getElementById('r-score').textContent = correct + '/4';
+  const cls = correct === 4 ? 'hi' : correct >= 2 ? 'md' : 'lo';
+  document.getElementById('r-grid').innerHTML = `
+    <div class="res-box ${cls}"><div class="rv">${correct}/4</div><div class="rl">ACERTOS</div></div>
+    <div class="res-box ${cls}"><div class="rv">${Math.round(correct/4*100)}%</div><div class="rl">APROVEIT.</div></div>
+    <div class="res-box info"><div class="rv">5</div><div class="rl">TECNOLOGIAS</div></div>`;
+
+  let rev = '';
+  matchResults.forEach(r => {
+    const ti = TECH_INFO[r.tech];
+    const fi = FUNC_INFO[r.correctFunc];
+    const placed = r.placedFunc ? FUNC_INFO[r.placedFunc]?.label : '(não respondido)';
+    rev += `<div class="rev-item ${r.ok ? 'rev-ok' : 'rev-nok'}">
+      <span class="rev-icon">${r.ok ? '✅' : '❌'}</span>
+      <div class="rev-body">
+        <div class="rev-label">${ti.icon} ${ti.name}</div>
+        <div class="rev-detail">Você ligou em: <strong>${placed}</strong><br>Correto: <strong>${fi.label}</strong></div>
+        <div class="rev-expl">${fi.expl}</div>
+      </div>
+    </div>`;
+  });
+  document.getElementById('r-review').innerHTML = rev;
+
+  let npcMsg;
+  if (correct === 4) npcMsg = 'Excelente! Você ligou todas as 4 tecnologias corretamente! Agora você conhece todo o caminho do Restaurante Digital: Tela → Fetch → FastAPI → PostgreSQL → JSON → Tela!';
+  else if (correct >= 2) npcMsg = `Muito bem! Você acertou ${correct} de 4. Releia as explicações, preste atenção nas analogias do restaurante e tente de novo — você está quase lá!`;
+  else npcMsg = 'Boa tentativa! Releia o caminho na tela de introdução e use as cores como guia — cada cor é uma tecnologia diferente. Tente de novo!';
+  document.getElementById('r-npc').textContent = npcMsg;
+
+  if (correct === 4) spawnConf();
+}
+
+// ══════════════════════════════════
+// CSV
+// ══════════════════════════════════
+function downloadCSV() {
+  const correct = matchResults.filter(r => r.ok).length;
+  const now = new Date();
+  let csv = 'sep=;\nATIVIDADE: O RESTAURANTE DIGITAL — LIGUE AS TECNOLOGIAS\n';
+  csv += `Data;${now.toLocaleDateString('pt-BR')}\nHora;${now.toLocaleTimeString('pt-BR')}\n`;
+  csv += `Acertos;${correct}\nTotal;4\nAproveitamento;${Math.round(correct/4*100)}%\n\n`;
+  csv += 'Tecnologia;Função Ligada;Função Correta;Resultado\n';
+  matchResults.forEach(r => {
+    const placed = r.placedFunc ? FUNC_INFO[r.placedFunc]?.label : '(não respondido)';
+    const correct_f = FUNC_INFO[r.correctFunc]?.label;
+    csv += `${TECH_INFO[r.tech].name};${placed};${correct_f};${r.ok?'CORRETO':'INCORRETO'}\n`;
+  });
+  csv += '\nGABARITO\n';
+  csv += 'JavaScript (fetch);Mensageiro — leva o pedido da tela ao servidor\n';
+  csv += 'FastAPI (Python);Cozinha — recebe e processa o pedido\n';
+  csv += 'PostgreSQL;Despensa — banco de dados que guarda as informações\n';
+  csv += 'JSON;Formato da resposta — bandeja com o dado pronto\n';
+  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `restaurante_digital_${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}.csv`;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+}
+
+// ══════════════════════════════════
+// UTILS
+// ══════════════════════════════════
+function go(id) {
+  document.querySelectorAll('.scr').forEach(s => s.classList.remove('on'));
+  document.getElementById(id).classList.add('on');
+  window.scrollTo(0, 0);
+}
+function fullReset() { resetMatch(); matchResults = []; go('s-intro'); }
+function showOv(t, s) { document.getElementById('ov').classList.add('on'); document.getElementById('ov-t').textContent = t; document.getElementById('ov-s').textContent = s; }
+function hideOv() { document.getElementById('ov').classList.remove('on'); }
+
+function spawnConf() {
+  const c = document.getElementById('conf');
+  const cols = ['#f5c842','#2563eb','#16a34a','#ea580c','#7c3aed','#0d9488','#dc2626'];
+  for (let i = 0; i < 80; i++) {
+    const el = document.createElement('div');
+    const sz = 4 + Math.random() * 9;
+    el.style.cssText = `position:absolute;width:${sz}px;height:${sz}px;background:${cols[Math.floor(Math.random()*cols.length)]};left:${Math.random()*100}%;top:-10px;border-radius:${Math.random()>.5?'50%':'2px'};animation:cf ${1.5+Math.random()*2}s ease ${Math.random()*.5}s both;`;
+    c.appendChild(el);
+  }
+  setTimeout(() => c.innerHTML = '', 5500);
+}
+(()=>{ const s=document.createElement('style'); s.textContent='@keyframes cf{from{transform:translateY(0) rotate(0deg);opacity:1}to{transform:translateY(100vh) rotate(720deg);opacity:0}}'; document.head.appendChild(s); })();
+</script>
+</body>
+</html>
