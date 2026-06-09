@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>O Cardápio de Pedidos — HTTP + FastAPI</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&family=Press+Start+2P&family=Fira+Code:wght@500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f0f4ff; --white:#ffffff; --navy:#1e3a5f; --navy2:#2d5f9e;
+  --border:#e5e7eb; --text:#111827; --text2:#374151; --gray:#6b7280; --gray-light:#f3f4f6;
+
+  --get-c:#16a34a;    --get-p:#dcfce7;
+  --post-c:#2563eb;   --post-p:#dbeafe;
+  --put-c:#d97706;    --put-p:#fef3c7;
+  --del-c:#dc2626;    --del-p:#fee2e2;
+
+  --green:#16a34a; --green-p:#dcfce7;
+  --red:#dc2626;   --red-p:#fee2e2;
+  --blue:#2563eb;  --blue-p:#dbeafe;
+  --gold:#d97706;  --gold-p:#fef3c7;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;}
+
+.scr{display:none;min-height:100vh;flex-direction:column;align-items:center;padding:22px 14px 60px;}
+.scr.on{display:flex;}
+.card{background:var(--white);border-radius:16px;box-shadow:0 2px 16px rgba(0,0,0,.08),0 0 0 1px rgba(0,0,0,.04);padding:28px 32px;max-width:900px;width:100%;}
+
+/* SCHOOL */
+.sh{display:flex;align-items:center;gap:13px;padding-bottom:13px;margin-bottom:13px;border-bottom:3px solid var(--navy);}
+.sl{width:48px;height:48px;background:var(--navy);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+.sn{font-size:.9rem;font-weight:900;color:var(--navy);line-height:1.3;}
+.ss{font-size:.7rem;color:var(--gray);margin-top:1px;}
+.sb{background:var(--navy);color:white;font-size:.6rem;font-weight:800;padding:4px 9px;border-radius:20px;letter-spacing:.5px;margin-left:auto;}
+
+h1.mt{font-size:clamp(1.15rem,3vw,1.85rem);font-weight:900;color:var(--navy);margin-bottom:3px;}
+.sub{font-size:.82rem;font-weight:700;color:var(--gray);margin-bottom:16px;}
+h2.sec{font-size:1rem;font-weight:900;color:var(--navy);margin-bottom:10px;display:flex;align-items:center;gap:7px;}
+.divider{height:2px;background:var(--gray-light);margin:16px 0;}
+
+/* STEPS */
+.sbar{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap;}
+.sp{font-weight:800;font-size:.68rem;padding:5px 11px;border-radius:20px;border:2px solid;transition:all .3s;}
+.sp.done  {border-color:var(--green);background:var(--green-p);color:var(--green);}
+.sp.active{border-color:var(--blue); background:var(--blue-p); color:var(--blue);}
+.sp.wait  {border-color:var(--border);color:var(--gray);background:var(--gray-light);}
+
+/* NPC */
+.npc{display:flex;gap:12px;align-items:flex-start;background:var(--navy);border-radius:12px;padding:14px 16px;margin-bottom:14px;}
+.nav{width:48px;height:48px;border-radius:50%;background:rgba(255,255,255,.14);border:2px solid rgba(255,255,255,.26);display:flex;align-items:center;justify-content:center;font-size:21px;flex-shrink:0;animation:bob 3s ease-in-out infinite;}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+.nt{font-size:.88rem;font-weight:700;color:rgba(255,255,255,.94);line-height:1.7;}
+.nt strong{color:#fde68a;}
+.code-tip{font-family:'Fira Code',monospace;font-size:.74rem;color:var(--green);background:rgba(22,163,74,.1);border:1px solid rgba(22,163,74,.25);border-radius:5px;padding:2px 8px;display:inline-block;margin-top:4px;}
+
+/* NOTICE */
+.notice{border-radius:10px;padding:10px 14px;font-size:.83rem;font-weight:700;line-height:1.6;margin:9px 0;display:flex;gap:9px;align-items:flex-start;}
+.ni{font-size:1.1rem;flex-shrink:0;}
+.nt-blue{background:var(--blue-p);border:2px solid rgba(37,99,235,.28);color:#1e40af;}
+.nt-gold{background:var(--gold-p);border:2px solid rgba(217,119,6,.28);color:#92400e;}
+.nt-green{background:var(--green-p);border:2px solid rgba(22,163,74,.28);color:#14532d;}
+
+/* ════ HTTP METHODS TABLE ════ */
+.method-table{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin:12px 0;}
+.method-card{border-radius:12px;border:2px solid;padding:13px 14px;text-align:center;}
+.mc-badge{display:inline-block;font-family:'Fira Code',monospace;font-size:.78rem;font-weight:700;padding:4px 12px;border-radius:6px;margin-bottom:8px;}
+.mc-icon{font-size:1.8rem;display:block;margin-bottom:5px;}
+.mc-name{font-size:.9rem;font-weight:900;margin-bottom:3px;}
+.mc-analogy{font-size:.78rem;font-weight:700;opacity:.75;line-height:1.4;}
+
+.mc-get {border-color:rgba(22,163,74,.4);background:#f0fdf4;}
+.mc-get .mc-badge{background:var(--get-p);color:var(--get-c);}
+.mc-get .mc-name{color:var(--get-c);}
+
+.mc-post{border-color:rgba(37,99,235,.35);background:#eff6ff;}
+.mc-post .mc-badge{background:var(--post-p);color:var(--post-c);}
+.mc-post .mc-name{color:var(--post-c);}
+
+.mc-put {border-color:rgba(217,119,6,.4);background:#fffbeb;}
+.mc-put .mc-badge{background:var(--put-p);color:var(--put-c);}
+.mc-put .mc-name{color:var(--put-c);}
+
+.mc-del {border-color:rgba(220,38,38,.35);background:#fef2f2;}
+.mc-del .mc-badge{background:var(--del-p);color:var(--del-c);}
+.mc-del .mc-name{color:var(--del-c);}
+
+/* ════ DRAG & DROP GAME ════ */
+.game-section{margin:14px 0;}
+.gs-title{font-size:.95rem;font-weight:900;color:var(--navy);margin-bottom:8px;display:flex;align-items:center;gap:7px;}
+
+/* CHIPS POOL */
+.chip-pool{
+  background:var(--gold-p);border:2px solid rgba(217,119,6,.35);
+  border-radius:12px;padding:14px 16px;margin-bottom:14px;
+  min-height:60px;display:flex;flex-wrap:wrap;gap:9px;align-items:flex-start;
+}
+.cp-title{width:100%;font-size:.72rem;font-weight:900;color:var(--gold);margin-bottom:4px;display:flex;align-items:center;gap:5px;}
+
+/* METHOD CHIP */
+.chip{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:8px 14px;border-radius:8px;border:2px solid;
+  font-family:'Fira Code',monospace;font-size:.82rem;font-weight:700;
+  cursor:grab;transition:all .2s;user-select:none;
+  touch-action:none;
+}
+.chip:hover:not(.chip-used){transform:translateY(-2px);box-shadow:0 4px 10px rgba(0,0,0,.12);}
+.chip.dragging{opacity:.3;cursor:grabbing;}
+.chip.touch-sel{box-shadow:0 0 0 3px var(--navy),0 4px 12px rgba(30,58,95,.3);transform:scale(1.06);}
+.chip.chip-used{opacity:.22;cursor:not-allowed;pointer-events:none;}
+
+.chip-get {border-color:rgba(22,163,74,.5); background:var(--get-p);color:var(--get-c);}
+.chip-post{border-color:rgba(37,99,235,.45);background:var(--post-p);color:var(--post-c);}
+.chip-put {border-color:rgba(217,119,6,.5); background:var(--put-p);color:var(--put-c);}
+.chip-del {border-color:rgba(220,38,38,.45);background:var(--del-p);color:var(--del-c);}
+
+/* DROP ZONES */
+.zones-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;}
+
+.drop-zone{
+  border:2.5px dashed var(--border);border-radius:12px;
+  padding:14px;min-height:110px;transition:all .25s;
+  background:var(--gray-light);cursor:pointer;
+}
+.drop-zone:hover:not(.filled){border-color:var(--navy);background:var(--blue-p);}
+.drop-zone.drag-over{border-color:var(--navy);background:var(--blue-p);transform:scale(1.02);}
+.drop-zone.touch-target{border-color:var(--navy);background:var(--blue-p);}
+
+.dz-header{margin-bottom:8px;}
+.dz-scenario{font-size:.88rem;font-weight:700;color:var(--text2);line-height:1.55;}
+.dz-scenario em{font-style:normal;font-weight:900;color:var(--navy);}
+.dz-hint{font-size:.72rem;font-weight:700;color:var(--gray);margin-top:4px;font-style:italic;}
+
+.dz-chip-wrap{margin-top:8px;}
+.dz-placed{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:6px 12px;border-radius:7px;border:2px solid;
+  font-family:'Fira Code',monospace;font-size:.8rem;font-weight:700;
+  cursor:pointer;transition:all .18s;
+}
+.dz-placed:hover{opacity:.75;}
+
+.drop-zone.ok-zone {border-color:var(--green)!important;background:var(--green-p)!important;border-style:solid!important;}
+.drop-zone.nok-zone{border-color:var(--red)!important;  background:var(--red-p)!important;  border-style:solid!important;}
+
+/* FASTAPI SECTION */
+.api-route-card{
+  background:var(--gray-light);border:1.5px solid var(--border);
+  border-radius:10px;padding:13px 15px;margin-bottom:10px;
+  display:flex;align-items:flex-start;gap:12px;transition:all .25s;
+}
+.arc-method{font-family:'Fira Code',monospace;font-size:.78rem;font-weight:700;padding:4px 10px;border-radius:6px;flex-shrink:0;}
+.arc-path{font-family:'Fira Code',monospace;font-size:.82rem;color:var(--navy);font-weight:600;}
+.arc-desc{font-size:.82rem;font-weight:700;color:var(--text2);margin-top:3px;line-height:1.5;}
+
+.route-dz{
+  border:2px dashed var(--border);border-radius:8px;
+  min-height:42px;padding:8px 10px;display:flex;align-items:center;
+  background:var(--white);cursor:pointer;transition:all .22s;margin-top:8px;
+}
+.route-dz:hover:not(.rdz-filled){border-color:var(--blue);background:var(--blue-p);}
+.route-dz.drag-over{border-color:var(--blue);background:var(--blue-p);}
+.route-dz.touch-target{border-color:var(--blue);background:var(--blue-p);}
+.route-dz.rdz-ok {border-color:var(--green);background:var(--green-p);border-style:solid;}
+.route-dz.rdz-nok{border-color:var(--red);background:var(--red-p);border-style:solid;}
+.rdz-hint{font-size:.78rem;color:var(--gray);font-style:italic;}
+
+/* FEEDBACK */
+.fb{border-radius:10px;padding:11px 15px;font-size:.86rem;font-weight:800;line-height:1.6;display:none;margin-top:10px;animation:pu .3s ease;}
+@keyframes pu{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+.fb-ok {background:var(--green-p);border:2px solid var(--green);color:var(--green);}
+.fb-nok{background:var(--red-p);  border:2px solid var(--red);  color:var(--red);}
+.fb-info{background:var(--blue-p);border:2px solid var(--blue); color:#1d4ed8;}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:7px;font-weight:900;font-size:.8rem;border:none;border-radius:10px;padding:11px 20px;cursor:pointer;transition:all .18s;}
+.btn-navy{background:var(--navy);color:white;}
+.btn-navy:hover{background:var(--navy2);transform:translateY(-1px);box-shadow:0 4px 12px rgba(30,58,95,.3);}
+.btn-green{background:var(--green);color:white;}
+.btn-green:hover{background:#15803d;transform:translateY(-1px);}
+.btn-outline{background:transparent;border:2px solid var(--navy);color:var(--navy);font-size:.72rem;}
+.btn-outline:hover{background:var(--navy);color:white;}
+.btn-ghost{background:rgba(0,0,0,.05);border:1.5px solid var(--border);font-size:.7rem;color:var(--text2);}
+.btn:disabled{opacity:.35;cursor:not-allowed;transform:none;}
+
+/* RESULT */
+.rring{width:116px;height:116px;border-radius:50%;margin:0 auto 14px;background:radial-gradient(circle,#fef9c3,#fffbeb);border:4px solid var(--gold);display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:0 0 22px rgba(217,119,6,.2);animation:rp 2.5s ease-in-out infinite;}
+@keyframes rp{0%,100%{box-shadow:0 0 16px rgba(217,119,6,.16)}50%{box-shadow:0 0 32px rgba(217,119,6,.35)}}
+.rn{font-family:'Press Start 2P',monospace;font-size:1.2rem;color:var(--gold);line-height:1;}
+.rl{font-size:.58rem;font-weight:800;color:var(--gray);margin-top:4px;}
+.rgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:9px;margin:12px 0;}
+.rbox{border-radius:10px;padding:12px;text-align:center;border:2px solid;}
+.rbox .rv{font-family:'Press Start 2P',monospace;font-size:.88rem;line-height:1;margin-bottom:4px;}
+.rbox .rl2{font-size:.64rem;font-weight:800;color:var(--gray);}
+.rbox.hi{border-color:var(--green);background:var(--green-p);}.rbox.hi .rv{color:var(--green);}
+.rbox.md{border-color:var(--gold); background:var(--gold-p);}.rbox.md .rv{color:var(--gold);}
+.rbox.lo{border-color:var(--red);  background:var(--red-p);}. rbox.lo .rv{color:var(--red);}
+.rbox.info{border-color:var(--blue);background:var(--blue-p);}.rbox.info .rv{color:var(--blue);}
+
+.rev{display:flex;align-items:flex-start;gap:9px;padding:10px 12px;border-radius:9px;border:2px solid;margin-bottom:7px;}
+.rev.ok{border-color:var(--green);background:var(--green-p);}
+.rev.nok{border-color:var(--red);background:var(--red-p);}
+.rev-ico{font-size:1.1rem;flex-shrink:0;}
+.rev-label{font-size:.8rem;font-weight:900;}
+.rev.ok .rev-label{color:var(--green);}
+.rev.nok .rev-label{color:var(--red);}
+.rev-detail{font-size:.78rem;font-weight:700;color:var(--text2);}
+.rev-expl{font-size:.73rem;color:var(--gray);margin-top:2px;}
+
+/* CONF / OV */
+.conf{position:fixed;inset:0;pointer-events:none;z-index:400;}
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:500;display:none;align-items:center;justify-content:center;flex-direction:column;}
+.ov.on{display:flex;}
+.ov-t{font-family:'Press Start 2P',monospace;font-size:clamp(.6rem,3vw,1.1rem);text-align:center;animation:bP .45s ease;}
+@keyframes bP{0%{transform:scale(.3);opacity:0}70%{transform:scale(1.1)}100%{transform:scale(1);opacity:1}}
+.ov-s{font-size:.88rem;font-weight:800;color:white;text-align:center;margin-top:10px;max-width:360px;line-height:1.7;padding:0 14px;}
+
+@media(max-width:540px){.card{padding:16px 12px;}.method-table{grid-template-columns:1fr 1fr;}.zones-grid{grid-template-columns:1fr 1fr;}}
+</style>
+</head>
+<body>
+<div class="conf" id="conf"></div>
+<div class="ov" id="ov"><div class="ov-t" id="ov-t" style="color:#fde68a;">✅ CORRETO!</div><div class="ov-s" id="ov-s"></div></div>
+
+<!-- ════ TELA 1: INTRO ════ -->
+<div class="scr on" id="s-intro">
+<div class="card" style="max-width:800px;margin-top:14px;">
+
+  <div class="sh">
+    <div class="sl">🎓</div>
+    <div><div class="sn">ETE Marechal Mascarenhas de Moraes</div><div class="ss">Desenvolvimento Web · Módulo 1 — Atividade 4</div></div>
+    <div class="sb">TEA</div>
+  </div>
+
+  <h1 class="mt">📋 O Cardápio de Pedidos</h1>
+  <p class="sub">Métodos HTTP + Rotas FastAPI — A Analogia do Restaurante</p>
+
+  <div class="npc">
+    <div class="nav">👨‍🏫</div>
+    <p class="nt">No restaurante, existem <strong>4 tipos de pedido</strong> que você pode fazer:<br>
+    Pedir para <strong>VER</strong> o cardápio, <strong>FAZER</strong> um novo pedido, <strong>TROCAR</strong> um pedido ou <strong>CANCELAR</strong>.<br><br>
+    Na internet, esses 4 tipos de pedido se chamam <strong>GET, POST, PUT e DELETE</strong>!</p>
+  </div>
+
+  <!-- HTTP METHODS -->
+  <h2 class="sec">🍽️ Os 4 Tipos de Pedido do Restaurante Digital</h2>
+  <div class="method-table">
+    <div class="method-card mc-get">
+      <span class="mc-icon">👀</span>
+      <div class="mc-badge">GET</div>
+      <div class="mc-name">Pedir para VER</div>
+      <div class="mc-analogy">🧾 Você pede o garçom para trazer o cardápio para <em>olhar</em>. Não muda nada.</div>
+    </div>
+    <div class="method-card mc-post">
+      <span class="mc-icon">🆕</span>
+      <div class="mc-badge">POST</div>
+      <div class="mc-name">FAZER novo pedido</div>
+      <div class="mc-analogy">➕ Você faz um pedido <em>novo</em>. Vai uma informação para a cozinha que ainda não existia.</div>
+    </div>
+    <div class="method-card mc-put">
+      <span class="mc-icon">✏️</span>
+      <div class="mc-badge">PUT</div>
+      <div class="mc-name">TROCAR o pedido</div>
+      <div class="mc-analogy">🔄 Você pediu pizza mas quer <em>trocar</em> por macarrão. Atualiza algo que já existe.</div>
+    </div>
+    <div class="method-card mc-del">
+      <span class="mc-icon">❌</span>
+      <div class="mc-badge">DELETE</div>
+      <div class="mc-name">CANCELAR o pedido</div>
+      <div class="mc-analogy">🗑️ Você desiste e pede para o garçom <em>cancelar</em>. Remove do sistema.</div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- FASTAPI PREVIEW -->
+  <h2 class="sec">⚙️ Como o FastAPI recebe esses pedidos?</h2>
+  <p style="font-size:.88rem;font-weight:700;color:var(--text2);margin-bottom:12px;line-height:1.7;">
+    O FastAPI é a <strong>cozinha</strong>. Cada pedido (método HTTP) chega em uma <strong>rota específica</strong> — como um balcão diferente para cada tipo de pedido:
+  </p>
+
+  <div class="api-route-card">
+    <div class="arc-method" style="background:var(--get-p);color:var(--get-c);">GET</div>
+    <div><div class="arc-path">@app.get("/usuarios")</div><div class="arc-desc">Retorna a lista de todos os usuários. É só <em>olhar</em> — não muda nada!</div></div>
+  </div>
+  <div class="api-route-card">
+    <div class="arc-method" style="background:var(--post-p);color:var(--post-c);">POST</div>
+    <div><div class="arc-path">@app.post("/usuarios")</div><div class="arc-desc">Cria um novo usuário no banco. É um pedido <em>novo</em>!</div></div>
+  </div>
+  <div class="api-route-card">
+    <div class="arc-method" style="background:var(--put-p);color:var(--put-c);">PUT</div>
+    <div><div class="arc-path">@app.put("/usuarios/1")</div><div class="arc-desc">Atualiza o usuário de ID=1. É uma <em>troca</em> — o dado já existia.</div></div>
+  </div>
+  <div class="api-route-card">
+    <div class="arc-method" style="background:var(--del-p);color:var(--del-c);">DELETE</div>
+    <div><div class="arc-path">@app.delete("/usuarios/1")</div><div class="arc-desc">Remove o usuário de ID=1. É um <em>cancelamento</em>.</div></div>
+  </div>
+
+  <div class="notice nt-gold" style="margin-top:12px;">
+    <span class="ni">📌</span>
+    <span>A atividade a seguir tem <strong>2 partes</strong>: arrastar os métodos HTTP para os cenários certos, e depois arrastar para as rotas do FastAPI.</span>
+  </div>
+
+  <div style="text-align:center;margin-top:16px;">
+    <button class="btn btn-navy" onclick="go('s-game')">🎮 COMEÇAR A ATIVIDADE →</button>
+  </div>
+</div>
+</div>
+
+<!-- ════ TELA 2: JOGO ════ -->
+<div class="scr" id="s-game">
+<div class="card" style="max-width:900px;margin-top:14px;">
+
+  <div class="sh" style="padding-bottom:10px;margin-bottom:10px;">
+    <div class="sl" style="width:40px;height:40px;font-size:16px;">🎓</div>
+    <div><div class="sn" style="font-size:.85rem;">Atividade de Arrastar</div><div class="ss">Métodos HTTP + FastAPI</div></div>
+  </div>
+
+  <div class="sbar">
+    <div class="sp done">📖 Leitura</div>
+    <div class="sp active">🎮 Arrastar</div>
+    <div class="sp wait">🏆 Resultado</div>
+  </div>
+
+  <div class="npc">
+    <div class="nav">👨‍🏫</div>
+    <p class="nt" id="npc-game"><strong>Como jogar:</strong><br>
+    1. Toque num método (GET, POST, PUT, DELETE) para <strong>selecioná-lo</strong>.<br>
+    2. Depois toque na caixa certa onde ele pertence.<br>
+    No computador: você também pode <strong>arrastar</strong>!</p>
+  </div>
+
+  <!-- PART 1: HTTP Scenarios -->
+  <div class="game-section">
+    <p class="gs-title">🍽️ PARTE 1 — Qual método HTTP usar?</p>
+
+    <div class="chip-pool" id="pool-1">
+      <div class="cp-title">📦 Métodos disponíveis — toque para selecionar:</div>
+      <div class="chip chip-get" id="chip-GET" draggable="true" data-method="GET"
+           ondragstart="onDragStart(event,'GET')" onclick="touchSelect('GET')">GET 👀</div>
+      <div class="chip chip-post" id="chip-POST" draggable="true" data-method="POST"
+           ondragstart="onDragStart(event,'POST')" onclick="touchSelect('POST')">POST 🆕</div>
+      <div class="chip chip-put" id="chip-PUT" draggable="true" data-method="PUT"
+           ondragstart="onDragStart(event,'PUT')" onclick="touchSelect('PUT')">PUT ✏️</div>
+      <div class="chip chip-del" id="chip-DELETE" draggable="true" data-method="DELETE"
+           ondragstart="onDragStart(event,'DELETE')" onclick="touchSelect('DELETE')">DELETE ❌</div>
+    </div>
+
+    <div class="zones-grid">
+      <div class="drop-zone" id="dz-ver"
+           ondragover="onDragOver(event)" ondragleave="onDragLeave(event)" ondrop="onDrop(event,'ver')"
+           onclick="touchDrop('ver')">
+        <div class="dz-scenario">👀 Você quer <em>ver a lista</em> de todos os usuários cadastrados.</div>
+        <div class="dz-hint">Qual método apenas busca dados sem mudar nada?</div>
+        <div class="dz-chip-wrap" id="dz-ver-chip"></div>
+      </div>
+
+      <div class="drop-zone" id="dz-novo"
+           ondragover="onDragOver(event)" ondragleave="onDragLeave(event)" ondrop="onDrop(event,'novo')"
+           onclick="touchDrop('novo')">
+        <div class="dz-scenario">🆕 Você quer <em>cadastrar</em> um usuário novo no sistema.</div>
+        <div class="dz-hint">Qual método cria um registro que não existia?</div>
+        <div class="dz-chip-wrap" id="dz-novo-chip"></div>
+      </div>
+
+      <div class="drop-zone" id="dz-trocar"
+           ondragover="onDragOver(event)" ondragleave="onDragLeave(event)" ondrop="onDrop(event,'trocar')"
+           onclick="touchDrop('trocar')">
+        <div class="dz-scenario">✏️ O e-mail de um usuário mudou. Você quer <em>atualizar</em> o dado dele.</div>
+        <div class="dz-hint">Qual método muda algo que já existe?</div>
+        <div class="dz-chip-wrap" id="dz-trocar-chip"></div>
+      </div>
+
+      <div class="drop-zone" id="dz-cancelar"
+           ondragover="onDragOver(event)" ondragleave="onDragLeave(event)" ondrop="onDrop(event,'cancelar')"
+           onclick="touchDrop('cancelar')">
+        <div class="dz-scenario">❌ Um usuário pediu para <em>apagar</em> a conta dele.</div>
+        <div class="dz-hint">Qual método remove um registro?</div>
+        <div class="dz-chip-wrap" id="dz-cancelar-chip"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- PART 2: FastAPI Routes -->
+  <div class="game-section">
+    <p class="gs-title">⚙️ PARTE 2 — Qual rota do FastAPI corresponde?</p>
+
+    <div class="chip-pool" id="pool-2">
+      <div class="cp-title">📦 Rotas disponíveis — toque para selecionar:</div>
+      <div class="chip chip-get" id="rchip-a" draggable="true" data-route="getlist"
+           ondragstart="onDragStart(event,'getlist',true)" onclick="touchSelectRoute('getlist')">
+        <span style="font-family:'Fira Code',monospace;font-size:.75rem;">@app.get("/usuarios")</span>
+      </div>
+      <div class="chip chip-post" id="rchip-b" draggable="true" data-route="postuser"
+           ondragstart="onDragStart(event,'postuser',true)" onclick="touchSelectRoute('postuser')">
+        <span style="font-family:'Fira Code',monospace;font-size:.75rem;">@app.post("/usuarios")</span>
+      </div>
+      <div class="chip chip-put" id="rchip-c" draggable="true" data-route="putuser"
+           ondragstart="onDragStart(event,'putuser',true)" onclick="touchSelectRoute('putuser')">
+        <span style="font-family:'Fira Code',monospace;font-size:.75rem;">@app.put("/usuarios/1")</span>
+      </div>
+      <div class="chip chip-del" id="rchip-d" draggable="true" data-route="deluser"
+           ondragstart="onDragStart(event,'deluser',true)" onclick="touchSelectRoute('deluser')">
+        <span style="font-family:'Fira Code',monospace;font-size:.75rem;">@app.delete("/usuarios/1")</span>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <div class="api-route-card" style="flex-direction:column;gap:6px;">
+        <p style="font-size:.9rem;font-weight:700;color:var(--text2);">🔍 <em>"Quero buscar todos os usuários do banco"</em></p>
+        <div class="route-dz" id="rdz-buscartodos"
+             ondragover="onDragOver(event)" ondragleave="onDragLeave(event)" ondrop="onDropRoute(event,'buscartodos')"
+             onclick="touchDropRoute('buscartodos')">
+          <span class="rdz-hint" id="rdz-buscartodos-hint">← Arraste ou toque a rota correta aqui</span>
+        </div>
+      </div>
+
+      <div class="api-route-card" style="flex-direction:column;gap:6px;">
+        <p style="font-size:.9rem;font-weight:700;color:var(--text2);">➕ <em>"Quero criar um novo usuário no banco"</em></p>
+        <div class="route-dz" id="rdz-criar"
+             ondragover="onDragOver(event)" ondragleave="onDragLeave(event)" ondrop="onDropRoute(event,'criar')"
+             onclick="touchDropRoute('criar')">
+          <span class="rdz-hint" id="rdz-criar-hint">← Arraste ou toque a rota correta aqui</span>
+        </div>
+      </div>
+
+      <div class="api-route-card" style="flex-direction:column;gap:6px;">
+        <p style="font-size:.9rem;font-weight:700;color:var(--text2);">🔄 <em>"Quero atualizar o e-mail do usuário de ID=1"</em></p>
+        <div class="route-dz" id="rdz-atualizar"
+             ondragover="onDragOver(event)" ondragleave="onDragLeave(event)" ondrop="onDropRoute(event,'atualizar')"
+             onclick="touchDropRoute('atualizar')">
+          <span class="rdz-hint" id="rdz-atualizar-hint">← Arraste ou toque a rota correta aqui</span>
+        </div>
+      </div>
+
+      <div class="api-route-card" style="flex-direction:column;gap:6px;">
+        <p style="font-size:.9rem;font-weight:700;color:var(--text2);">🗑️ <em>"Quero remover o usuário de ID=1 do banco"</em></p>
+        <div class="route-dz" id="rdz-remover"
+             ondragover="onDragOver(event)" ondragleave="onDragLeave(event)" ondrop="onDropRoute(event,'remover')"
+             onclick="touchDropRoute('remover')">
+          <span class="rdz-hint" id="rdz-remover-hint">← Arraste ou toque a rota correta aqui</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="fb" id="fb-game"></div>
+
+  <div style="display:flex;gap:9px;flex-wrap:wrap;justify-content:space-between;margin-top:14px;align-items:center;">
+    <button class="btn btn-outline" onclick="go('s-intro')">← Rever</button>
+    <div style="display:flex;gap:7px;">
+      <button class="btn btn-ghost" onclick="resetGame()">↺ Recomeçar</button>
+      <button class="btn btn-green" id="btn-check" onclick="checkAll()" disabled>✅ VERIFICAR</button>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ════ TELA 3: RESULTADO ════ -->
+<div class="scr" id="s-result">
+<div class="card" style="max-width:720px;margin-top:14px;">
+
+  <div class="sh" style="padding-bottom:10px;margin-bottom:10px;">
+    <div class="sl" style="width:40px;height:40px;font-size:16px;">🎓</div>
+    <div><div class="sn" style="font-size:.85rem;">Resultado</div><div class="ss">Métodos HTTP + FastAPI</div></div>
+  </div>
+
+  <div class="sbar">
+    <div class="sp done">📖 Leitura</div>
+    <div class="sp done">🎮 Arrastar</div>
+    <div class="sp active">🏆 Resultado</div>
+  </div>
+
+  <div style="text-align:center;margin-bottom:12px;">
+    <div class="rring"><span class="rn" id="r-score">0/8</span><span class="rl">ACERTOS</span></div>
+  </div>
+  <div class="rgrid" id="r-grid"></div>
+  <div class="divider"></div>
+  <h2 class="sec">📋 Gabarito</h2>
+  <div id="r-review"></div>
+
+  <div class="divider"></div>
+  <h2 class="sec">🔑 Regra de Ouro</h2>
+  <div class="method-table">
+    <div class="method-card mc-get"><span class="mc-icon">👀</span><div class="mc-badge">GET</div><div class="mc-name">VER</div></div>
+    <div class="method-card mc-post"><span class="mc-icon">🆕</span><div class="mc-badge">POST</div><div class="mc-name">CRIAR</div></div>
+    <div class="method-card mc-put"><span class="mc-icon">✏️</span><div class="mc-badge">PUT</div><div class="mc-name">ATUALIZAR</div></div>
+    <div class="method-card mc-del"><span class="mc-icon">❌</span><div class="mc-badge">DELETE</div><div class="mc-name">APAGAR</div></div>
+  </div>
+
+  <div class="npc" style="margin-top:14px;">
+    <div class="nav">👨‍🏫</div>
+    <p class="nt" id="r-npc">—</p>
+  </div>
+
+  <div style="display:flex;gap:9px;flex-wrap:wrap;margin-top:12px;">
+    <button class="btn btn-navy" onclick="downloadCSV()">⬇ Baixar CSV</button>
+    <button class="btn btn-outline" onclick="fullReset()">↺ Tentar Novamente</button>
+  </div>
+</div>
+</div>
+
+<script>
+// ════════════ DATA ════════════
+const CORRECT_PART1 = { ver:'GET', novo:'POST', trocar:'PUT', cancelar:'DELETE' };
+const CORRECT_PART2 = { buscartodos:'getlist', criar:'postuser', atualizar:'putuser', remover:'deluser' };
+
+const METHOD_INFO = {
+  GET:    { cls:'chip-get',  icon:'👀', label:'GET',    color:'var(--get-c)',  pale:'var(--get-p)' },
+  POST:   { cls:'chip-post', icon:'🆕', label:'POST',   color:'var(--post-c)', pale:'var(--post-p)' },
+  PUT:    { cls:'chip-put',  icon:'✏️', label:'PUT',    color:'var(--put-c)',  pale:'var(--put-p)' },
+  DELETE: { cls:'chip-del',  icon:'❌', label:'DELETE', color:'var(--del-c)',  pale:'var(--del-p)' }
+};
+const ROUTE_INFO = {
+  getlist:  { cls:'chip-get',  text:'@app.get("/usuarios")',    color:'var(--get-c)',  pale:'var(--get-p)' },
+  postuser: { cls:'chip-post', text:'@app.post("/usuarios")',   color:'var(--post-c)', pale:'var(--post-p)' },
+  putuser:  { cls:'chip-put',  text:'@app.put("/usuarios/1")',  color:'var(--put-c)',  pale:'var(--put-p)' },
+  deluser:  { cls:'chip-del',  text:'@app.delete("/usuarios/1")',color:'var(--del-c)', pale:'var(--del-p)' }
+};
+const P1_EXPL = {
+  ver:'GET é para BUSCAR dados. Só olha — não muda nada no banco!',
+  novo:'POST CRIA um registro novo no banco. É um pedido que ainda não existia!',
+  trocar:'PUT ATUALIZA um dado que já existe. A pizza virou macarrão!',
+  cancelar:'DELETE REMOVE o registro. O pedido foi cancelado!'
+};
+const P2_EXPL = {
+  buscartodos:'@app.get("/usuarios") → busca todos. GET = ver.',
+  criar:'@app.post("/usuarios") → cria um novo. POST = criar.',
+  atualizar:'@app.put("/usuarios/1") → atualiza o usuário #1. PUT = trocar.',
+  remover:'@app.delete("/usuarios/1") → apaga o usuário #1. DELETE = cancelar.'
+};
+
+let p1 = {};  // dzId → method
+let p2 = {};  // rdzId → routeKey
+let selMethod = null;
+let selRoute  = null;
+let dragItem  = null;
+let dragRoute = null;
+let gameChecked = false;
+let results = [];
+
+// ═══ DRAG ═══
+function onDragStart(e, val, isRoute=false) {
+  if(isRoute){ dragRoute = val; dragItem = null; }
+  else { dragItem = val; dragRoute = null; }
+  e.dataTransfer.effectAllowed = 'move';
+}
+function onDragOver(e){ e.preventDefault(); e.currentTarget.classList.add('drag-over'); }
+function onDragLeave(e){ e.currentTarget.classList.remove('drag-over'); }
+function onDrop(e, dzId){ e.preventDefault(); e.currentTarget.classList.remove('drag-over'); if(dragItem) placeMethod(dzId, dragItem); dragItem=null; }
+function onDropRoute(e, rdzId){ e.preventDefault(); e.currentTarget.classList.remove('drag-over'); if(dragRoute) placeRoute(rdzId, dragRoute); dragRoute=null; }
+
+// ═══ TOUCH SELECT ═══
+function touchSelect(method) {
+  if(gameChecked) return;
+  if(selMethod===method){ selMethod=null; unchipAll(); return; }
+  selMethod=method; selRoute=null;
+  unchipAll(); document.getElementById('chip-'+method)?.classList.add('touch-sel');
+}
+function touchSelectRoute(rkey) {
+  if(gameChecked) return;
+  if(selRoute===rkey){ selRoute=null; unchipRouteAll(); return; }
+  selRoute=rkey; selMethod=null;
+  unchipRouteAll();
+  const ids={getlist:'rchip-a',postuser:'rchip-b',putuser:'rchip-c',deluser:'rchip-d'};
+  document.getElementById(ids[rkey])?.classList.add('touch-sel');
+}
+function unchipAll(){ document.querySelectorAll('#pool-1 .chip').forEach(c=>c.classList.remove('touch-sel')); }
+function unchipRouteAll(){ document.querySelectorAll('#pool-2 .chip').forEach(c=>c.classList.remove('touch-sel')); }
+
+function touchDrop(dzId){ if(selMethod) placeMethod(dzId, selMethod); }
+function touchDropRoute(rdzId){ if(selRoute) placeRoute(rdzId, selRoute); }
+
+// ═══ PLACE ═══
+function placeMethod(dzId, method) {
+  if(gameChecked) return;
+  // remove from previous
+  const prev = Object.keys(p1).find(k=>p1[k]===method);
+  if(prev){ delete p1[prev]; renderDZ(prev, null); }
+  // if zone occupied, return old chip
+  if(p1[dzId]){ const old=p1[dzId]; delete p1[dzId]; renderDZ(dzId,null); const c=document.getElementById('chip-'+old); if(c){c.classList.remove('chip-used');} }
+  p1[dzId]=method;
+  renderDZ(dzId, method);
+  const chip=document.getElementById('chip-'+method); if(chip) chip.classList.add('chip-used');
+  selMethod=null; unchipAll();
+  updateCheck();
+}
+function placeRoute(rdzId, rkey) {
+  if(gameChecked) return;
+  const ids={getlist:'rchip-a',postuser:'rchip-b',putuser:'rchip-c',deluser:'rchip-d'};
+  const prev=Object.keys(p2).find(k=>p2[k]===rkey);
+  if(prev){ delete p2[prev]; renderRDZ(prev, null); }
+  if(p2[rdzId]){ const old=p2[rdzId]; delete p2[rdzId]; renderRDZ(rdzId,null); const c=document.getElementById(ids[old]); if(c) c.classList.remove('chip-used'); }
+  p2[rdzId]=rkey;
+  renderRDZ(rdzId, rkey);
+  const c=document.getElementById(ids[rkey]); if(c){ c.classList.add('chip-used'); c.classList.remove('touch-sel'); }
+  selRoute=null; unchipRouteAll();
+  updateCheck();
+}
+
+// ═══ RENDER ═══
+function renderDZ(dzId, method) {
+  const wrap=document.getElementById('dz-'+dzId+'-chip');
+  const dz=document.getElementById('dz-'+dzId);
+  if(!wrap||!dz) return;
+  if(!method){ wrap.innerHTML=''; dz.style.borderColor=''; dz.style.background=''; return; }
+  const mi=METHOD_INFO[method];
+  dz.style.borderColor=mi.color; dz.style.background=mi.pale; dz.style.borderStyle='solid';
+  wrap.innerHTML=`<div class="dz-placed ${mi.cls}" style="border-color:${mi.color};color:${mi.color};background:white;" onclick="removeMethod('${dzId}')">${mi.icon} ${mi.label} <span style="font-size:.65rem;opacity:.6;">✕</span></div>`;
+}
+function renderRDZ(rdzId, rkey) {
+  const dz=document.getElementById('rdz-'+rdzId);
+  const hint=document.getElementById('rdz-'+rdzId+'-hint');
+  if(!dz) return;
+  if(!rkey){ if(hint) hint.textContent='← Arraste ou toque a rota correta aqui'; dz.style.borderColor=''; dz.style.background=''; dz.classList.remove('rdz-filled'); return; }
+  const ri=ROUTE_INFO[rkey];
+  dz.style.borderColor=ri.color; dz.style.background=ri.pale; dz.style.borderStyle='solid'; dz.classList.add('rdz-filled');
+  if(hint){ hint.innerHTML=`<span style="font-family:'Fira Code',monospace;font-size:.78rem;font-weight:700;color:${ri.color};">${ri.text}</span> <span style="font-size:.7rem;color:var(--gray);cursor:pointer;" onclick="removeRoute('${rdzId}')">✕</span>`; }
+}
+
+function removeMethod(dzId) {
+  if(gameChecked) return;
+  const m=p1[dzId]; if(!m) return;
+  delete p1[dzId]; renderDZ(dzId,null);
+  const c=document.getElementById('chip-'+m); if(c) c.classList.remove('chip-used');
+  updateCheck();
+}
+function removeRoute(rdzId) {
+  if(gameChecked) return;
+  const ids={getlist:'rchip-a',postuser:'rchip-b',putuser:'rchip-c',deluser:'rchip-d'};
+  const rk=p2[rdzId]; if(!rk) return;
+  delete p2[rdzId]; renderRDZ(rdzId,null);
+  const c=document.getElementById(ids[rk]); if(c) c.classList.remove('chip-used');
+  updateCheck();
+}
+
+function updateCheck() {
+  const filled=Object.keys(p1).length===4 && Object.keys(p2).length===4;
+  document.getElementById('btn-check').disabled=!filled;
+}
+
+// ═══ CHECK ═══
+function checkAll() {
+  gameChecked=true; results=[];
+  let correct=0;
+  const p1Labels={ver:'Buscar lista de usuários',novo:'Cadastrar novo usuário',trocar:'Atualizar e-mail de usuário',cancelar:'Apagar conta de usuário'};
+  Object.keys(CORRECT_PART1).forEach(dzId=>{
+    const given=p1[dzId]; const ans=CORRECT_PART1[dzId]; const ok=given===ans;
+    if(ok) correct++;
+    results.push({part:1, label:p1Labels[dzId], given:given||'—', answer:ans, ok, expl:P1_EXPL[dzId]});
+    const dz=document.getElementById('dz-'+dzId);
+    if(dz) dz.classList.add(ok?'ok-zone':'nok-zone');
+  });
+  const p2Labels={buscartodos:'Buscar todos usuários',criar:'Criar novo usuário',atualizar:'Atualizar usuário #1',remover:'Remover usuário #1'};
+  Object.keys(CORRECT_PART2).forEach(rdzId=>{
+    const given=p2[rdzId]; const ans=CORRECT_PART2[rdzId]; const ok=given===ans;
+    if(ok) correct++;
+    const gText=given?ROUTE_INFO[given]?.text:'—';
+    const aText=ROUTE_INFO[ans]?.text;
+    results.push({part:2, label:p2Labels[rdzId], given:gText, answer:aText, ok, expl:P2_EXPL[rdzId]});
+    const dz=document.getElementById('rdz-'+rdzId);
+    if(dz) dz.classList.add(ok?'rdz-ok':'rdz-nok');
+  });
+  document.getElementById('btn-check').disabled=true;
+  const fb=document.getElementById('fb-game'); fb.style.display='block';
+  if(correct===8){ fb.className='fb fb-ok'; fb.innerHTML='🎉 Perfeito! Você acertou todos os 8 itens! GET, POST, PUT e DELETE dominados!'; spawnConf(); }
+  else { fb.className='fb fb-nok'; fb.innerHTML=`Você acertou ${correct} de 8. Veja as explicações no resultado!`; }
+  setTimeout(()=>{ buildResult(correct); go('s-result'); }, 2000);
+}
+
+function buildResult(correct) {
+  document.getElementById('r-score').textContent=correct+'/8';
+  const cls=correct===8?'hi':correct>=5?'md':'lo';
+  document.getElementById('r-grid').innerHTML=`
+    <div class="rbox ${cls}"><div class="rv">${correct}/8</div><div class="rl2">ACERTOS</div></div>
+    <div class="rbox ${cls}"><div class="rv">${Math.round(correct/8*100)}%</div><div class="rl2">APROVEIT.</div></div>
+    <div class="rbox info"><div class="rv">4</div><div class="rl2">MÉTODOS HTTP</div></div>`;
+  let rev='';
+  results.forEach(r=>{
+    rev+=`<div class="rev ${r.ok?'ok':'nok'}">
+      <span class="rev-ico">${r.ok?'✅':'❌'}</span>
+      <div><div class="rev-label">${r.label}</div>
+      <div class="rev-detail">Você colocou: <strong>${r.given}</strong> · Certo: <strong>${r.answer}</strong></div>
+      <div class="rev-expl">${r.expl}</div></div>
+    </div>`;
+  });
+  document.getElementById('r-review').innerHTML=rev;
+  const msgs=['Perfeito! GET = ver, POST = criar, PUT = atualizar, DELETE = apagar. Esses são os 4 verbos do restaurante digital!','Muito bem! Você está quase lá. Lembre: GET não muda nada, POST cria coisa nova, PUT troca, DELETE cancela!','Continue praticando! Use a analogia do restaurante: o tipo de pedido (GET/POST/PUT/DELETE) diz ao garçom O QUE fazer.'];
+  const npc=document.getElementById('r-npc');
+  npc.innerHTML=correct===8?msgs[0]:correct>=5?msgs[1]:msgs[2];
+  if(correct===8) spawnConf();
+}
+
+function resetGame() {
+  p1={}; p2={}; selMethod=null; selRoute=null; gameChecked=false; results=[];
+  ['ver','novo','trocar','cancelar'].forEach(id=>{ renderDZ(id,null); document.getElementById('dz-'+id)?.classList.remove('ok-zone','nok-zone'); });
+  ['buscartodos','criar','atualizar','remover'].forEach(id=>{ renderRDZ(id,null); document.getElementById('rdz-'+id)?.classList.remove('rdz-ok','rdz-nok'); });
+  document.querySelectorAll('.chip').forEach(c=>c.classList.remove('chip-used','touch-sel','dragging'));
+  document.getElementById('btn-check').disabled=true;
+  const fb=document.getElementById('fb-game'); if(fb) fb.style.display='none';
+}
+function fullReset(){ resetGame(); go('s-intro'); }
+
+function downloadCSV(){
+  const correct=results.filter(r=>r.ok).length;
+  const now=new Date();
+  let csv='sep=;\nATIVIDADE: O CARDÁPIO DE PEDIDOS — MÉTODOS HTTP + FASTAPI\n';
+  csv+=`Data;${now.toLocaleDateString('pt-BR')}\nHora;${now.toLocaleTimeString('pt-BR')}\nAcertos;${correct}\nTotal;8\nAproveitamento;${Math.round(correct/8*100)}%\n\n`;
+  csv+='Cenário;Resposta Aluno;Resposta Correta;Resultado\n';
+  results.forEach(r=>{ csv+=`${r.label};${r.given};${r.answer};${r.ok?'CORRETO':'INCORRETO'}\n`; });
+  const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a'); a.href=url; a.download=`cardapio_pedidos_${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}.csv`;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+}
+
+function go(id){ document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on')); document.getElementById(id).classList.add('on'); window.scrollTo(0,0); }
+function showOv(t,s){ document.getElementById('ov').classList.add('on'); document.getElementById('ov-t').textContent=t; document.getElementById('ov-s').textContent=s; }
+function hideOv(){ document.getElementById('ov').classList.remove('on'); }
+function spawnConf(){ const c=document.getElementById('conf'); const cols=['#16a34a','#2563eb','#d97706','#dc2626','#7c3aed','#0d9488']; for(let i=0;i<80;i++){ const el=document.createElement('div'); const sz=4+Math.random()*9; el.style.cssText=`position:absolute;width:${sz}px;height:${sz}px;background:${cols[Math.floor(Math.random()*cols.length)]};left:${Math.random()*100}%;top:-10px;border-radius:${Math.random()>.5?'50%':'2px'};animation:cf ${1.5+Math.random()*2}s ease ${Math.random()*.5}s both;`; c.appendChild(el); } setTimeout(()=>c.innerHTML='',5500); }
+(()=>{ const s=document.createElement('style'); s.textContent='@keyframes cf{from{transform:translateY(0) rotate(0deg);opacity:1}to{transform:translateY(100vh) rotate(720deg);opacity:0}}'; document.head.appendChild(s); })();
+</script>
+</body>
+</html>

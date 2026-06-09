@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>A Cozinha por Dentro — JavaScript DOM + SQL</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&family=Press+Start+2P&family=Fira+Code:wght@500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f5f0ff; --white:#ffffff; --navy:#2d1b69; --navy2:#4c2fa0;
+  --border:#e0d4f5; --text:#1a0a3a; --text2:#3a2a5a; --gray:#7060a0; --gray-light:#f0eaff;
+
+  --js-c:#ca8a04;   --js-p:#fef9c3;
+  --dom-c:#2563eb;  --dom-p:#dbeafe;
+  --sql-c:#0d9488;  --sql-p:#ccfbf1;
+  --sel-c:#7c3aed;  --sel-p:#ede9fe;
+  --whr-c:#16a34a;  --whr-p:#dcfce7;
+  --joi-c:#dc2626;  --joi-p:#fee2e2;
+
+  --green:#16a34a; --green-p:#dcfce7;
+  --red:#dc2626;   --red-p:#fee2e2;
+  --blue:#2563eb;  --blue-p:#dbeafe;
+  --gold:#d97706;  --gold-p:#fef3c7;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;}
+
+.scr{display:none;min-height:100vh;flex-direction:column;align-items:center;padding:22px 14px 60px;}
+.scr.on{display:flex;}
+.card{background:var(--white);border-radius:16px;box-shadow:0 2px 16px rgba(45,27,105,.1),0 0 0 1px rgba(45,27,105,.05);padding:28px 32px;max-width:900px;width:100%;}
+
+/* SCHOOL */
+.sh{display:flex;align-items:center;gap:13px;padding-bottom:13px;margin-bottom:13px;border-bottom:3px solid var(--navy);}
+.sl{width:48px;height:48px;background:var(--navy);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+.sn{font-size:.9rem;font-weight:900;color:var(--navy);line-height:1.3;}
+.ss{font-size:.7rem;color:var(--gray);margin-top:1px;}
+.sb{background:var(--navy);color:white;font-size:.6rem;font-weight:800;padding:4px 9px;border-radius:20px;letter-spacing:.5px;margin-left:auto;}
+
+h1.mt{font-size:clamp(1.1rem,3vw,1.8rem);font-weight:900;color:var(--navy);margin-bottom:3px;}
+.sub{font-size:.82rem;font-weight:700;color:var(--gray);margin-bottom:15px;}
+h2.sec{font-size:.98rem;font-weight:900;color:var(--navy);margin-bottom:10px;display:flex;align-items:center;gap:7px;}
+.divider{height:2px;background:var(--gray-light);margin:16px 0;}
+
+/* STEPS */
+.sbar{display:flex;gap:6px;margin-bottom:13px;flex-wrap:wrap;}
+.sp{font-weight:800;font-size:.67rem;padding:5px 11px;border-radius:20px;border:2px solid;transition:all .3s;}
+.sp.done  {border-color:var(--green);background:var(--green-p);color:var(--green);}
+.sp.active{border-color:var(--blue); background:var(--blue-p); color:var(--blue);}
+.sp.wait  {border-color:var(--border);color:var(--gray);background:var(--gray-light);}
+
+/* NPC */
+.npc{display:flex;gap:12px;align-items:flex-start;background:var(--navy);border-radius:12px;padding:14px 16px;margin-bottom:14px;}
+.nav{width:48px;height:48px;border-radius:50%;background:rgba(255,255,255,.14);border:2px solid rgba(255,255,255,.26);display:flex;align-items:center;justify-content:center;font-size:21px;flex-shrink:0;animation:bob 3s ease-in-out infinite;}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+.nt{font-size:.88rem;font-weight:700;color:rgba(255,255,255,.94);line-height:1.7;}
+.nt strong{color:#fde68a;}
+
+/* NOTICE */
+.notice{border-radius:10px;padding:10px 14px;font-size:.82rem;font-weight:700;line-height:1.6;margin:9px 0;display:flex;gap:9px;align-items:flex-start;}
+.ni{font-size:1.1rem;flex-shrink:0;}
+.nt-blue{background:var(--blue-p);border:2px solid rgba(37,99,235,.28);color:#1e40af;}
+.nt-gold{background:var(--gold-p);border:2px solid rgba(217,119,6,.28);color:#92400e;}
+
+/* ════ CONCEPT CARDS ════ */
+.concept-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px;margin:12px 0;}
+.concept-card{border-radius:12px;border:2px solid;padding:14px 16px;}
+.cc-icon{font-size:1.8rem;margin-bottom:6px;display:block;}
+.cc-tech{font-size:.68rem;font-weight:900;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;}
+.cc-title{font-size:.9rem;font-weight:900;margin-bottom:5px;}
+.cc-analogy{font-size:.82rem;font-weight:700;line-height:1.55;color:var(--text2);}
+.cc-code{font-family:'Fira Code',monospace;font-size:.74rem;background:rgba(0,0,0,.06);border-radius:6px;padding:6px 10px;margin-top:7px;display:block;line-height:1.6;}
+
+.cc-js  {border-color:rgba(202,138,4,.4);background:#fefce8;}
+.cc-js  .cc-tech,.cc-js  .cc-title{color:var(--js-c);}
+.cc-dom {border-color:rgba(37,99,235,.35);background:#eff6ff;}
+.cc-dom .cc-tech,.cc-dom .cc-title{color:var(--dom-c);}
+.cc-sql {border-color:rgba(13,148,136,.35);background:#f0fdfa;}
+.cc-sql .cc-tech,.cc-sql .cc-title{color:var(--sql-c);}
+
+/* ════ DRAG & DROP ════ */
+.chip-pool{
+  background:var(--gold-p);border:2px solid rgba(217,119,6,.32);
+  border-radius:12px;padding:13px 15px;margin-bottom:13px;
+  min-height:56px;display:flex;flex-wrap:wrap;gap:8px;align-items:flex-start;
+}
+.cp-lbl{width:100%;font-size:.7rem;font-weight:900;color:var(--gold);margin-bottom:4px;}
+
+.chip{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:7px 13px;border-radius:8px;border:2px solid;
+  font-family:'Fira Code',monospace;font-size:.76rem;font-weight:700;
+  cursor:grab;transition:all .2s;user-select:none;
+}
+.chip:hover:not(.chip-used){transform:translateY(-2px);box-shadow:0 4px 10px rgba(0,0,0,.12);}
+.chip.dragging{opacity:.28;cursor:grabbing;}
+.chip.touch-sel{box-shadow:0 0 0 3px var(--navy),0 4px 12px rgba(45,27,105,.3);transform:scale(1.06);}
+.chip.chip-used{opacity:.2;cursor:not-allowed;pointer-events:none;}
+
+.chip-js  {border-color:rgba(202,138,4,.5); background:var(--js-p); color:var(--js-c);}
+.chip-dom {border-color:rgba(37,99,235,.45);background:var(--dom-p);color:var(--dom-c);}
+.chip-sel {border-color:rgba(124,58,237,.45);background:var(--sel-p);color:var(--sel-c);}
+.chip-whr {border-color:rgba(22,163,74,.45); background:var(--whr-p);color:var(--whr-c);}
+.chip-joi {border-color:rgba(220,38,38,.45); background:var(--joi-p);color:var(--joi-c);}
+.chip-sql {border-color:rgba(13,148,136,.45);background:var(--sql-p);color:var(--sql-c);}
+
+/* DROP ZONES */
+.dz{
+  border:2.5px dashed var(--border);border-radius:12px;
+  padding:13px;min-height:90px;transition:all .22s;
+  background:var(--gray-light);cursor:pointer;margin-bottom:10px;
+}
+.dz:hover:not(.dz-filled){border-color:var(--navy);background:var(--blue-p);}
+.dz.drag-over{border-color:var(--navy);background:var(--blue-p);transform:scale(1.02);}
+.dz.touch-target{border-color:var(--navy);background:var(--blue-p);}
+.dz.ok-dz {border-color:var(--green)!important;background:var(--green-p)!important;border-style:solid!important;}
+.dz.nok-dz{border-color:var(--red)!important;  background:var(--red-p)!important;  border-style:solid!important;}
+.dz-filled{border-style:solid!important;}
+
+.dz-q{font-size:.88rem;font-weight:700;color:var(--text2);line-height:1.55;margin-bottom:6px;}
+.dz-q em{font-style:normal;font-weight:900;color:var(--navy);}
+.dz-code{font-family:'Fira Code',monospace;font-size:.76rem;background:rgba(0,0,0,.06);border-radius:6px;padding:5px 9px;display:block;margin-bottom:6px;line-height:1.5;color:var(--gray);}
+.dz-hint{font-size:.72rem;font-weight:700;color:var(--gray);font-style:italic;}
+
+.placed-chip{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:5px 12px;border-radius:7px;border:2px solid;
+  font-family:'Fira Code',monospace;font-size:.78rem;font-weight:700;
+  cursor:pointer;
+}
+.placed-chip:hover{opacity:.75;}
+
+/* SECTIONS */
+.game-section{margin:14px 0;}
+.gs-t{font-size:.92rem;font-weight:900;color:var(--navy);margin-bottom:8px;display:flex;align-items:center;gap:7px;}
+
+/* SQL VISUAL TABLE */
+.sql-table-demo{border:2px solid var(--border);border-radius:10px;overflow:hidden;margin:10px 0;}
+.std-header{display:flex;align-items:center;justify-content:space-between;padding:8px 13px;background:var(--gray-light);border-bottom:1px solid var(--border);}
+.std-title{font-family:'Fira Code',monospace;font-size:.76rem;font-weight:700;color:var(--navy);}
+table.stbl{width:100%;border-collapse:collapse;font-size:.82rem;}
+table.stbl th{font-family:'Fira Code',monospace;font-size:.65rem;padding:7px 11px;text-align:left;background:rgba(0,0,0,.04);border-bottom:1px solid var(--border);color:var(--gray);}
+table.stbl td{padding:7px 11px;border-bottom:1px solid rgba(200,190,240,.4);color:var(--text2);font-weight:700;}
+table.stbl tr.hl td{background:rgba(22,163,74,.08);}
+.stbl-tag{font-size:.68rem;font-weight:800;padding:2px 7px;border-radius:4px;}
+
+/* FEEDBACK */
+.fb{border-radius:10px;padding:11px 15px;font-size:.85rem;font-weight:800;line-height:1.6;display:none;margin-top:10px;animation:pu .3s ease;}
+@keyframes pu{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+.fb-ok {background:var(--green-p);border:2px solid var(--green);color:var(--green);}
+.fb-nok{background:var(--red-p);  border:2px solid var(--red);  color:var(--red);}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:7px;font-weight:900;font-size:.8rem;border:none;border-radius:10px;padding:11px 20px;cursor:pointer;transition:all .18s;}
+.btn-navy{background:var(--navy);color:white;}
+.btn-navy:hover{background:var(--navy2);transform:translateY(-1px);box-shadow:0 4px 12px rgba(45,27,105,.3);}
+.btn-green{background:var(--green);color:white;}
+.btn-green:hover{background:#15803d;transform:translateY(-1px);}
+.btn-outline{background:transparent;border:2px solid var(--navy);color:var(--navy);font-size:.72rem;}
+.btn-outline:hover{background:var(--navy);color:white;}
+.btn-ghost{background:rgba(0,0,0,.05);border:1.5px solid var(--border);font-size:.7rem;color:var(--text2);}
+.btn:disabled{opacity:.35;cursor:not-allowed;transform:none;}
+
+/* RESULT */
+.rring{width:114px;height:114px;border-radius:50%;margin:0 auto 13px;background:radial-gradient(circle,#f5e8ff,#ede9fe);border:4px solid var(--navy);display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:0 0 22px rgba(45,27,105,.2);animation:rp 2.5s ease-in-out infinite;}
+@keyframes rp{0%,100%{box-shadow:0 0 16px rgba(45,27,105,.15)}50%{box-shadow:0 0 32px rgba(45,27,105,.35)}}
+.rn{font-family:'Press Start 2P',monospace;font-size:1.2rem;color:var(--navy);line-height:1;}
+.rl{font-size:.57rem;font-weight:800;color:var(--gray);margin-top:4px;}
+.rgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:9px;margin:12px 0;}
+.rbox{border-radius:10px;padding:12px;text-align:center;border:2px solid;}
+.rbox .rv{font-family:'Press Start 2P',monospace;font-size:.86rem;line-height:1;margin-bottom:4px;}
+.rbox .rl2{font-size:.62rem;font-weight:800;color:var(--gray);}
+.rbox.hi{border-color:var(--green);background:var(--green-p);}.rbox.hi .rv{color:var(--green);}
+.rbox.md{border-color:var(--gold); background:var(--gold-p);}.rbox.md .rv{color:var(--gold);}
+.rbox.lo{border-color:var(--red);  background:var(--red-p);} .rbox.lo .rv{color:var(--red);}
+.rbox.info{border-color:var(--blue);background:var(--blue-p);}.rbox.info .rv{color:var(--blue);}
+
+.rev{display:flex;align-items:flex-start;gap:9px;padding:10px 12px;border-radius:9px;border:2px solid;margin-bottom:7px;}
+.rev.ok{border-color:var(--green);background:var(--green-p);}
+.rev.nok{border-color:var(--red);background:var(--red-p);}
+.rev-ico{font-size:1.1rem;flex-shrink:0;}
+.rev-label{font-size:.8rem;font-weight:900;}
+.rev.ok .rev-label{color:var(--green);}.rev.nok .rev-label{color:var(--red);}
+.rev-detail{font-size:.78rem;font-weight:700;color:var(--text2);}
+.rev-expl{font-size:.72rem;color:var(--gray);margin-top:2px;}
+
+/* CONF / OV */
+.conf{position:fixed;inset:0;pointer-events:none;z-index:400;}
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:500;display:none;align-items:center;justify-content:center;flex-direction:column;}
+.ov.on{display:flex;}
+.ov-t{font-family:'Press Start 2P',monospace;font-size:clamp(.6rem,3vw,1.1rem);text-align:center;animation:bP .45s ease;}
+@keyframes bP{0%{transform:scale(.3);opacity:0}70%{transform:scale(1.1)}100%{transform:scale(1);opacity:1}}
+.ov-s{font-size:.88rem;font-weight:800;color:white;text-align:center;margin-top:10px;max-width:360px;line-height:1.7;padding:0 14px;}
+
+@media(max-width:540px){.card{padding:16px 12px;}.concept-grid{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+<div class="conf" id="conf"></div>
+<div class="ov" id="ov"><div class="ov-t" id="ov-t" style="color:#fde68a;">✅ CORRETO!</div><div class="ov-s" id="ov-s"></div></div>
+
+<!-- ════ TELA 1: INTRO ════ -->
+<div class="scr on" id="s-intro">
+<div class="card" style="max-width:800px;margin-top:14px;">
+
+  <div class="sh">
+    <div class="sl">🎓</div>
+    <div><div class="sn">ETE Marechal Mascarenhas de Moraes</div><div class="ss">Desenvolvimento Web · Módulo 1 — Atividade 5</div></div>
+    <div class="sb">TEA</div>
+  </div>
+
+  <h1 class="mt">🍳 A Cozinha por Dentro</h1>
+  <p class="sub">JavaScript DOM + SQL (SELECT · WHERE · JOIN) — A Analogia do Restaurante</p>
+
+  <div class="npc">
+    <div class="nav">👨‍🏫</div>
+    <p class="nt">Você já conhece o garçom (<strong>fetch</strong>) e a cozinha (<strong>FastAPI</strong>).<br><br>
+    Hoje vamos ver o que acontece <strong>dentro da cozinha</strong>: como o JavaScript modifica a tela, e como o SQL busca ingredientes exatos na despensa!</p>
+  </div>
+
+  <!-- CONCEPTS -->
+  <h2 class="sec">💻 JavaScript: Funções e Eventos no DOM</h2>
+  <div class="concept-grid">
+    <div class="concept-card cc-js">
+      <span class="cc-icon">⚡</span>
+      <div class="cc-tech">JavaScript · Evento</div>
+      <div class="cc-title">addEventListener</div>
+      <p class="cc-analogy">🔔 É o <em>sino da mesa</em>. Quando você aperta o botão, o JavaScript "ouve" e chama o garçom.</p>
+      <code class="cc-code">botao.addEventListener(<br>  'click', chamarGarcom<br>);</code>
+    </div>
+    <div class="concept-card cc-dom">
+      <span class="cc-icon">📝</span>
+      <div class="cc-tech">JavaScript · DOM</div>
+      <div class="cc-title">getElementById + innerText</div>
+      <p class="cc-analogy">🪧 É a <em>plaquinha da mesa</em>. O JavaScript encontra a plaquinha pelo ID e escreve o nome do prato nela.</p>
+      <code class="cc-code">document<br>  .getElementById('placa')<br>  .innerText = 'Pizza';</code>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- SQL CONCEPTS -->
+  <h2 class="sec">🗄️ SQL: Buscando na Despensa</h2>
+
+  <div class="sql-table-demo">
+    <div class="std-header">
+      <span class="std-title">📦 Tabela: usuarios</span>
+      <span style="font-size:.7rem;color:var(--gray);">Exemplo visual</span>
+    </div>
+    <table class="stbl">
+      <thead><tr><th>id</th><th>nome</th><th>cidade</th><th>id_plano</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>Rei Artur</td><td>Norte</td><td>1</td></tr>
+        <tr class="hl"><td>2</td><td>Elfos</td><td>Floresta</td><td>2</td></tr>
+        <tr><td>3</td><td>Magos</td><td>Norte</td><td>1</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="concept-grid">
+    <div class="concept-card cc-sql" style="border-color:rgba(124,58,237,.35);background:#f5f3ff;">
+      <span class="cc-icon">🔍</span>
+      <div class="cc-tech" style="color:var(--sel-c);">SQL · Comando</div>
+      <div class="cc-title" style="color:var(--sel-c);">SELECT</div>
+      <p class="cc-analogy">📋 É o <em>pedido ao garçom</em>. Diz o que você quer ver. <code style="font-family:'Fira Code';font-size:.75rem;">*</code> significa "tudo".</p>
+      <code class="cc-code" style="color:var(--sel-c);">SELECT * FROM usuarios;</code>
+    </div>
+    <div class="concept-card cc-sql" style="border-color:rgba(22,163,74,.35);background:#f0fdf4;">
+      <span class="cc-icon">🎯</span>
+      <div class="cc-tech" style="color:var(--whr-c);">SQL · Filtro</div>
+      <div class="cc-title" style="color:var(--whr-c);">WHERE</div>
+      <p class="cc-analogy">🗺️ É a <em>mesa específica</em>. "Não quero ver todos, só os da cidade Norte!"</p>
+      <code class="cc-code" style="color:var(--whr-c);">SELECT * FROM usuarios<br>WHERE cidade = 'Norte';</code>
+    </div>
+    <div class="concept-card cc-sql" style="border-color:rgba(220,38,38,.35);background:#fef2f2;">
+      <span class="cc-icon">🔗</span>
+      <div class="cc-tech" style="color:var(--joi-c);">SQL · União</div>
+      <div class="cc-title" style="color:var(--joi-c);">JOIN</div>
+      <p class="cc-analogy">🍱 É a <em>bandeja completa</em>. Une duas tabelas — mostra o nome do usuário E o nome do plano dele juntos.</p>
+      <code class="cc-code" style="color:var(--joi-c);">SELECT u.nome, p.nome<br>FROM usuarios u<br>JOIN planos p<br>  ON u.id_plano = p.id;</code>
+    </div>
+  </div>
+
+  <div class="notice nt-gold" style="margin-top:12px;">
+    <span class="ni">📌</span>
+    <span>A atividade a seguir tem <strong>2 partes</strong>: arrastar conceitos de JavaScript para os cenários certos, e depois arrastar comandos SQL para as situações corretas.</span>
+  </div>
+
+  <div style="text-align:center;margin-top:16px;">
+    <button class="btn btn-navy" onclick="go('s-game')">🎮 COMEÇAR A ATIVIDADE →</button>
+  </div>
+</div>
+</div>
+
+<!-- ════ TELA 2: JOGO ════ -->
+<div class="scr" id="s-game">
+<div class="card" style="max-width:900px;margin-top:14px;">
+
+  <div class="sh" style="padding-bottom:10px;margin-bottom:10px;">
+    <div class="sl" style="width:40px;height:40px;font-size:16px;">🎓</div>
+    <div><div class="sn" style="font-size:.85rem;">Atividade de Arrastar</div><div class="ss">JavaScript DOM + SQL</div></div>
+  </div>
+
+  <div class="sbar">
+    <div class="sp done">📖 Leitura</div>
+    <div class="sp active">🎮 Arrastar</div>
+    <div class="sp wait">🏆 Resultado</div>
+  </div>
+
+  <div class="npc">
+    <div class="nav">👨‍🏫</div>
+    <p class="nt" id="npc-game"><strong>Como jogar:</strong><br>
+    1. Toque num conceito para <strong>selecioná-lo</strong> (fica com borda escura).<br>
+    2. Toque na caixa onde ele pertence.<br>
+    No computador: você também pode <strong>arrastar e soltar</strong>!</p>
+  </div>
+
+  <!-- PART 1: JS DOM -->
+  <div class="game-section">
+    <p class="gs-t">💻 PARTE 1 — JavaScript: função ou evento?</p>
+
+    <div class="chip-pool" id="pool-js">
+      <div class="cp-lbl">📦 Conceitos — toque para selecionar:</div>
+      <div class="chip chip-js" id="jc-event" draggable="true" data-key="event"
+           ondragstart="dstart(event,'event')" onclick="tsel('event','js')">addEventListener 🔔</div>
+      <div class="chip chip-dom" id="jc-inner" draggable="true" data-key="inner"
+           ondragstart="dstart(event,'inner')" onclick="tsel('inner','js')">getElementById + innerText 📝</div>
+      <div class="chip chip-js" id="jc-func" draggable="true" data-key="func"
+           ondragstart="dstart(event,'func')" onclick="tsel('func','js')">function chamar() {} ⚙️</div>
+      <div class="chip chip-dom" id="jc-fetch" draggable="true" data-key="fetchjs"
+           ondragstart="dstart(event,'fetchjs')" onclick="tsel('fetchjs','js')">fetch('url').then() 🏃</div>
+    </div>
+
+    <div class="dz" id="dz-sino"
+         ondragover="dov(event)" ondragleave="dlv(event)" ondrop="ddr(event,'sino')"
+         onclick="tdrop('sino','js')">
+      <p class="dz-q">🔔 <em>"Quando o usuário clicar no botão, quero que o JavaScript execute uma ação."</em></p>
+      <p class="dz-hint">Qual conceito "ouve" o clique e dispara uma ação?</p>
+      <div id="dz-sino-chip"></div>
+    </div>
+
+    <div class="dz" id="dz-placa"
+         ondragover="dov(event)" ondragleave="dlv(event)" ondrop="ddr(event,'placa')"
+         onclick="tdrop('placa','js')">
+      <p class="dz-q">🪧 <em>"Quero mostrar o nome do usuário dentro de um elemento HTML que tem o ID 'nome-usuario'."</em></p>
+      <p class="dz-hint">Qual conceito acha o elemento e escreve texto nele?</p>
+      <div id="dz-placa-chip"></div>
+    </div>
+
+    <div class="dz" id="dz-garcom"
+         ondragover="dov(event)" ondragleave="dlv(event)" ondrop="ddr(event,'garcom')"
+         onclick="tdrop('garcom','js')">
+      <p class="dz-q">🏃 <em>"Quero buscar dados da API Python e pegar a resposta no formato JSON."</em></p>
+      <p class="dz-hint">Qual conceito chama a API e processa a resposta?</p>
+      <div id="dz-garcom-chip"></div>
+    </div>
+
+    <div class="dz" id="dz-cozinhar"
+         ondragover="dov(event)" ondragleave="dlv(event)" ondrop="ddr(event,'cozinhar')"
+         onclick="tdrop('cozinhar','js')">
+      <p class="dz-q">⚙️ <em>"Quero criar um bloco de código reutilizável que posso chamar sempre que precisar processar um pedido."</em></p>
+      <p class="dz-hint">Qual conceito cria um bloco de código com nome próprio?</p>
+      <div id="dz-cozinhar-chip"></div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- PART 2: SQL -->
+  <div class="game-section">
+    <p class="gs-t">🗄️ PARTE 2 — SQL: qual comando usar?</p>
+
+    <div class="chip-pool" id="pool-sql">
+      <div class="cp-lbl">📦 Comandos SQL — toque para selecionar:</div>
+      <div class="chip chip-sel" id="sc-select" draggable="true" data-key="sqlsel"
+           ondragstart="dstart(event,'sqlsel')" onclick="tsel('sqlsel','sql')">
+        <span style="font-family:'Fira Code',monospace;font-size:.74rem;">SELECT *</span> 🔍
+      </div>
+      <div class="chip chip-whr" id="sc-where" draggable="true" data-key="sqlwhr"
+           ondragstart="dstart(event,'sqlwhr')" onclick="tsel('sqlwhr','sql')">
+        <span style="font-family:'Fira Code',monospace;font-size:.74rem;">WHERE cidade =</span> 🎯
+      </div>
+      <div class="chip chip-joi" id="sc-join" draggable="true" data-key="sqljoin"
+           ondragstart="dstart(event,'sqljoin')" onclick="tsel('sqljoin','sql')">
+        <span style="font-family:'Fira Code',monospace;font-size:.74rem;">JOIN ... ON</span> 🔗
+      </div>
+    </div>
+
+    <div class="dz" id="dz-todos"
+         ondragover="dov(event)" ondragleave="dlv(event)" ondrop="ddr(event,'todos')"
+         onclick="tdrop('todos','sql')">
+      <p class="dz-q">📋 <em>"Quero ver todos os usuários do banco, sem nenhum filtro."</em></p>
+      <code class="dz-code">______ FROM usuarios;</code>
+      <p class="dz-hint">Qual parte da query busca tudo sem filtro?</p>
+      <div id="dz-todos-chip"></div>
+    </div>
+
+    <div class="dz" id="dz-filtro"
+         ondragover="dov(event)" ondragleave="dlv(event)" ondrop="ddr(event,'filtro')"
+         onclick="tdrop('filtro','sql')">
+      <p class="dz-q">🎯 <em>"Quero ver só os usuários da cidade 'Norte'."</em></p>
+      <code class="dz-code">SELECT * FROM usuarios<br>______ cidade = 'Norte';</code>
+      <p class="dz-hint">Qual parte filtra por uma condição específica?</p>
+      <div id="dz-filtro-chip"></div>
+    </div>
+
+    <div class="dz" id="dz-unir"
+         ondragover="dov(event)" ondragleave="dlv(event)" ondrop="ddr(event,'unir')"
+         onclick="tdrop('unir','sql')">
+      <p class="dz-q">🔗 <em>"Quero ver o nome do usuário E o nome do plano dele juntos numa só consulta."</em></p>
+      <code class="dz-code">SELECT u.nome, p.nome<br>FROM usuarios u<br>______ planos p ON u.id_plano = p.id;</code>
+      <p class="dz-hint">Qual parte une duas tabelas numa consulta?</p>
+      <div id="dz-unir-chip"></div>
+    </div>
+  </div>
+
+  <div class="fb" id="fb-game"></div>
+
+  <div style="display:flex;gap:9px;flex-wrap:wrap;justify-content:space-between;margin-top:14px;align-items:center;">
+    <button class="btn btn-outline" onclick="go('s-intro')">← Rever</button>
+    <div style="display:flex;gap:7px;">
+      <button class="btn btn-ghost" onclick="resetGame()">↺ Recomeçar</button>
+      <button class="btn btn-green" id="btn-check" onclick="checkAll()" disabled>✅ VERIFICAR</button>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ════ TELA 3: RESULTADO ════ -->
+<div class="scr" id="s-result">
+<div class="card" style="max-width:720px;margin-top:14px;">
+
+  <div class="sh" style="padding-bottom:10px;margin-bottom:10px;">
+    <div class="sl" style="width:40px;height:40px;font-size:16px;">🎓</div>
+    <div><div class="sn" style="font-size:.85rem;">Resultado</div><div class="ss">JavaScript DOM + SQL</div></div>
+  </div>
+
+  <div class="sbar">
+    <div class="sp done">📖 Leitura</div>
+    <div class="sp done">🎮 Arrastar</div>
+    <div class="sp active">🏆 Resultado</div>
+  </div>
+
+  <div style="text-align:center;margin-bottom:12px;">
+    <div class="rring"><span class="rn" id="r-score">0/7</span><span class="rl">ACERTOS</span></div>
+  </div>
+  <div class="rgrid" id="r-grid"></div>
+  <div class="divider"></div>
+  <h2 class="sec">📋 Gabarito</h2>
+  <div id="r-review"></div>
+
+  <div class="divider"></div>
+  <h2 class="sec">🧠 Resumo Final</h2>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
+    <div style="border:1.5px solid rgba(202,138,4,.4);border-radius:9px;padding:11px;background:#fefce8;">
+      <p style="font-size:.68rem;font-weight:900;color:var(--js-c);margin-bottom:5px;">💻 JAVASCRIPT</p>
+      <p style="font-size:.8rem;font-weight:700;color:var(--text2);line-height:1.55;"><strong>addEventListener</strong> = ouvir cliques<br><strong>getElementById</strong> = achar elemento<br><strong>innerText</strong> = escrever na tela<br><strong>fetch()</strong> = chamar a API</p>
+    </div>
+    <div style="border:1.5px solid rgba(13,148,136,.4);border-radius:9px;padding:11px;background:#f0fdfa;">
+      <p style="font-size:.68rem;font-weight:900;color:var(--sql-c);margin-bottom:5px;">🗄️ SQL</p>
+      <p style="font-size:.8rem;font-weight:700;color:var(--text2);line-height:1.55;"><strong style="color:var(--sel-c);">SELECT *</strong> = buscar tudo<br><strong style="color:var(--whr-c);">WHERE</strong> = filtrar por condição<br><strong style="color:var(--joi-c);">JOIN</strong> = unir duas tabelas</p>
+    </div>
+  </div>
+
+  <div class="npc" style="margin-top:10px;">
+    <div class="nav">👨‍🏫</div>
+    <p class="nt" id="r-npc">—</p>
+  </div>
+
+  <div style="display:flex;gap:9px;flex-wrap:wrap;margin-top:12px;">
+    <button class="btn btn-navy" onclick="downloadCSV()">⬇ Baixar CSV</button>
+    <button class="btn btn-outline" onclick="fullReset()">↺ Tentar Novamente</button>
+  </div>
+</div>
+</div>
+
+<script>
+// ══════════ DATA ══════════
+const CORRECT_JS  = { sino:'event', placa:'inner', garcom:'fetchjs', cozinhar:'func' };
+const CORRECT_SQL = { todos:'sqlsel', filtro:'sqlwhr', unir:'sqljoin' };
+
+const CHIP_INFO = {
+  event:  { id:'jc-event',  cls:'chip-js',  color:'var(--js-c)',  pale:'var(--js-p)',  label:'addEventListener 🔔' },
+  inner:  { id:'jc-inner',  cls:'chip-dom', color:'var(--dom-c)', pale:'var(--dom-p)', label:'getElementById + innerText 📝' },
+  func:   { id:'jc-func',   cls:'chip-js',  color:'var(--js-c)',  pale:'var(--js-p)',  label:'function chamar() {} ⚙️' },
+  fetchjs:{ id:'jc-fetch',  cls:'chip-dom', color:'var(--dom-c)', pale:'var(--dom-p)', label:"fetch('url').then() 🏃" },
+  sqlsel: { id:'sc-select', cls:'chip-sel', color:'var(--sel-c)', pale:'var(--sel-p)', label:'SELECT * 🔍' },
+  sqlwhr: { id:'sc-where',  cls:'chip-whr', color:'var(--whr-c)', pale:'var(--whr-p)', label:'WHERE cidade = 🎯' },
+  sqljoin:{ id:'sc-join',   cls:'chip-joi', color:'var(--joi-c)', pale:'var(--joi-p)', label:'JOIN ... ON 🔗' }
+};
+const EXPL = {
+  sino:    'addEventListener "ouve" o evento de clique no botão e chama a função quando ele acontece — é o sino que chama o garçom!',
+  placa:   'getElementById encontra o elemento HTML pelo ID, e innerText escreve o texto dentro dele — é a plaquinha da mesa!',
+  garcom:  "fetch('url').then() é o garçom digital: chama a API e processa a resposta JSON!",
+  cozinhar:'function nome() {} cria um bloco de código reutilizável com nome próprio — como a receita da cozinha!',
+  todos:   'SELECT * FROM tabela busca TODOS os registros sem filtro — pede o cardápio completo!',
+  filtro:  "WHERE filtra os resultados por uma condição — é como pedir só o prato da mesa 'Norte'!",
+  unir:    'JOIN une duas tabelas numa única consulta usando a chave em comum — une a bandeja do usuário com a bandeja do plano!'
+};
+
+let pJS = {}, pSQL = {};
+let selKey = null, selGroup = null;
+let dragKey = null;
+let checked = false, results = [];
+
+// ═══ DRAG ═══
+function dstart(e, key){ dragKey=key; e.dataTransfer.effectAllowed='move'; }
+function dov(e){ e.preventDefault(); e.currentTarget.classList.add('drag-over'); }
+function dlv(e){ e.currentTarget.classList.remove('drag-over'); }
+function ddr(e, dzId){ e.preventDefault(); e.currentTarget.classList.remove('drag-over'); if(dragKey) placeChip(dzId, dragKey); dragKey=null; }
+
+// ═══ TOUCH ═══
+function tsel(key, group) {
+  if(checked) return;
+  if(selKey===key){ selKey=null; selGroup=null; unchipAll(); return; }
+  selKey=key; selGroup=group;
+  unchipAll();
+  document.getElementById(CHIP_INFO[key].id)?.classList.add('touch-sel');
+}
+function tdrop(dzId, group) {
+  if(checked||!selKey) return;
+  const info=CHIP_INFO[selKey];
+  const correctGroup= Object.keys(CORRECT_JS).includes(dzId)?'js':'sql';
+  if(selGroup!==correctGroup) return; // don't allow cross-group
+  placeChip(dzId, selKey);
+}
+function unchipAll(){ document.querySelectorAll('.chip').forEach(c=>c.classList.remove('touch-sel')); }
+
+// ═══ PLACE ═══
+function placeChip(dzId, key) {
+  if(checked) return;
+  const isJS = Object.keys(CORRECT_JS).includes(dzId);
+  const store = isJS ? pJS : pSQL;
+  const info = CHIP_INFO[key];
+  // remove from previous
+  const prev=Object.keys(store).find(k=>store[k]===key);
+  if(prev){ delete store[prev]; renderDZ(prev, null); }
+  // displace existing
+  if(store[dzId]){ const old=store[dzId]; delete store[dzId]; renderDZ(dzId,null); const c=document.getElementById(CHIP_INFO[old].id); if(c) c.classList.remove('chip-used'); }
+  store[dzId]=key;
+  renderDZ(dzId, key);
+  const chip=document.getElementById(info.id); if(chip){ chip.classList.add('chip-used'); chip.classList.remove('touch-sel'); }
+  selKey=null; selGroup=null; unchipAll();
+  updateCheck();
+}
+
+// ═══ RENDER ═══
+function renderDZ(dzId, key) {
+  const wrap=document.getElementById('dz-'+dzId+'-chip');
+  const dz=document.getElementById('dz-'+dzId);
+  if(!wrap||!dz) return;
+  if(!key){ wrap.innerHTML=''; dz.style.borderColor=''; dz.style.background=''; dz.classList.remove('dz-filled'); return; }
+  const info=CHIP_INFO[key];
+  dz.style.borderColor=info.color; dz.style.background=info.pale; dz.style.borderStyle='solid'; dz.classList.add('dz-filled');
+  wrap.innerHTML=`<div class="placed-chip ${info.cls}" style="border-color:${info.color};color:${info.color};background:white;" onclick="removeChip('${dzId}')">${info.label} <span style="font-size:.65rem;opacity:.6;">✕</span></div>`;
+}
+
+function removeChip(dzId) {
+  if(checked) return;
+  const isJS=Object.keys(CORRECT_JS).includes(dzId);
+  const store=isJS?pJS:pSQL;
+  const key=store[dzId]; if(!key) return;
+  delete store[dzId]; renderDZ(dzId, null);
+  const c=document.getElementById(CHIP_INFO[key].id); if(c) c.classList.remove('chip-used');
+  updateCheck();
+}
+
+function updateCheck(){
+  const done=Object.keys(pJS).length===4&&Object.keys(pSQL).length===3;
+  document.getElementById('btn-check').disabled=!done;
+}
+
+// ═══ CHECK ═══
+function checkAll(){
+  checked=true; results=[];
+  let correct=0;
+  const jLabels={sino:'Ouvir clique do botão',placa:'Mostrar texto na tela',garcom:'Buscar dados da API',cozinhar:'Criar bloco de código reutilizável'};
+  const sLabels={todos:'Buscar todos os usuários',filtro:"Filtrar por cidade 'Norte'",unir:'Unir usuários e planos'};
+  Object.keys(CORRECT_JS).forEach(dzId=>{
+    const given=pJS[dzId]; const ans=CORRECT_JS[dzId]; const ok=given===ans;
+    if(ok)correct++;
+    results.push({label:jLabels[dzId], given:given?CHIP_INFO[given].label:'—', answer:CHIP_INFO[ans].label, ok, expl:EXPL[dzId]});
+    document.getElementById('dz-'+dzId)?.classList.add(ok?'ok-dz':'nok-dz');
+  });
+  Object.keys(CORRECT_SQL).forEach(dzId=>{
+    const given=pSQL[dzId]; const ans=CORRECT_SQL[dzId]; const ok=given===ans;
+    if(ok)correct++;
+    results.push({label:sLabels[dzId], given:given?CHIP_INFO[given].label:'—', answer:CHIP_INFO[ans].label, ok, expl:EXPL[dzId]});
+    document.getElementById('dz-'+dzId)?.classList.add(ok?'ok-dz':'nok-dz');
+  });
+  document.getElementById('btn-check').disabled=true;
+  const fb=document.getElementById('fb-game'); fb.style.display='block';
+  if(correct===7){ fb.className='fb fb-ok'; fb.innerHTML='🎉 Perfeito! Você acertou todos os 7 itens! JavaScript + SQL dominados!'; spawnConf(); }
+  else { fb.className='fb fb-nok'; fb.innerHTML=`Você acertou ${correct} de 7. Veja as explicações no resultado!`; }
+  setTimeout(()=>{ buildResult(correct); go('s-result'); }, 2000);
+}
+
+function buildResult(correct){
+  document.getElementById('r-score').textContent=correct+'/7';
+  const cls=correct===7?'hi':correct>=4?'md':'lo';
+  document.getElementById('r-grid').innerHTML=`
+    <div class="rbox ${cls}"><div class="rv">${correct}/7</div><div class="rl2">ACERTOS</div></div>
+    <div class="rbox ${cls}"><div class="rv">${Math.round(correct/7*100)}%</div><div class="rl2">APROVEIT.</div></div>
+    <div class="rbox info"><div class="rv">3</div><div class="rl2">CONCEITOS SQL</div></div>`;
+  let rev='';
+  results.forEach(r=>{
+    rev+=`<div class="rev ${r.ok?'ok':'nok'}">
+      <span class="rev-ico">${r.ok?'✅':'❌'}</span>
+      <div><div class="rev-label">${r.label}</div>
+      <div class="rev-detail">Você colocou: <strong>${r.given}</strong> · Certo: <strong>${r.answer}</strong></div>
+      <div class="rev-expl">${r.expl}</div></div>
+    </div>`;
+  });
+  document.getElementById('r-review').innerHTML=rev;
+  const npc=document.getElementById('r-npc');
+  npc.innerHTML=correct===7
+    ?'Excelente! Você conhece tanto o JavaScript (a tela que reage) quanto o SQL (que busca ingredientes na despensa). Juntos, eles fazem o restaurante funcionar!'
+    :correct>=4?'Muito bem! Reveja os itens que erraste e lembre: addEventListener ouve, getElementById acha, fetch chama, SELECT busca, WHERE filtra, JOIN une!'
+    :'Continue praticando! Use as analogias: addEventListener = sino, getElementById+innerText = plaquinha, SELECT = cardápio completo, WHERE = mesa específica, JOIN = bandeja completa!';
+  if(correct===7) spawnConf();
+}
+
+function resetGame(){
+  pJS={}; pSQL={}; selKey=null; selGroup=null; dragKey=null; checked=false; results=[];
+  [...Object.keys(CORRECT_JS),...Object.keys(CORRECT_SQL)].forEach(id=>{ renderDZ(id,null); document.getElementById('dz-'+id)?.classList.remove('ok-dz','nok-dz'); });
+  document.querySelectorAll('.chip').forEach(c=>c.classList.remove('chip-used','touch-sel','dragging'));
+  document.getElementById('btn-check').disabled=true;
+  const fb=document.getElementById('fb-game'); if(fb) fb.style.display='none';
+}
+function fullReset(){ resetGame(); go('s-intro'); }
+
+function downloadCSV(){
+  const correct=results.filter(r=>r.ok).length;
+  const now=new Date();
+  let csv='sep=;\nATIVIDADE: A COZINHA POR DENTRO — JS DOM + SQL\n';
+  csv+=`Data;${now.toLocaleDateString('pt-BR')}\nHora;${now.toLocaleTimeString('pt-BR')}\nAcertos;${correct}\nTotal;7\nAproveitamento;${Math.round(correct/7*100)}%\n\n`;
+  csv+='Cenário;Resposta Aluno;Resposta Correta;Resultado\n';
+  results.forEach(r=>{ csv+=`${r.label};${r.given};${r.answer};${r.ok?'CORRETO':'INCORRETO'}\n`; });
+  csv+='\nGABARITO\n';
+  csv+='addEventListener;Ouvir eventos (cliques) na tela\n';
+  csv+='getElementById+innerText;Encontrar elemento HTML e escrever texto nele\n';
+  csv+="fetch().then();Chamar a API e processar a resposta JSON\n";
+  csv+='function;Criar bloco de código reutilizável\n';
+  csv+='SELECT *;Buscar todos os registros da tabela\n';
+  csv+='WHERE;Filtrar resultados por condição\n';
+  csv+='JOIN;Unir duas tabelas em uma consulta\n';
+  const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a'); a.href=url; a.download=`cozinha_js_sql_${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}.csv`;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+}
+
+function go(id){ document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on')); document.getElementById(id).classList.add('on'); window.scrollTo(0,0); }
+function spawnConf(){ const c=document.getElementById('conf'); const cols=['#7c3aed','#2563eb','#16a34a','#dc2626','#0d9488','#ca8a04']; for(let i=0;i<80;i++){ const el=document.createElement('div'); const sz=4+Math.random()*9; el.style.cssText=`position:absolute;width:${sz}px;height:${sz}px;background:${cols[Math.floor(Math.random()*cols.length)]};left:${Math.random()*100}%;top:-10px;border-radius:${Math.random()>.5?'50%':'2px'};animation:cf ${1.5+Math.random()*2}s ease ${Math.random()*.5}s both;`; c.appendChild(el); } setTimeout(()=>c.innerHTML='',5500); }
+(()=>{ const s=document.createElement('style'); s.textContent='@keyframes cf{from{transform:translateY(0) rotate(0deg);opacity:1}to{transform:translateY(100vh) rotate(720deg);opacity:0}}'; document.head.appendChild(s); })();
+</script>
+</body>
+</html>
