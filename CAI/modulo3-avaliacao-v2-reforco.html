@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Provas do Módulo 3 — Versão 2 · Reforço</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Nunito:wght@700;800;900&family=Fira+Code:wght@500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#070b10;--panel:#0c1320;--panel2:#111a2e;--border:#1c2848;--border2:#283860;
+  --gold:#f5c842;--gold2:#ffe082;--green:#00e676;--green2:#b9f6ca;
+  --red:#ff5252;--red2:#ffd0d0;--blue:#40c4ff;--blue2:#b3e5fc;
+  --purple:#ce93d8;--orange:#ff9800;--orange2:#ffe0b2;
+  --teal:#1de9b6;--teal2:#a7ffeb;--white:#e2edff;--gray:#566090;--gray2:#303a68;
+  --s1:#ff9800;--s2:#40c4ff;--s3:#ce93d8;--s4:#1de9b6;--s5:#f5c842;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--white);min-height:100vh;overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;
+  background-image:
+    radial-gradient(circle at 22% 28%,rgba(255,152,0,.04) 0%,transparent 55%),
+    radial-gradient(circle at 78% 72%,rgba(64,196,255,.04) 0%,transparent 55%),
+    radial-gradient(1px 1px at 8% 20%,rgba(255,255,255,.9) 0%,transparent 100%),
+    radial-gradient(1px 1px at 84% 13%,rgba(255,255,255,.7) 0%,transparent 100%),
+    radial-gradient(1px 1px at 50% 87%,rgba(255,255,255,.8) 0%,transparent 100%),
+    radial-gradient(1px 1px at 27% 60%,rgba(255,255,255,.6) 0%,transparent 100%),
+    radial-gradient(1px 1px at 70% 38%,rgba(255,255,255,.7) 0%,transparent 100%);
+  pointer-events:none;z-index:0;}
+.scr{display:none;position:relative;z-index:1;min-height:100vh;flex-direction:column;align-items:center;padding:20px 14px 60px;}
+.scr.on{display:flex;}
+.panel{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:26px 30px;max-width:860px;width:100%;box-shadow:0 0 60px rgba(255,152,0,.04),0 16px 60px rgba(0,0,0,.9);}
+.ptitle{font-family:'Press Start 2P',monospace;font-size:clamp(.48rem,1.5vw,.78rem);color:var(--orange);text-shadow:2px 2px 0 rgba(0,0,0,.9),0 0 20px rgba(255,152,0,.4);line-height:2.1;text-align:center;}
+.psub{font-family:'Press Start 2P',monospace;font-size:.35rem;color:var(--gray);letter-spacing:2px;text-align:center;}
+.npc{display:flex;gap:13px;align-items:flex-start;background:rgba(7,11,16,.96);border:1px solid rgba(255,152,0,.18);border-radius:10px;padding:13px 15px;margin-bottom:14px;}
+.nav{width:50px;height:50px;border-radius:8px;border:1.5px solid var(--orange);background:linear-gradient(135deg,#1a0800,#3a1800);display:flex;align-items:center;justify-content:center;font-size:23px;flex-shrink:0;animation:fl 3s ease-in-out infinite;box-shadow:0 0 10px rgba(255,152,0,.18);}
+@keyframes fl{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+.nname{font-family:'Press Start 2P',monospace;font-size:.38rem;color:var(--orange);margin-bottom:5px;}
+.ntxt{font-size:.88rem;font-weight:700;color:#b8b0a0;line-height:1.75;}
+.ntxt strong{color:var(--orange2);}
+.ctip{font-family:'Fira Code',monospace;font-size:.74rem;color:var(--teal);background:rgba(29,233,182,.08);border:1px solid rgba(29,233,182,.22);border-radius:5px;padding:3px 8px;display:inline-block;margin-top:4px;}
+/* open book */
+.ob-banner{background:linear-gradient(135deg,rgba(255,152,0,.1),rgba(245,200,66,.07));border:2px solid rgba(255,152,0,.4);border-radius:12px;padding:14px 18px;margin-bottom:14px;display:flex;align-items:center;gap:14px;}
+.ob-icon{font-size:2.5rem;flex-shrink:0;animation:fl 3s ease-in-out infinite;}
+.ob-title{font-family:'Press Start 2P',monospace;font-size:.44rem;color:var(--orange);margin-bottom:5px;}
+.ob-desc{font-size:.86rem;font-weight:700;color:#b8b0a0;line-height:1.6;}
+.ob-desc strong{color:var(--gold2);}
+/* timer */
+.timer-bar{display:flex;align-items:center;gap:11px;background:rgba(7,11,16,.9);border:1px solid var(--border2);border-radius:8px;padding:10px 14px;margin-bottom:12px;}
+.timer-track{flex:1;height:10px;background:rgba(255,255,255,.07);border-radius:5px;overflow:hidden;}
+.timer-fill{height:100%;border-radius:5px;transition:width .5s linear,background .5s;}
+.t-ok{background:linear-gradient(90deg,var(--orange),var(--gold));}
+.t-warn{background:linear-gradient(90deg,#dd5500,var(--orange));}
+.t-crit{background:linear-gradient(90deg,var(--red),#dd5500);animation:tp .6s infinite;}
+@keyframes tp{0%,100%{opacity:1}50%{opacity:.6}}
+.timer-val{font-family:'Press Start 2P',monospace;font-size:.5rem;color:var(--white);min-width:52px;text-align:right;}
+/* progress dots */
+.q-progress{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap;}
+.qp-dot{width:30px;height:30px;border-radius:50%;border:2px solid var(--border2);display:flex;align-items:center;justify-content:center;font-family:'Press Start 2P',monospace;font-size:.32rem;color:var(--gray2);transition:all .3s;cursor:pointer;}
+.qp-dot.answered{border-color:var(--green);background:rgba(0,230,118,.1);color:var(--green);}
+.qp-dot.current{border-color:var(--orange);background:rgba(255,152,0,.12);color:var(--orange);}
+.qp-dot.unans{border-color:var(--red);}
+/* section badges */
+.sec-badge{display:inline-flex;align-items:center;gap:7px;padding:6px 13px;border-radius:20px;border:1.5px solid;font-family:'Press Start 2P',monospace;font-size:.35rem;margin-bottom:11px;}
+.sb1{border-color:rgba(255,152,0,.4);background:rgba(255,152,0,.07);color:var(--s1);}
+.sb2{border-color:rgba(64,196,255,.4);background:rgba(64,196,255,.07);color:var(--s2);}
+.sb3{border-color:rgba(206,147,216,.4);background:rgba(206,147,216,.07);color:var(--s3);}
+.sb4{border-color:rgba(29,233,182,.4);background:rgba(29,233,182,.07);color:var(--s4);}
+.sb5{border-color:rgba(245,200,66,.4);background:rgba(245,200,66,.07);color:var(--s5);}
+/* q card */
+.q-card{background:rgba(7,11,16,.8);border:1.5px solid var(--border2);border-radius:12px;padding:18px 20px;margin-bottom:14px;}
+.q-num{font-family:'Press Start 2P',monospace;font-size:.38rem;color:var(--gray);margin-bottom:8px;display:flex;align-items:center;gap:7px;}
+.qi{font-size:1.1rem;}
+.q-stem{font-size:.92rem;font-weight:800;color:var(--white);line-height:1.75;margin-bottom:14px;}
+.q-stem strong{color:var(--gold2);}
+.q-stem code{font-family:'Fira Code',monospace;font-size:.85rem;background:rgba(0,0,0,.4);border-radius:4px;padding:1px 6px;color:var(--teal);}
+/* options */
+.opts{display:flex;flex-direction:column;gap:9px;}
+.opt{display:flex;align-items:flex-start;gap:12px;background:rgba(255,255,255,.03);border:1.5px solid var(--border);border-radius:9px;padding:12px 15px;cursor:pointer;transition:all .2s;width:100%;font-size:.9rem;font-weight:700;color:#a0aec0;text-align:left;}
+.opt:hover:not(.locked){border-color:var(--orange);color:var(--white);background:rgba(255,152,0,.07);}
+.opt .opt-l{font-family:'Press Start 2P',monospace;font-size:.36rem;color:var(--gray2);flex-shrink:0;margin-top:2px;width:22px;}
+.opt.ok{border-color:var(--green)!important;background:rgba(0,230,118,.12)!important;color:var(--green2)!important;}
+.opt.nok{border-color:var(--red)!important;background:rgba(255,82,82,.1)!important;color:var(--red2)!important;}
+.opt.reveal{border-color:rgba(0,230,118,.5)!important;background:rgba(0,230,118,.05)!important;}
+.opt.locked{cursor:default;}
+/* tip */
+.tip-link{font-size:.76rem;font-weight:800;color:var(--orange);margin-top:8px;display:inline-block;cursor:pointer;}
+.tip-link:hover{color:var(--gold);}
+.tip-box{background:rgba(255,152,0,.07);border:1px solid rgba(255,152,0,.22);border-radius:8px;padding:10px 13px;margin-top:8px;display:none;font-size:.84rem;font-weight:700;color:var(--orange2);line-height:1.65;}
+/* discursive */
+.disc-ta{width:100%;background:rgba(0,0,0,.5);border:1.5px solid var(--border2);border-radius:8px;padding:12px 14px;font-family:'Nunito',sans-serif;font-size:.9rem;font-weight:700;color:var(--white);line-height:1.7;outline:none;resize:vertical;min-height:130px;caret-color:var(--orange);transition:border-color .2s;}
+.disc-ta:focus{border-color:var(--orange);box-shadow:0 0 10px rgba(255,152,0,.14);}
+.disc-ta.typed{border-color:rgba(0,230,118,.4);}
+.disc-char{font-family:'Press Start 2P',monospace;font-size:.32rem;color:var(--gray);margin-top:5px;text-align:right;}
+.disc-char.enough{color:var(--green);}
+.gab-btn{font-size:.78rem;font-weight:800;color:var(--green);background:rgba(0,230,118,.07);border:1px solid rgba(0,230,118,.25);border-radius:7px;padding:6px 13px;cursor:pointer;margin-top:10px;transition:all .2s;}
+.gab-btn:hover{background:rgba(0,230,118,.14);}
+.gab-box{background:rgba(0,230,118,.07);border:1.5px solid rgba(0,230,118,.28);border-radius:9px;padding:12px 14px;margin-top:10px;display:none;animation:pu .3s ease;}
+@keyframes pu{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+.gab-title{font-family:'Press Start 2P',monospace;font-size:.36rem;color:var(--green);margin-bottom:6px;}
+.gab-text{font-size:.85rem;font-weight:700;color:var(--green2);line-height:1.7;}
+/* feedback */
+.q-fb{border-radius:9px;padding:10px 13px;font-size:.86rem;font-weight:800;line-height:1.6;display:none;margin-top:10px;animation:pu .3s ease;}
+.fb-ok{background:rgba(0,230,118,.1);border:1.5px solid rgba(0,230,118,.35);color:var(--green2);}
+.fb-nok{background:rgba(255,82,82,.08);border:1.5px solid rgba(255,82,82,.3);color:var(--red2);}
+/* nav */
+.q-nav{display:flex;justify-content:space-between;align-items:center;margin-top:14px;flex-wrap:wrap;gap:8px;}
+.btn{display:inline-flex;align-items:center;gap:7px;font-family:'Press Start 2P',monospace;font-size:.44rem;border:1px solid transparent;border-radius:8px;padding:11px 20px;cursor:pointer;transition:all .2s;color:white;}
+.btn-orange{background:linear-gradient(135deg,#4a2000,#903800);border-color:rgba(255,152,0,.4);color:var(--orange2);box-shadow:0 4px 12px rgba(255,152,0,.18);}
+.btn-orange:hover{transform:translateY(-1px);box-shadow:0 6px 18px rgba(255,152,0,.32);}
+.btn-gold{background:linear-gradient(135deg,#4a2c00,#9a6000);border-color:rgba(245,200,66,.4);color:#fef3c7;box-shadow:0 4px 12px rgba(245,200,66,.2);}
+.btn-gold:hover{transform:translateY(-1px);}
+.btn-ghost{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);font-size:.38rem;}
+.btn-ghost:hover{background:rgba(255,255,255,.1);}
+.btn:disabled{opacity:.3;cursor:not-allowed;transform:none;}
+/* result */
+.xp-ring{width:126px;height:126px;border-radius:50%;margin:0 auto 14px;display:flex;flex-direction:column;align-items:center;justify-content:center;border:4px solid var(--orange);background:radial-gradient(circle,rgba(255,152,0,.14),rgba(12,19,32,.9));box-shadow:0 0 28px rgba(255,152,0,.28);animation:rp 2.5s ease-in-out infinite;}
+@keyframes rp{0%,100%{box-shadow:0 0 18px rgba(255,152,0,.18)}50%{box-shadow:0 0 44px rgba(255,152,0,.45)}}
+.xp-n{font-family:'Press Start 2P',monospace;font-size:1.25rem;color:var(--orange);line-height:1;}
+.xp-l{font-family:'Press Start 2P',monospace;font-size:.38rem;color:var(--gray);margin-top:4px;}
+.r-badge{border-radius:12px;padding:13px 17px;text-align:center;font-size:.94rem;font-weight:800;line-height:1.5;border:2px solid;margin-bottom:13px;}
+.rb-gold{border-color:var(--gold);background:rgba(245,200,66,.1);color:var(--gold2);}
+.rb-green{border-color:var(--green);background:rgba(0,230,118,.1);color:var(--green2);}
+.rb-orange{border-color:var(--orange);background:rgba(255,152,0,.1);color:var(--orange2);}
+.rb-red{border-color:var(--red);background:rgba(255,82,82,.1);color:var(--red2);}
+.rgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:9px;margin:12px 0;}
+.rbox{border-radius:10px;padding:12px;text-align:center;border:1.5px solid;}
+.rbox .rv{font-family:'Press Start 2P',monospace;font-size:.88rem;line-height:1;margin-bottom:4px;}
+.rbox .rl{font-size:.64rem;font-weight:800;color:var(--gray);}
+.rbox.hi{border-color:var(--orange);background:rgba(255,152,0,.07);}.rbox.hi .rv{color:var(--orange);}
+.rbox.md{border-color:var(--gold);background:rgba(245,200,66,.07);}.rbox.md .rv{color:var(--gold);}
+.rbox.lo{border-color:var(--red);background:rgba(255,82,82,.07);}.rbox.lo .rv{color:var(--red);}
+.rbox.info{border-color:var(--blue);background:rgba(64,196,255,.07);}.rbox.info .rv{color:var(--blue);}
+.rev-item{border-radius:10px;border:1.5px solid;padding:12px 14px;margin-bottom:8px;}
+.rev-item.ok{border-color:rgba(0,230,118,.35);background:rgba(0,230,118,.05);}
+.rev-item.nok{border-color:rgba(255,82,82,.3);background:rgba(255,82,82,.05);}
+.rev-item.disc{border-color:rgba(255,152,0,.3);background:rgba(255,152,0,.05);}
+.ri-top{display:flex;align-items:center;gap:9px;margin-bottom:5px;}
+.ri-num{font-family:'Press Start 2P',monospace;font-size:.36rem;}
+.rev-item.ok .ri-num{color:var(--green);}
+.rev-item.nok .ri-num{color:var(--red);}
+.rev-item.disc .ri-num{color:var(--orange);}
+.ri-q{font-size:.82rem;font-weight:800;color:#b0c0d0;}
+.ri-ans{font-size:.76rem;font-weight:700;color:var(--gray);margin-top:3px;}
+/* teacher */
+.teacher-panel{background:rgba(255,152,0,.06);border:2px solid rgba(255,152,0,.28);border-radius:12px;padding:16px 18px;margin-top:14px;}
+.tp-title{font-family:'Press Start 2P',monospace;font-size:.42rem;color:var(--orange);margin-bottom:10px;display:flex;align-items:center;gap:7px;}
+.tp-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid rgba(255,152,0,.12);font-size:.84rem;font-weight:700;color:#c8b0a0;}
+.tp-row:last-child{border-bottom:none;}
+.tp-v{font-family:'Fira Code',monospace;font-size:.8rem;color:var(--gold2);}
+.disc-resp{background:rgba(0,0,0,.3);border-radius:7px;padding:9px 12px;margin:5px 0 10px;font-size:.82rem;font-weight:700;color:#c8c0b0;line-height:1.6;font-style:italic;border:1px solid rgba(255,152,0,.18);}
+.gab-resp{background:rgba(0,230,118,.06);border-radius:7px;padding:9px 12px;margin:4px 0 12px;font-size:.8rem;font-weight:700;color:var(--green2);line-height:1.6;border:1px solid rgba(0,230,118,.2);}
+/* conf/ov */
+.conf{position:fixed;inset:0;pointer-events:none;z-index:400;}
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:500;display:none;align-items:center;justify-content:center;flex-direction:column;}
+.ov.on{display:flex;}
+.ov-t{font-family:'Press Start 2P',monospace;font-size:clamp(.6rem,3vw,1.15rem);text-align:center;animation:bp .45s ease;}
+@keyframes bp{0%{transform:scale(.3);opacity:0}70%{transform:scale(1.1)}100%{transform:scale(1);opacity:1}}
+.ov-s{font-size:.88rem;font-weight:700;color:white;text-align:center;margin-top:10px;max-width:380px;line-height:1.7;padding:0 14px;}
+.ov-btns{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap;justify-content:center;}
+@media(max-width:540px){.panel{padding:16px 12px;}.btn{font-size:.38rem;padding:10px 14px;}}
+</style>
+</head>
+<body>
+<div class="conf" id="conf"></div>
+<div class="ov" id="ov">
+  <div class="ov-t" id="ov-t" style="color:var(--orange);">✅ CORRETO!</div>
+  <div class="ov-s" id="ov-s"></div>
+  <div class="ov-btns" id="ov-btns"></div>
+</div>
+
+<!-- ════ INTRO ════ -->
+<div class="scr on" id="s-intro">
+<div class="panel" style="max-width:760px;margin-top:16px;">
+  <div style="text-align:center;margin-bottom:14px;">
+    <div style="font-size:3rem;animation:fl 2.5s ease-in-out infinite;margin-bottom:8px;">🔥</div>
+    <p class="ptitle">MÓDULO 3</p>
+    <p class="ptitle" style="color:var(--s1);font-size:clamp(.38rem,1.2vw,.56rem);">VERSÃO 2 · REFORÇO</p>
+    <p class="psub" style="margin-top:5px;">AVALIAÇÃO COM CONSULTA · GUILDA TECHSOLUTIONS</p>
+  </div>
+  <div class="ob-banner">
+    <span class="ob-icon">📚</span>
+    <div>
+      <p class="ob-title">⚡ GRIMÓRIO ABERTO — CONSULTA LIBERADA!</p>
+      <p class="ob-desc">Esta é uma segunda versão da avaliação com <strong>questões diferentes</strong> para reforço. Abra suas anotações, slides e atividades — e use seu raciocínio!</p>
+    </div>
+  </div>
+  <div class="npc">
+    <div class="nav">🔥</div>
+    <div><p class="nname">MESTRE DO REFORÇO</p>
+      <p class="ntxt">Herói! Esta é a <strong>Versão 2</strong> da avaliação — com novos cenários para testar se você realmente entende os conceitos, não só decorou as respostas!<br><br>Mesmo com o Grimório aberto, o raciocínio tem que ser <strong>seu</strong>!
+        <span class="ctip">5 questões · 45 min · Grimório aberto</span>
+      </p>
+    </div>
+  </div>
+  <!-- overview -->
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:9px;margin-bottom:14px;">
+    <div style="border:1.5px solid rgba(255,152,0,.35);border-radius:9px;padding:11px;background:rgba(255,152,0,.05);"><span style="font-family:'Press Start 2P',monospace;font-size:.3rem;color:var(--s1);display:block;margin-bottom:4px;">📊 AULAS 9–10</span><span style="font-size:.82rem;font-weight:800;color:var(--white);">Planilha · Fórmulas</span></div>
+    <div style="border:1.5px solid rgba(64,196,255,.35);border-radius:9px;padding:11px;background:rgba(64,196,255,.05);"><span style="font-family:'Press Start 2P',monospace;font-size:.3rem;color:var(--s2);display:block;margin-bottom:4px;">🖥️ AULA 11</span><span style="font-size:.82rem;font-weight:800;color:var(--white);">ERP · Módulos</span></div>
+    <div style="border:1.5px solid rgba(206,147,216,.35);border-radius:9px;padding:11px;background:rgba(206,147,216,.05);"><span style="font-family:'Press Start 2P',monospace;font-size:.3rem;color:var(--s3);display:block;margin-bottom:4px;">🏦 AULA 12</span><span style="font-size:.82rem;font-weight:800;color:var(--white);">SQL · Chaves</span></div>
+    <div style="border:1.5px solid rgba(29,233,182,.35);border-radius:9px;padding:11px;background:rgba(29,233,182,.05);"><span style="font-family:'Press Start 2P',monospace;font-size:.3rem;color:var(--s4);display:block;margin-bottom:4px;">⚗️ AULA 13</span><span style="font-size:.82rem;font-weight:800;color:var(--white);">Custos · Algoritmo</span></div>
+    <div style="border:1.5px solid rgba(245,200,66,.35);border-radius:9px;padding:11px;background:rgba(245,200,66,.05);"><span style="font-family:'Press Start 2P',monospace;font-size:.3rem;color:var(--s5);display:block;margin-bottom:4px;">🖊️ DISCURSIVA</span><span style="font-size:.82rem;font-weight:800;color:var(--white);">Síntese · Análise</span></div>
+  </div>
+  <div style="text-align:center;">
+    <button class="btn btn-orange" style="font-size:.5rem;" onclick="startExam()">🔥 INICIAR VERSÃO 2 →</button>
+  </div>
+</div>
+</div>
+
+<!-- ════ PROVA ════ -->
+<div class="scr" id="s-exam">
+<div class="panel" style="max-width:860px;margin-top:14px;">
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px;">
+    <div><p class="ptitle" style="font-size:.46rem;text-align:left;">🔥 MÓDULO 3 · VERSÃO 2</p><p class="psub" style="text-align:left;margin-top:2px;">REFORÇO · GRIMÓRIO ABERTO</p></div>
+    <div style="display:flex;gap:6px;">
+      <div class="ob-banner" style="padding:7px 12px;margin:0;border-radius:8px;border-width:1.5px;">
+        <span style="font-size:1rem;">📚</span>
+        <span style="font-family:'Press Start 2P',monospace;font-size:.3rem;color:var(--orange);">GRIMÓRIO<br>ABERTO</span>
+      </div>
+      <button class="btn btn-ghost" onclick="confirmEnd()">🏁 FINALIZAR</button>
+    </div>
+  </div>
+  <div class="timer-bar">
+    <span style="font-size:1.3rem;">⏱️</span>
+    <div class="timer-track"><div class="timer-fill t-ok" id="timer-fill" style="width:100%;"></div></div>
+    <span class="timer-val" id="timer-val">45:00</span>
+  </div>
+  <div class="q-progress" id="q-progress">
+    <div class="qp-dot current" id="qp0">1</div>
+    <div class="qp-dot" id="qp1">2</div>
+    <div class="qp-dot" id="qp2">3</div>
+    <div class="qp-dot" id="qp3">4</div>
+    <div class="qp-dot" id="qp4">5</div>
+  </div>
+  <div class="npc" style="margin-bottom:12px;">
+    <div class="nav">🔥</div>
+    <div><p class="nname">MESTRE DO REFORÇO</p>
+      <p class="ntxt" id="npc-exam">Novos cenários, mesmo Grimório aberto. Leia com atenção — estas questões testam seu <strong>raciocínio</strong>!</p>
+    </div>
+  </div>
+  <div id="question-area"></div>
+  <div class="q-nav">
+    <button class="btn btn-ghost" id="btn-prev" onclick="prevQ()" disabled>← ANTERIOR</button>
+    <div style="font-family:'Press Start 2P',monospace;font-size:.36rem;color:var(--gray);" id="q-counter">Q 1 / 5</div>
+    <button class="btn btn-orange" id="btn-next" onclick="nextQ()">PRÓXIMA →</button>
+  </div>
+</div>
+</div>
+
+<!-- ════ RESULTADO ════ -->
+<div class="scr" id="s-result">
+<div class="panel" style="max-width:780px;margin-top:14px;">
+  <div style="text-align:center;margin-bottom:14px;">
+    <div style="font-size:3rem;animation:fl 2.5s ease-in-out infinite;">🏆</div>
+    <p class="ptitle" style="color:var(--orange);">VERSÃO 2<br>CONCLUÍDA!</p>
+    <p class="psub" style="margin-top:5px;">RELATÓRIO DE REFORÇO</p>
+  </div>
+  <div id="r-badge-wrap"></div>
+  <div class="xp-ring"><span class="xp-n" id="r-xp">—</span><span class="xp-l">XP</span></div>
+  <div class="rgrid" id="r-grid"></div>
+  <div style="border-top:1px solid var(--border);padding-top:13px;margin-top:4px;">
+    <p style="font-family:'Press Start 2P',monospace;font-size:.38rem;color:var(--gray);margin-bottom:10px;">📋 REVISÃO</p>
+    <div id="r-review"></div>
+  </div>
+  <div class="teacher-panel"><p class="tp-title">👨‍🏫 PAINEL DO PROFESSOR</p><div id="teacher-data"></div></div>
+  <div class="npc" style="margin-top:14px;"><div class="nav">🔥</div><div><p class="nname">MESTRE DO REFORÇO</p><p class="ntxt" id="r-npc">—</p></div></div>
+  <div style="display:flex;gap:9px;flex-wrap:wrap;margin-top:12px;">
+    <button class="btn btn-gold" onclick="downloadCSV()">⬇ BAIXAR RELATÓRIO</button>
+    <button class="btn btn-ghost" onclick="fullReset()">↺ REFAZER</button>
+  </div>
+</div>
+</div>
+
+<script>
+const QQ=[
+  {
+    id:1,type:'mc',
+    secLabel:'📊 AULAS 9 E 10 · O Pergaminho Mágico',secClass:'sb1',
+    icon:'📊',xpFull:15,xpPartial:7,
+    stem:'O Guardião das Finanças da Guilda criou uma planilha com duas colunas: <strong>Ouro Ganho (Receitas)</strong> e <strong>Dano Sofrido (Despesas)</strong>. Ele usa o feitiço <code>=SOMA(A2:A10)</code> para somar todas as receitas. O que o feitiço <code>=SOMA(A2:A10)</code> significa exatamente?',
+    opts:[
+      'Multiplica os valores da célula A2 até A10.',
+      'Soma todos os valores que estão nas células de A2 até A10, calculando o total automaticamente.',
+      'Apaga todos os valores negativos entre A2 e A10.',
+      'Copia o valor de A2 e cola em A10.'
+    ],
+    correct:1,
+    feedOk:'✅ Exato! A2:A10 é o intervalo — "de A2 até A10". O =SOMA() soma todos esses valores automaticamente. É o feitiço de automação da planilha!',
+    feedNok:'❌ Não é essa! A2:A10 é um intervalo de células. =SOMA() faz a conta de adição de todas elas. Releia a aula sobre fórmulas!',
+    tip:'💡 A2:A10 = "de A2 até A10". =SOMA() = somar tudo nesse intervalo. Pense: é como somar um baú de moedas de ouro do slot 2 ao slot 10!'
+  },
+  {
+    id:2,type:'mc',
+    secLabel:'🖥️ AULA 11 · O Servidor Central (ERP)',secClass:'sb2',
+    icon:'🖥️',xpFull:15,xpPartial:7,
+    stem:'A Guilda tem um ERP com 4 módulos: <strong>Vendas, Estoque, RH e Contábil</strong>. O Mestre de Compras registra a compra de 100 Cristais de Energia. Qual sequência de eventos o ERP desencadeia <strong>automaticamente</strong>?',
+    opts:[
+      'Nenhum módulo é avisado — o Banqueiro ainda precisa atualizar tudo manualmente.',
+      'Apenas o Módulo de Vendas é atualizado.',
+      'O Módulo de Estoque aumenta os Cristais em 100 unidades E o Módulo Contábil registra a saída de ouro (Despesa) — tudo ao mesmo tempo, sem digitação extra.',
+      'O ERP manda uma notificação de e-mail para o Rei, mas não atualiza os dados.'
+    ],
+    correct:2,
+    feedOk:'✅ Correto! Um registro no ERP dispara ações em cascata: Estoque+100 e Contábil registra a Despesa. É a integração automática — o poder do Servidor Central!',
+    feedNok:'❌ Não é essa! O ERP conecta tudo. Uma ação em Compras automaticamente atualiza Estoque (itens) E Contábil (dinheiro gasto). Sem digitar duas vezes!',
+    tip:'💡 ERP = tudo conectado. Comprou algo? Estoque sobe + caixa desce. Vendeu algo? Estoque desce + caixa sobe. Tudo automático!'
+  },
+  {
+    id:3,type:'mc',
+    secLabel:'🏦 AULA 12 · O Cofre de Dados (Modelagem)',secClass:'sb3',
+    icon:'🔑',xpFull:15,xpPartial:7,
+    stem:'No Cofre de Dados (PostgreSQL), o Baú de Faturas tem a coluna <strong>id_cliente</strong> que é uma <strong>Chave Estrangeira (FK)</strong> apontando para o Baú de Clientes. O que acontece se alguém tentar inserir uma Fatura com um <code>id_cliente = 999</code>, mas nenhum cliente com ID 999 existe?',
+    opts:[
+      'O banco aceita normalmente e cria um cliente fantasma com ID 999.',
+      'O banco ignora a fatura e não registra nenhum erro.',
+      'O PostgreSQL retorna um erro de violação de Chave Estrangeira e RECUSA a inserção — a integridade dos dados é protegida!',
+      'O banco apaga todas as faturas existentes para dar espaço à nova.'
+    ],
+    correct:2,
+    feedOk:'✅ Perfeito! A Chave Estrangeira é uma proteção. Você não pode criar uma fatura para um cliente que não existe — isso seria um bug no sistema!',
+    feedNok:'❌ Não é essa! A FK é uma TRAVA de segurança. O banco NÃO deixa criar uma fatura sem o cliente correspondente. Releia a parte de Chaves Estrangeiras!',
+    tip:'💡 FK = portão de segurança. "Quero criar fatura para cliente 999." Banco verifica: "Existe cliente 999?" Não existe? ERRO! Fatura recusada.'
+  },
+  {
+    id:4,type:'mc',
+    secLabel:'⚗️ AULA 13 · O Custo da Nova Magia',secClass:'sb4',
+    icon:'⚗️',xpFull:15,xpPartial:7,
+    stem:'A Guilda quer contratar <strong>2 Magos do Código</strong> (não apenas 1) para um novo projeto. Cada mago custa <strong>50 moedas por hora</strong>. O projeto vai durar <strong>60 horas</strong>. Além disso, há uma <strong>taxa fixa de 500 moedas</strong> para a Torre de Cristal Premium. Qual é o custo total?',
+    opts:[
+      '3.000 moedas',
+      '6.500 moedas',
+      '3.500 moedas',
+      '6.000 moedas'
+    ],
+    correct:1,
+    feedOk:'✅ Correto! 2 magos × 50 moedas × 60 horas = 6.000 + 500 (taxa) = 6.500 moedas. Repara que com 2 magos, você multiplica o custo por 2!',
+    feedNok:'❌ Tente de novo! Atenção: são 2 magos, não 1. Fórmula: (nº magos × custo/hora × horas) + taxa fixa. 2×50×60=? Depois some +500.',
+    tip:'💡 Dica passo a passo: 1) custo por hora TOTAL = 2 × 50 = 100. 2) Custo dos magos = 100 × 60 horas = 6.000. 3) Total = 6.000 + 500 = ?'
+  },
+  {
+    id:5,type:'disc',
+    secLabel:'🖊️ MISSÃO DISCURSIVA · A Visão do Rei',secClass:'sb5',
+    icon:'👑',xp:20,
+    stem:'O Rei Artur está decidindo se a Guilda deve <strong>continuar usando planilhas (Excel)</strong> ou <strong>migrar para o ERP</strong> (Servidor Central).\n\nComo Tech Lead da Guilda, <strong>explique ao Rei em linguagem simples</strong>: qual é a principal diferença entre os dois sistemas? Em qual situação a planilha é suficiente e em qual situação o ERP é necessário?',
+    placeholder:'Escreva sua resposta aqui... (Pense nas vantagens e limitações de cada sistema)',
+    gabarito:'A planilha (Excel/Pergaminho Mágico) funciona bem para cálculos simples e pequenas guildas — uma pessoa controla tudo manualmente. Mas quando a guilda cresce e vários módulos (Vendas, RH, Estoque) precisam se comunicar ao mesmo tempo, a planilha trava: alguém pode atualizar o arquivo errado ou esquecer de atualizar o outro departamento. O ERP resolve isso porque conecta todos os módulos automaticamente — uma venda registrada já atualiza o estoque e o financeiro sem digitar duas vezes. A planilha é boa para uma loja pequena. O ERP é necessário quando a guilda tem vários reinos comunicando entre si ao mesmo tempo.'
+  }
+];
+
+let cur=0,answers={},discAns={},timerInterval=null,timeLeft=45*60;
+
+function startExam(){go('s-exam');startTimer();renderQ(0);}
+
+function startTimer(){
+  updateTimer();
+  timerInterval=setInterval(()=>{timeLeft--;updateTimer();if(timeLeft<=0){clearInterval(timerInterval);endExam();}},1000);
+}
+function updateTimer(){
+  const m=Math.floor(timeLeft/60),s=timeLeft%60;
+  document.getElementById('timer-val').textContent=`${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  const pct=timeLeft/(45*60)*100;
+  const f=document.getElementById('timer-fill');
+  f.style.width=pct+'%';
+  f.className='timer-fill '+(pct>50?'t-ok':pct>20?'t-warn':'t-crit');
+}
+
+function renderQ(idx){
+  cur=idx;
+  const q=QQ[idx];
+  for(let i=0;i<QQ.length;i++){
+    const d=document.getElementById('qp'+i);
+    d.className='qp-dot';
+    if(i===idx)d.className+=' current';
+    else if(answers[i]!==undefined||discAns[i]!==undefined)d.className+=' answered';
+    else d.className+=' unans';
+  }
+  document.getElementById('q-counter').textContent=`Q ${idx+1} / ${QQ.length}`;
+  document.getElementById('btn-prev').disabled=idx===0;
+  document.getElementById('btn-next').textContent=idx===QQ.length-1?'🏁 FINALIZAR':'PRÓXIMA →';
+  const npcMsgs=[
+    'Questão 1 — <strong>Planilha</strong>: O que significa exatamente a fórmula =SOMA(A2:A10)?',
+    'Questão 2 — <strong>ERP</strong>: O que acontece quando uma compra é registrada no Servidor Central?',
+    'Questão 3 — <strong>Banco de Dados</strong>: O que a Chave Estrangeira faz quando o dado não existe?',
+    'Questão 4 — <strong>Custo</strong>: Cuidado! São 2 magos — calcule passo a passo!',
+    'Última questão! <strong>Discursiva</strong> — explique a diferença entre Planilha e ERP para o Rei!'
+  ];
+  document.getElementById('npc-exam').innerHTML=npcMsgs[idx];
+  const area=document.getElementById('question-area');
+  if(q.type==='mc'){
+    area.innerHTML=buildMC(q,idx);
+    if(answers[idx]?.locked)lockMC(idx,answers[idx].answer,answers[idx].correct);
+  } else {
+    area.innerHTML=buildDisc(q,idx);
+    const ta=document.getElementById('disc-ta-'+idx);
+    if(discAns[idx]){ta.value=discAns[idx];ta.classList.add('typed');updateCC(idx);}
+    ta.addEventListener('input',()=>{discAns[idx]=ta.value.trim();ta.classList.toggle('typed',ta.value.trim().length>20);updateCC(idx);document.getElementById('qp'+idx).className='qp-dot '+(ta.value.trim().length>20?'answered':'current');});
+  }
+}
+
+function buildMC(q,idx){
+  const L=['A','B','C','D'];
+  const opts=q.opts.map((o,i)=>`<button class="opt" id="opt${idx}_${i}" onclick="pickOpt(${idx},${i})"><span class="opt-l">${L[i]}</span><span>${o}</span></button>`).join('');
+  return `<div class="q-card"><div class="sec-badge ${q.secClass}">${q.secLabel}</div><div class="q-num"><span class="qi">${q.icon}</span> QUESTÃO ${q.id} — ${q.xpFull} XP</div><p class="q-stem">${q.stem.replace(/\n/g,'<br>')}</p><div class="opts" id="opts-${idx}">${opts}</div><a class="tip-link" onclick="toggleTip(${idx});return false;">💡 Ver dica</a><div class="tip-box" id="tip-${idx}">${q.tip}</div><div class="q-fb" id="qfb-${idx}"></div></div>`;
+}
+
+function buildDisc(q,idx){
+  return `<div class="q-card"><div class="sec-badge ${q.secClass}">${q.secLabel}</div><div class="q-num"><span class="qi">${q.icon}</span> QUESTÃO ${q.id} — ${q.xp} XP (professor avalia)</div><p class="q-stem">${q.stem.replace(/\n/g,'<br>')}</p><textarea class="disc-ta" id="disc-ta-${idx}" placeholder="${q.placeholder}"></textarea><div class="disc-char" id="disc-char-${idx}">0 caracteres</div><button class="gab-btn" onclick="toggleGab(${idx})">📋 Ver gabarito</button><div class="gab-box" id="gab-${idx}"><p class="gab-title">📋 GABARITO</p><p class="gab-text">${q.gabarito.replace(/\n/g,'<br>')}</p></div></div>`;
+}
+
+function toggleTip(idx){const el=document.getElementById('tip-'+idx);if(el)el.style.display=el.style.display==='none'?'block':'none';}
+function toggleGab(idx){const el=document.getElementById('gab-'+idx);if(el)el.style.display=el.style.display==='none'?'block':'none';}
+function updateCC(idx){const ta=document.getElementById('disc-ta-'+idx);if(!ta)return;const l=ta.value.trim().length;const cc=document.getElementById('disc-char-'+idx);if(!cc)return;cc.textContent=l+' caractere'+(l!==1?'s':'');cc.className='disc-char'+(l>=80?' enough':'');}
+
+function pickOpt(qIdx,optIdx){
+  const q=QQ[qIdx];if(answers[qIdx]?.locked)return;
+  const attempts=answers[qIdx]?.attempts||0;const isOk=optIdx===q.correct;
+  if(!answers[qIdx])answers[qIdx]={attempts:0,score:q.xpFull};
+  answers[qIdx].attempts=attempts+1;
+  if(isOk){
+    const score=attempts===0?q.xpFull:q.xpPartial;
+    answers[qIdx]={answer:optIdx,correct:true,score,attempts:attempts+1,locked:true};
+    lockMC(qIdx,optIdx,true);showFb(qIdx,'ok',q.feedOk);
+    document.getElementById('qp'+qIdx).className='qp-dot answered';
+    showOv('✅ +'+score+' XP!',q.feedOk.replace('✅ ',''),[]);setTimeout(hideOv,1600);spawnConf();
+  } else {
+    document.querySelectorAll(`[id^="opt${qIdx}_"]`).forEach(b=>b.classList.remove('selected','nok'));
+    document.getElementById(`opt${qIdx}_${optIdx}`).classList.add('nok');
+    answers[qIdx]={...(answers[qIdx]||{}),attempts:attempts+1,score:q.xpPartial};
+    showFb(qIdx,'nok',q.feedNok);
+  }
+}
+
+function lockMC(qIdx,chosen,correct){
+  const q=QQ[qIdx];
+  document.querySelectorAll(`[id^="opt${qIdx}_"]`).forEach((btn,i)=>{
+    btn.classList.add('locked');
+    if(i===q.correct)btn.classList.add('ok');
+    else if(i===chosen&&!correct)btn.classList.add('nok');
+  });
+}
+
+function showFb(qIdx,type,msg){const fb=document.getElementById('qfb-'+qIdx);if(!fb)return;fb.style.display='block';fb.className='q-fb fb-'+type;fb.innerHTML=msg;}
+function nextQ(){if(cur===QQ.length-1){confirmEnd();return;}renderQ(cur+1);}
+function prevQ(){if(cur>0)renderQ(cur-1);}
+
+function confirmEnd(){
+  const u=QQ.filter((q,i)=>q.type==='mc'?answers[i]===undefined:!discAns[i]||discAns[i].length<20).length;
+  if(u>0){showOv('⚠️ ATENÇÃO!',`${u} questão(ões) sem resposta. Finalizar mesmo assim?`,[{label:'✅ FINALIZAR',fn:'endExam()'},{label:'← VOLTAR',fn:'hideOv()'}]);}
+  else endExam();
+}
+
+function endExam(){
+  clearInterval(timerInterval);
+  QQ.forEach((q,i)=>{if(q.type==='disc'){const ta=document.getElementById('disc-ta-'+i);if(ta&&ta.value.trim())discAns[i]=ta.value.trim();}});
+  buildResult();go('s-result');spawnConf();
+}
+
+function buildResult(){
+  let mc=0,mcT=0,dT=0;
+  QQ.forEach((q,i)=>{if(q.type==='mc'){mcT+=q.xpFull;if(answers[i]?.correct)mc+=answers[i].score;}else dT+=q.xp;});
+  const pct=Math.round(mc/mcT*100);
+  document.getElementById('r-xp').textContent=mc+'/'+(mcT+dT);
+  let badge,npc;
+  if(pct===100){badge=`<div class="r-badge rb-gold">🏆 PERFEITO! Você dominou a Versão 2 completa!</div>`;npc='Incrível! 100% nas objetivas da Versão 2. Você realmente entende os conceitos — não só decorou!';}
+  else if(pct>=75){badge=`<div class="r-badge rb-green">⚔️ APROVADO! ${pct}% de aproveitamento!</div>`;npc=`Ótimo trabalho! ${pct}% de aproveitamento. A Versão 2 é mais desafiadora e você foi bem!`;}
+  else if(pct>=50){badge=`<div class="r-badge rb-orange">🛡️ PARCIAL — ${pct}%. Revise os pontos vermelhos!</div>`;npc='Você está no caminho certo! Revise as questões que erraste e reforce os conceitos.';}
+  else{badge=`<div class="r-badge rb-red">💪 REFORÇO NECESSÁRIO — ${pct}%.</div>`;npc='Não desanime! Esta versão tem cenários mais elaborados. Revise as aulas e tente de novo!';}
+  document.getElementById('r-badge-wrap').innerHTML=badge;document.getElementById('r-npc').innerHTML=npc;
+  const cls=pct>=75?'hi':pct>=50?'md':'lo';
+  document.getElementById('r-grid').innerHTML=`
+    <div class="rbox ${cls}"><div class="rv">${mc}/${mcT}</div><div class="rl">XP OBJETIVAS</div></div>
+    <div class="rbox ${cls}"><div class="rv">${pct}%</div><div class="rl">APROVEIT.</div></div>
+    <div class="rbox info"><div class="rv">${dT}</div><div class="rl">XP DISCURSIVA</div></div>
+    <div class="rbox ${cls}"><div class="rv">${Object.values(answers).filter(a=>a.correct).length}/4</div><div class="rl">CORRETAS</div></div>`;
+  let rev='';
+  QQ.forEach((q,i)=>{
+    if(q.type==='mc'){
+      const st=answers[i];const ok=st?.correct;
+      const given=st?.answer!==undefined?q.opts[st.answer]:'(sem resposta)';
+      rev+=`<div class="rev-item ${ok?'ok':'nok'}"><div class="ri-top"><span style="font-size:1.1rem;">${ok?'✅':'❌'}</span><span class="ri-num">Q${i+1} — ${ok?'+'+st.score+' XP':'0 XP'}</span></div><div class="ri-q">${q.stem.replace(/<[^>]+>/g,'').substring(0,70)}...</div><div class="ri-ans">Sua resposta: <strong>${given.substring(0,55)}...</strong></div>${!ok?`<div class="ri-ans" style="color:var(--green);">✅ Correta: ${q.opts[q.correct].substring(0,60)}...</div>`:''}</div>`;
+    } else {
+      const txt=discAns[i]||'(sem resposta)';
+      rev+=`<div class="rev-item disc"><div class="ri-top"><span style="font-size:1.1rem;">📝</span><span class="ri-num">Q${i+1} — ${q.xp} XP (professor)</span></div><div class="ri-q">${q.stem.replace(/<[^>]+>/g,'').substring(0,70)}...</div><div class="ri-ans">"${txt.substring(0,75)}${txt.length>75?'...':''}"</div></div>`;
+    }
+  });
+  document.getElementById('r-review').innerHTML=rev;
+  const ts=45*60-timeLeft;const tm=Math.floor(ts/60),tsec=ts%60;
+  const dq=QQ.find(q=>q.type==='disc');const di=QQ.indexOf(dq);const dtxt=discAns[di]||'(sem resposta)';
+  document.getElementById('teacher-data').innerHTML=`
+    <div class="tp-row"><span>Tempo utilizado</span><span class="tp-v">${String(tm).padStart(2,'0')}:${String(tsec).padStart(2,'0')}</span></div>
+    <div class="tp-row"><span>Objetivas corretas</span><span class="tp-v">${Object.values(answers).filter(a=>a.correct).length}/4</span></div>
+    <div class="tp-row"><span>XP objetivas</span><span class="tp-v">${mc}/${mcT}</span></div>
+    <div class="tp-row"><span>Versão</span><span class="tp-v" style="color:var(--orange);">🔥 V2 — REFORÇO</span></div>
+    <hr style="border-color:rgba(255,152,0,.12);margin:8px 0;">
+    <p style="font-family:'Press Start 2P',monospace;font-size:.32rem;color:var(--orange);margin:8px 0;">🖊️ RESPOSTA DISCURSIVA (Q5)</p>
+    <div class="disc-resp">${dtxt}</div>
+    <p style="font-family:'Press Start 2P',monospace;font-size:.3rem;color:var(--green);margin:4px 0 6px;">📋 GABARITO:</p>
+    <div class="gab-resp">${dq.gabarito.replace(/\n/g,'<br>')}</div>`;
+}
+
+function downloadCSV(){
+  const now=new Date();const ts=45*60-timeLeft;const tm=Math.floor(ts/60),tsec=ts%60;
+  let mc=0;QQ.forEach((q,i)=>{if(q.type==='mc'&&answers[i]?.correct)mc+=answers[i].score;});
+  let csv='sep=;\nAVALIAÇÃO MÓDULO 3 — VERSÃO 2 (REFORÇO) · GRIMÓRIO ABERTO\n';
+  csv+=`Data;${now.toLocaleDateString('pt-BR')}\nHora;${now.toLocaleTimeString('pt-BR')}\nTempo;${String(tm).padStart(2,'0')}:${String(tsec).padStart(2,'0')}\n\n`;
+  csv+='OBJETIVAS\nQ;Resposta;Correta;XP\n';
+  QQ.filter(q=>q.type==='mc').forEach(q=>{const i=QQ.indexOf(q);const st=answers[i];const given=st?.answer!==undefined?['A','B','C','D'][st.answer]:'—';csv+=`Q${q.id};${given};${st?.correct?'SIM':'NÃO'};${st?.correct?st.score:0}\n`;});
+  csv+=`TOTAL MC;${mc}/60\n\nDISCURSIVA\n`;
+  const dq=QQ.find(q=>q.type==='disc');const di=QQ.indexOf(dq);
+  csv+=`Q5;"${(discAns[di]||'(sem resposta)').replace(/;/g,',')}"\nGABAROTO;"${dq.gabarito.replace(/\n/g,' ').replace(/;/g,',')}"\n`;
+  const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'});
+  const url=URL.createObjectURL(blob);const a=document.createElement('a');
+  a.href=url;a.download=`modulo3_v2_${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}.csv`;
+  document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);
+}
+
+function go(id){document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on'));document.getElementById(id).classList.add('on');window.scrollTo(0,0);}
+function showOv(t,s,btns=[]){document.getElementById('ov').classList.add('on');document.getElementById('ov-t').textContent=t;document.getElementById('ov-s').textContent=s;document.getElementById('ov-btns').innerHTML=btns.map(b=>`<button class="btn btn-${b.fn.includes('end')?'gold':'ghost'}" onclick="${b.fn}">${b.label}</button>`).join('');}
+function hideOv(){document.getElementById('ov').classList.remove('on');document.getElementById('ov-btns').innerHTML='';}
+function fullReset(){clearInterval(timerInterval);answers={};discAns={};cur=0;timeLeft=45*60;go('s-intro');}
+function spawnConf(){const c=document.getElementById('conf');const cols=['#ff9800','#f5c842','#00e676','#1de9b6','#40c4ff','#ce93d8'];for(let i=0;i<70;i++){const el=document.createElement('div');const sz=4+Math.random()*9;el.style.cssText=`position:absolute;width:${sz}px;height:${sz}px;background:${cols[Math.floor(Math.random()*cols.length)]};left:${Math.random()*100}%;top:-10px;border-radius:${Math.random()>.5?'50%':'2px'};animation:cf ${1.5+Math.random()*2}s ease ${Math.random()*.5}s both;`;c.appendChild(el);}setTimeout(()=>c.innerHTML='',5500);}
+(()=>{const s=document.createElement('style');s.textContent='@keyframes cf{from{transform:translateY(0) rotate(0deg);opacity:1}to{transform:translateY(100vh) rotate(720deg);opacity:0}}';document.head.appendChild(s);})();
+</script>
+</body>
+</html>
