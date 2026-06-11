@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Quest 2 — O Chamado ao Oráculo</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Nunito:wght@700;800;900&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:      #08060f;
+  --panel:   #100d22;
+  --panel2:  #161230;
+  --border:  #241a48;
+  --border2: #362860;
+  --gold:    #f5c842;
+  --gold2:   #ffe082;
+  --green:   #00e676;
+  --green2:  #b9f6ca;
+  --red:     #ff5252;
+  --blue:    #40c4ff;
+  --blue2:   #b3e5fc;
+  --purple:  #ce93d8;
+  --purple2: #f3d9ff;
+  --orange:  #ff9800;
+  --teal:    #1de9b6;
+  --white:   #ede8ff;
+  --gray:    #6858a0;
+  --gray2:   #3a2870;
+
+  /* prompt parts */
+  --p1: #ce93d8; /* papel */
+  --p2: #40c4ff; /* contexto */
+  --p3: #f5c842; /* regra */
+  --p4: #00e676; /* saida */
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Nunito', sans-serif;
+  background: var(--bg);
+  color: var(--white);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background-image:
+    radial-gradient(circle at 20% 30%, rgba(206,147,216,.04) 0%, transparent 55%),
+    radial-gradient(circle at 80% 70%, rgba(64,196,255,.04) 0%, transparent 55%),
+    radial-gradient(1px 1px at 10% 22%, rgba(255,255,255,.8) 0%, transparent 100%),
+    radial-gradient(1px 1px at 84% 14%, rgba(255,255,255,.6) 0%, transparent 100%),
+    radial-gradient(1px 1px at 52% 88%, rgba(255,255,255,.7) 0%, transparent 100%),
+    radial-gradient(1px 1px at 28% 60%, rgba(255,255,255,.5) 0%, transparent 100%),
+    radial-gradient(1px 1px at 73% 40%, rgba(255,255,255,.6) 0%, transparent 100%);
+  pointer-events: none; z-index: 0;
+}
+
+.scr { display: none; position: relative; z-index: 1; min-height: 100vh; flex-direction: column; align-items: center; padding: 20px 14px 60px; }
+.scr.on { display: flex; }
+
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 26px 30px;
+  max-width: 860px; width: 100%;
+  box-shadow: 0 0 60px rgba(206,147,216,.05), 0 16px 60px rgba(0,0,0,.9);
+}
+
+.ptitle { font-family: 'Press Start 2P', monospace; font-size: clamp(.48rem,1.5vw,.78rem); color: var(--purple); text-shadow: 2px 2px 0 rgba(0,0,0,.9), 0 0 20px rgba(206,147,216,.4); line-height: 2.1; text-align: center; }
+.psub   { font-family: 'Press Start 2P', monospace; font-size: .36rem; color: var(--gray); letter-spacing: 2px; text-align: center; }
+
+/* NPC */
+.npc { display: flex; gap: 13px; align-items: flex-start; background: rgba(8,6,15,.95); border: 1px solid rgba(206,147,216,.2); border-radius: 10px; padding: 14px 16px; margin-bottom: 16px; }
+.nav { width: 50px; height: 50px; border-radius: 8px; border: 1.5px solid var(--purple); background: linear-gradient(135deg,#0e0420,#2a1050); display: flex; align-items: center; justify-content: center; font-size: 23px; flex-shrink: 0; animation: fl 3s ease-in-out infinite; box-shadow: 0 0 10px rgba(206,147,216,.18); }
+@keyframes fl { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-4px)} }
+.nname { font-family: 'Press Start 2P', monospace; font-size: .38rem; color: var(--purple); margin-bottom: 5px; }
+.ntxt  { font-size: .88rem; font-weight: 700; color: #b8b0d8; line-height: 1.75; }
+.ntxt strong { color: var(--purple2); }
+.ctip { font-family: 'Fira Code', monospace; font-size: .74rem; color: var(--teal); background: rgba(29,233,182,.08); border: 1px solid rgba(29,233,182,.22); border-radius: 5px; padding: 3px 8px; display: inline-block; margin-top: 4px; }
+
+/* STEPS */
+.snav { display: flex; gap: 6px; justify-content: center; margin-bottom: 14px; flex-wrap: wrap; }
+.sd { font-family: 'Press Start 2P', monospace; font-size: .3rem; padding: 5px 9px; border-radius: 5px; border: 1px solid; transition: all .3s; }
+.sd.done   { border-color: var(--green);  background: rgba(0,230,118,.07);  color: var(--green); }
+.sd.active { border-color: var(--purple); background: rgba(206,147,216,.07);color: var(--purple); }
+.sd.locked { border-color: var(--border); color: rgba(255,255,255,.15); }
+
+/* NOTICE */
+.notice { border-radius: 10px; padding: 10px 14px; font-size: .83rem; font-weight: 700; line-height: 1.6; margin: 9px 0; display: flex; gap: 9px; align-items: flex-start; }
+.ni { font-size: 1.1rem; flex-shrink: 0; }
+.nt-purple { background: rgba(206,147,216,.08); border: 1.5px solid rgba(206,147,216,.25); color: var(--purple2); }
+.nt-teal   { background: rgba(29,233,182,.08);  border: 1.5px solid rgba(29,233,182,.22);  color: #a7ffeb; }
+.nt-gold   { background: rgba(245,200,66,.08);  border: 1.5px solid rgba(245,200,66,.22);  color: var(--gold2); }
+
+/* ════ PROMPT BUILDER ════ */
+.prompt-preview {
+  background: #0a0816;
+  border: 1.5px solid var(--border2);
+  border-radius: 12px;
+  overflow: hidden;
+  margin: 14px 0;
+  position: sticky; top: 14px; z-index: 10;
+}
+.pp-top { display: flex; align-items: center; gap: 9px; padding: 9px 14px; background: rgba(0,0,0,.5); border-bottom: 1px solid var(--border); }
+.pp-icon { font-size: 1.2rem; }
+.pp-title { font-family: 'Press Start 2P', monospace; font-size: .4rem; color: var(--purple); }
+.pp-count { font-family: 'Fira Code', monospace; font-size: .65rem; color: var(--gray); margin-left: auto; }
+.pp-body { padding: 16px; min-height: 100px; font-family: 'Fira Code', monospace; font-size: .78rem; line-height: 1.8; color: #908090; }
+.pp-part { display: block; padding: 2px 0; }
+.pp-part.filled { animation: lineIn .4s ease; }
+@keyframes lineIn { from{opacity:0;transform:translateX(-6px)} to{opacity:1;transform:translateX(0)} }
+.pp-placeholder { color: rgba(150,130,160,.35); font-style: italic; }
+
+/* Highlight colors */
+.c-p1 { color: var(--p1); } .c-p2 { color: var(--p2); } .c-p3 { color: var(--p3); } .c-p4 { color: var(--p4); }
+
+/* ════ PART BUILDER ════ */
+.part-card {
+  border-radius: 12px; border: 1.5px solid var(--border);
+  overflow: hidden; margin-bottom: 14px; transition: all .3s;
+}
+.part-card.locked-c { opacity: .3; pointer-events: none; }
+.part-card.active-c { border-color: rgba(206,147,216,.4); }
+.part-card.done-c   { border-color: rgba(0,230,118,.4); }
+
+.pc-header { display: flex; align-items: center; gap: 12px; padding: 12px 16px; }
+.pc-num { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: 'Press Start 2P', monospace; font-size: .42rem; color: white; flex-shrink: 0; }
+.pc-title { font-family: 'Press Start 2P', monospace; font-size: .44rem; }
+.pc-badge { font-size: .62rem; font-weight: 800; padding: 3px 9px; border-radius: 12px; margin-left: auto; }
+
+.part-card.p1-c .pc-header { background: rgba(206,147,216,.1); }
+.part-card.p1-c .pc-title  { color: var(--p1); }
+.part-card.p1-c .pc-num    { background: var(--p1); }
+.part-card.p1-c .pc-badge  { background: rgba(206,147,216,.15); border: 1px solid rgba(206,147,216,.3); color: var(--p1); }
+
+.part-card.p2-c .pc-header { background: rgba(64,196,255,.08); }
+.part-card.p2-c .pc-title  { color: var(--p2); }
+.part-card.p2-c .pc-num    { background: var(--p2); color: #001020; }
+.part-card.p2-c .pc-badge  { background: rgba(64,196,255,.12); border: 1px solid rgba(64,196,255,.3); color: var(--p2); }
+
+.part-card.p3-c .pc-header { background: rgba(245,200,66,.08); }
+.part-card.p3-c .pc-title  { color: var(--p3); }
+.part-card.p3-c .pc-num    { background: var(--p3); color: #1a0e00; }
+.part-card.p3-c .pc-badge  { background: rgba(245,200,66,.12); border: 1px solid rgba(245,200,66,.3); color: var(--p3); }
+
+.part-card.p4-c .pc-header { background: rgba(0,230,118,.07); }
+.part-card.p4-c .pc-title  { color: var(--p4); }
+.part-card.p4-c .pc-num    { background: var(--p4); color: #001a08; }
+.part-card.p4-c .pc-badge  { background: rgba(0,230,118,.1); border: 1px solid rgba(0,230,118,.3); color: var(--p4); }
+
+.pc-body { padding: 14px 16px; }
+.pc-desc { font-size: .88rem; font-weight: 700; color: #b0a8c8; line-height: 1.65; margin-bottom: 12px; }
+.pc-desc strong { color: var(--gold2); }
+.pc-example { font-family: 'Fira Code', monospace; font-size: .74rem; background: rgba(0,0,0,.4); border: 1px solid var(--border2); border-radius: 7px; padding: 9px 12px; color: #808090; line-height: 1.7; margin-bottom: 12px; white-space: pre-wrap; }
+
+/* OPTIONS */
+.opt-grid { display: flex; flex-direction: column; gap: 8px; }
+.opt-btn {
+  display: flex; align-items: flex-start; gap: 10px;
+  background: rgba(255,255,255,.03); border: 1.5px solid var(--border);
+  border-radius: 9px; padding: 11px 14px;
+  cursor: pointer; font-size: .88rem; font-weight: 700;
+  color: #a090b8; transition: all .2s; width: 100%;
+}
+.opt-btn:hover { border-color: var(--purple); color: var(--white); background: rgba(206,147,216,.06); }
+.opt-btn .ob-letter { font-family: 'Press Start 2P', monospace; font-size: .36rem; color: var(--gray2); flex-shrink: 0; margin-top: 2px; width: 20px; }
+.opt-btn.ok  { border-color: var(--green)!important;  background: rgba(0,230,118,.1)!important;  color: var(--green2)!important; }
+.opt-btn.nok { border-color: var(--red)!important;    background: rgba(255,82,82,.1)!important;  color: #ffd0d0!important; }
+.opt-btn.locked { cursor: default; }
+.opt-btn.reveal { border-color: var(--green); background: rgba(0,230,118,.05); }
+
+/* CUSTOM TEXTAREA */
+.prompt-ta {
+  width: 100%; background: rgba(0,0,0,.5);
+  border: 1.5px solid var(--border2); border-radius: 8px;
+  padding: 10px 13px; font-family: 'Fira Code', monospace;
+  font-size: .8rem; color: var(--purple2); outline: none;
+  resize: vertical; min-height: 80px; line-height: 1.7;
+  caret-color: var(--purple);
+  transition: border-color .2s;
+}
+.prompt-ta:focus { border-color: var(--purple); box-shadow: 0 0 10px rgba(206,147,216,.18); }
+.prompt-ta.ok    { border-color: var(--green); }
+
+/* FB */
+.fb { border-radius: 9px; padding: 10px 13px; font-size: .86rem; font-weight: 800; line-height: 1.6; display: none; margin-top: 8px; animation: pu .3s ease; }
+@keyframes pu { from{opacity:0;transform:translateY(4px)} to{opacity:1;transform:translateY(0)} }
+.fb-ok  { background: rgba(0,230,118,.1); border: 1.5px solid rgba(0,230,118,.35); color: var(--green2); }
+.fb-nok { background: rgba(255,82,82,.08); border: 1.5px solid rgba(255,82,82,.3); color: #ffd0d0; }
+
+/* ════ AI RESPONSE TABLE ════ */
+.ai-response {
+  background: #0a0816; border: 1.5px solid rgba(29,233,182,.3);
+  border-radius: 12px; overflow: hidden; margin: 14px 0;
+  animation: aiGlow 3s ease-in-out infinite;
+}
+@keyframes aiGlow { 0%,100%{box-shadow:0 0 14px rgba(29,233,182,.08)} 50%{box-shadow:0 0 30px rgba(29,233,182,.2)} }
+.ai-top { display: flex; align-items: center; gap: 10px; padding: 10px 16px; background: rgba(29,233,182,.08); border-bottom: 1px solid rgba(29,233,182,.2); }
+.ai-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--teal); box-shadow: 0 0 6px var(--teal); animation: blink 2s infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.35} }
+.ai-badge { font-family: 'Press Start 2P', monospace; font-size: .38rem; color: var(--teal); }
+
+.ai-typing { font-family: 'Fira Code', monospace; font-size: .78rem; color: #807090; padding: 12px 16px; line-height: 1.7; }
+.ai-typing .at-intro { margin-bottom: 10px; color: var(--purple2); }
+
+.ai-table-wrap { overflow-x: auto; padding: 0 16px 16px; }
+table.ai-tbl { width: 100%; border-collapse: collapse; font-size: .82rem; min-width: 480px; }
+table.ai-tbl th { font-family: 'Press Start 2P', monospace; font-size: .3rem; padding: 8px 12px; text-align: left; background: rgba(0,0,0,.5); border-bottom: 1px solid var(--border2); color: var(--gray); letter-spacing: 1px; }
+table.ai-tbl td { padding: 9px 12px; border-bottom: 1px solid rgba(36,26,72,.4); font-weight: 600; }
+table.ai-tbl tr:last-child td { border-bottom: none; }
+table.ai-tbl tr:hover td { background: rgba(206,147,216,.04); }
+table.ai-tbl .nt { font-family: 'Fira Code', monospace; color: #a090b8; }
+table.ai-tbl .nh { font-family: 'Fira Code', monospace; color: var(--blue2); }
+table.ai-tbl .nc { font-family: 'Fira Code', monospace; color: var(--gold2); }
+.ai-total { display: flex; justify-content: flex-end; padding: 10px 16px; border-top: 1px solid var(--border2); }
+.at-val { font-family: 'Press Start 2P', monospace; font-size: .52rem; color: var(--gold); }
+
+/* TYPING ANIMATION */
+.typing-cursor::after { content: '█'; animation: cur .8s infinite; color: var(--teal); font-size: .8rem; }
+@keyframes cur { 0%,100%{opacity:1} 50%{opacity:0} }
+
+/* RESULT */
+.res-frame { background: linear-gradient(135deg,rgba(206,147,216,.06),rgba(0,230,118,.04)); border: 2px solid var(--purple); border-radius: 12px; padding: 22px; margin: 12px 0; animation: rf 2.5s ease-in-out infinite; }
+@keyframes rf { 0%,100%{box-shadow:0 0 20px rgba(206,147,216,.1)} 50%{box-shadow:0 0 40px rgba(206,147,216,.26)} }
+
+/* BUTTONS */
+.btn { display: inline-flex; align-items: center; gap: 7px; font-family: 'Press Start 2P', monospace; font-size: .45rem; border: 1px solid transparent; border-radius: 8px; padding: 11px 20px; cursor: pointer; transition: all .2s; color: white; }
+.btn-purple { background: linear-gradient(135deg,#200840,#4a1880); border-color: rgba(206,147,216,.4); box-shadow: 0 4px 12px rgba(206,147,216,.18); }
+.btn-purple:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(206,147,216,.32); }
+.btn-teal   { background: linear-gradient(135deg,#032820,#065040); border-color: rgba(29,233,182,.4); box-shadow: 0 4px 12px rgba(29,233,182,.18); }
+.btn-teal:hover   { transform: translateY(-1px); }
+.btn-gold   { background: linear-gradient(135deg,#4a2c00,#9a6000); border-color: rgba(245,200,66,.4); color: #fef3c7; }
+.btn-gold:hover   { transform: translateY(-1px); }
+.btn-ghost  { background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.12); font-size: .38rem; }
+.btn-ghost:hover  { background: rgba(255,255,255,.1); }
+.btn:disabled { opacity: .3; cursor: not-allowed; transform: none; }
+
+/* CONF / OV */
+.conf { position: fixed; inset: 0; pointer-events: none; z-index: 400; }
+.ov { position: fixed; inset: 0; background: rgba(0,0,0,.9); z-index: 500; display: none; align-items: center; justify-content: center; flex-direction: column; }
+.ov.on { display: flex; }
+.ov-t { font-family: 'Press Start 2P', monospace; font-size: clamp(.62rem,3vw,1.1rem); text-align: center; animation: bp .45s ease; }
+@keyframes bp { 0%{transform:scale(.3);opacity:0} 70%{transform:scale(1.1)} 100%{transform:scale(1);opacity:1} }
+.ov-s { font-size: .88rem; font-weight: 700; color: white; text-align: center; margin-top: 10px; max-width: 380px; line-height: 1.7; padding: 0 14px; }
+
+@media(max-width:540px) { .panel{padding:16px 12px;} }
+</style>
+</head>
+<body>
+<div class="conf" id="conf"></div>
+<div class="ov" id="ov"><div class="ov-t" id="ov-t" style="color:var(--purple);">✨ PARTE ADICIONADA!</div><div class="ov-s" id="ov-s"></div></div>
+
+<!-- ════ INTRO ════ -->
+<div class="scr on" id="s-intro">
+<div class="panel" style="max-width:740px;margin-top:16px;">
+
+  <div style="text-align:center;margin-bottom:14px;">
+    <div style="font-size:3rem;animation:fl 2.5s ease-in-out infinite;margin-bottom:8px;">🔮</div>
+    <p class="ptitle">QUEST 2</p>
+    <p class="ptitle" style="color:var(--teal);font-size:clamp(.38rem,1.2vw,.56rem);">O CHAMADO AO ORÁCULO</p>
+    <p class="psub" style="margin-top:5px;">ENGENHARIA DE PROMPT · INTELIGÊNCIA ARTIFICIAL</p>
+  </div>
+
+  <div class="npc">
+    <div class="nav">🔮</div>
+    <div><p class="nname">ORÁCULO DA GUILDA</p>
+      <p class="ntxt">Herói! O Rei mudou de ideia! Agora quer um <strong>Aplicativo de Taverna</strong>. Mas não sabemos quantas horas vai levar!<br><br>
+      Você vai usar a <strong>Engenharia de Prompt</strong> para chamar uma IA e pedir que ela <strong>estime o custo</strong>. Mas atenção: um prompt mal escrito vai dar respostas erradas!
+      <span class="ctip">Engenharia de Prompt = escrever instruções precisas para a IA</span>
+      </p>
+    </div>
+  </div>
+
+  <!-- WHAT IS PROMPT ENGINEERING -->
+  <div style="background:rgba(8,6,15,.9);border:1px solid rgba(206,147,216,.22);border-radius:10px;padding:15px;margin-bottom:14px;">
+    <p style="font-family:'Press Start 2P',monospace;font-size:.42rem;color:var(--purple);margin-bottom:11px;">📜 O QUE É ENGENHARIA DE PROMPT?</p>
+    <div style="display:flex;flex-direction:column;gap:8px;font-size:.86rem;font-weight:700;color:#b0a8c8;line-height:1.6;">
+      <div style="display:flex;gap:9px;"><span>🎭</span><span>É a arte de <strong style="color:var(--purple2);">escrever instruções precisas</strong> para uma IA (como ChatGPT ou Gemini).</span></div>
+      <div style="display:flex;gap:9px;"><span>🎯</span><span>Um bom prompt tem: <strong style="color:var(--gold2);">papel + contexto + regras + formato de saída</strong>.</span></div>
+      <div style="display:flex;gap:9px;"><span>⚠️</span><span>Prompt vago = resposta inútil. Prompt preciso = resposta que resolve o problema!</span></div>
+    </div>
+  </div>
+
+  <!-- THE 4 PARTS -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;">
+    <div style="border:1.5px solid rgba(206,147,216,.3);border-radius:9px;padding:12px;background:rgba(206,147,216,.05);">
+      <p style="font-family:'Press Start 2P',monospace;font-size:.38rem;color:var(--p1);margin-bottom:6px;">1 · PAPEL MÁGICO</p>
+      <p style="font-size:.8rem;font-weight:700;color:#b0a8c8;line-height:1.5;">"Atue como um Arquiteto de Software..." — define o <em>personagem</em> que a IA vai interpretar.</p>
+    </div>
+    <div style="border:1.5px solid rgba(64,196,255,.3);border-radius:9px;padding:12px;background:rgba(64,196,255,.05);">
+      <p style="font-family:'Press Start 2P',monospace;font-size:.38rem;color:var(--p2);margin-bottom:6px;">2 · CONTEXTO</p>
+      <p style="font-size:.8rem;font-weight:700;color:#b0a8c8;line-height:1.5;">O que o app precisa fazer — login, cardápio, agendamento. Sem contexto, a IA chuta!</p>
+    </div>
+    <div style="border:1.5px solid rgba(245,200,66,.3);border-radius:9px;padding:12px;background:rgba(245,200,66,.05);">
+      <p style="font-family:'Press Start 2P',monospace;font-size:.38rem;color:var(--p3);margin-bottom:6px;">3 · REGRA DE OURO</p>
+      <p style="font-size:.8rem;font-weight:700;color:#b0a8c8;line-height:1.5;">A regra contábil: 50 moedas/hora. Sem isso, a IA inventa um preço diferente!</p>
+    </div>
+    <div style="border:1.5px solid rgba(0,230,118,.3);border-radius:9px;padding:12px;background:rgba(0,230,118,.04);">
+      <p style="font-family:'Press Start 2P',monospace;font-size:.38rem;color:var(--p4);margin-bottom:6px;">4 · TELA DE SAÍDA</p>
+      <p style="font-size:.8rem;font-weight:700;color:#b0a8c8;line-height:1.5;">Exige uma tabela com: módulo | horas estimadas | custo. Define o <em>formato</em> da resposta!</p>
+    </div>
+  </div>
+
+  <div class="notice nt-purple">
+    <span class="ni">📌</span>
+    <span>Nesta quest você vai <strong>construir o prompt perfeito</strong> escolhendo a opção certa para cada uma das 4 partes. No final, a IA vai "responder" com a tabela de custos!</span>
+  </div>
+
+  <div style="text-align:center;margin-top:16px;">
+    <button class="btn btn-purple" onclick="go('s-game')">🔮 CONVOCAR O ORÁCULO →</button>
+  </div>
+</div>
+</div>
+
+<!-- ════ JOGO ════ -->
+<div class="scr" id="s-game">
+<div class="panel" style="max-width:860px;margin-top:14px;">
+
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px;">
+    <div><p class="ptitle" style="font-size:.48rem;text-align:left;">🔮 CONSTRUINDO O PERGAMINHO</p><p class="psub" style="text-align:left;margin-top:2px;">ENGENHARIA DE PROMPT · ORÁCULO IA</p></div>
+    <button class="btn btn-ghost" onclick="go('s-intro')">← INTRO</button>
+  </div>
+
+  <div class="snav">
+    <div class="sd active" id="sd0">🎭 PARTE 1</div>
+    <div class="sd locked" id="sd1">🌍 PARTE 2</div>
+    <div class="sd locked" id="sd2">⚖️ PARTE 3</div>
+    <div class="sd locked" id="sd3">📊 PARTE 4</div>
+    <div class="sd locked" id="sd4">🔮 ORÁCULO</div>
+  </div>
+
+  <div class="npc">
+    <div class="nav">🔮</div>
+    <div><p class="nname">ORÁCULO DA GUILDA</p>
+      <p class="ntxt" id="npc-game">Herói! Escolha a opção <strong>correta</strong> para cada parte do prompt. O Pergaminho vai sendo montado em tempo real no topo!</p>
+    </div>
+  </div>
+
+  <!-- LIVE PROMPT PREVIEW -->
+  <div class="prompt-preview">
+    <div class="pp-top">
+      <span class="pp-icon">📜</span>
+      <span class="pp-title">PERGAMINHO DO PROMPT (AO VIVO)</span>
+      <span class="pp-count" id="pp-count">0/4 partes</span>
+    </div>
+    <div class="pp-body" id="pp-body">
+      <span id="pp1" class="pp-part pp-placeholder">① [PAPEL MÁGICO] — ainda não preenchido...</span>
+      <span id="pp2" class="pp-part pp-placeholder" style="margin-top:4px;">② [CONTEXTO] — ainda não preenchido...</span>
+      <span id="pp3" class="pp-part pp-placeholder" style="margin-top:4px;">③ [REGRA DE OURO] — ainda não preenchido...</span>
+      <span id="pp4" class="pp-part pp-placeholder" style="margin-top:4px;">④ [TELA DE SAÍDA] — ainda não preenchido...</span>
+    </div>
+  </div>
+
+  <!-- PART 1: PAPEL -->
+  <div class="part-card p1-c active-c" id="pc1">
+    <div class="pc-header">
+      <div class="pc-num">1</div>
+      <div><div class="pc-title">PARTE 1 — O PAPEL MÁGICO</div></div>
+      <div class="pc-badge">🎭 Persona</div>
+    </div>
+    <div class="pc-body">
+      <p class="pc-desc">O prompt deve começar dizendo à IA <strong>qual papel ela deve interpretar</strong>. Escolha a opção mais completa e específica:</p>
+      <div class="opt-grid" id="opts1">
+        <button class="opt-btn" onclick="pick(1,'A')">
+          <span class="ob-letter">A</span>
+          <span>"Você é uma IA. Me ajude com custos."</span>
+        </button>
+        <button class="opt-btn" onclick="pick(1,'B')">
+          <span class="ob-letter">B</span>
+          <span>"Atue como um Arquiteto de Software e Contador de Custos da nossa Guilda. Sua função é estimar o custo de desenvolvimento de aplicativos usando as regras contábeis que vou fornecer."</span>
+        </button>
+        <button class="opt-btn" onclick="pick(1,'C')">
+          <span class="ob-letter">C</span>
+          <span>"Me diga quanto custa fazer um aplicativo."</span>
+        </button>
+      </div>
+      <div class="fb" id="fb1"></div>
+    </div>
+  </div>
+
+  <!-- PART 2: CONTEXTO -->
+  <div class="part-card p2-c locked-c" id="pc2">
+    <div class="pc-header">
+      <div class="pc-num">2</div>
+      <div><div class="pc-title">PARTE 2 — O CONTEXTO DA MISSÃO</div></div>
+      <div class="pc-badge">🌍 Briefing</div>
+    </div>
+    <div class="pc-body">
+      <p class="pc-desc">Agora descreva à IA <strong>o que o Aplicativo de Taverna precisa ter</strong>. Qual opção tem o contexto mais completo?</p>
+      <div class="opt-grid" id="opts2">
+        <button class="opt-btn" onclick="pick(2,'A')">
+          <span class="ob-letter">A</span>
+          <span>"Preciso de um aplicativo."</span>
+        </button>
+        <button class="opt-btn" onclick="pick(2,'B')">
+          <span class="ob-letter">B</span>
+          <span>"O projeto é um Aplicativo de Taverna com 3 módulos: (1) Login de guerreiros com autenticação, (2) Cardápio de poções virtuais com preços, (3) Sistema de agendamento de descanso por período."</span>
+        </button>
+        <button class="opt-btn" onclick="pick(2,'C')">
+          <span class="ob-letter">C</span>
+          <span>"Preciso de um app com login e umas coisas a mais."</span>
+        </button>
+      </div>
+      <div class="fb" id="fb2"></div>
+    </div>
+  </div>
+
+  <!-- PART 3: REGRA -->
+  <div class="part-card p3-c locked-c" id="pc3">
+    <div class="pc-header">
+      <div class="pc-num">3</div>
+      <div><div class="pc-title">PARTE 3 — A REGRA DE OURO</div></div>
+      <div class="pc-badge">⚖️ Restrição</div>
+    </div>
+    <div class="pc-body">
+      <p class="pc-desc">Você precisa <strong>informar a regra contábil</strong> para que a IA calcule corretamente. Qual opção passa a regra de forma mais precisa?</p>
+      <div class="opt-grid" id="opts3">
+        <button class="opt-btn" onclick="pick(3,'A')">
+          <span class="ob-letter">A</span>
+          <span>"Nossa regra contábil é clara e deve ser usada obrigatoriamente: o custo de desenvolvimento é de 50 moedas de ouro por hora trabalhada. Não use nenhum outro valor."</span>
+        </button>
+        <button class="opt-btn" onclick="pick(3,'B')">
+          <span class="ob-letter">B</span>
+          <span>"O programador cobra por hora. Use valores de mercado."</span>
+        </button>
+        <button class="opt-btn" onclick="pick(3,'C')">
+          <span class="ob-letter">C</span>
+          <span>"Cobre acho que 50 por hora? Não sei ao certo."</span>
+        </button>
+      </div>
+      <div class="fb" id="fb3"></div>
+    </div>
+  </div>
+
+  <!-- PART 4: SAÍDA -->
+  <div class="part-card p4-c locked-c" id="pc4">
+    <div class="pc-header">
+      <div class="pc-num">4</div>
+      <div><div class="pc-title">PARTE 4 — A TELA DE SAÍDA</div></div>
+      <div class="pc-badge">📊 Formato</div>
+    </div>
+    <div class="pc-body">
+      <p class="pc-desc">Defina à IA <strong>exatamente como a resposta deve ser formatada</strong>. Qual opção especifica melhor o formato?</p>
+      <div class="opt-grid" id="opts4">
+        <button class="opt-btn" onclick="pick(4,'A')">
+          <span class="ob-letter">A</span>
+          <span>"Me responda com um texto descrevendo os custos."</span>
+        </button>
+        <button class="opt-btn" onclick="pick(4,'B')">
+          <span class="ob-letter">B</span>
+          <span>"Responda em texto livre."</span>
+        </button>
+        <button class="opt-btn" onclick="pick(4,'C')">
+          <span class="ob-letter">C</span>
+          <span>"Devolva obrigatoriamente uma Tabela de Status com 3 colunas: (Nome do Módulo | Estimativa de Horas | Custo em Ouro). Inclua uma linha de TOTAL no final."</span>
+        </button>
+      </div>
+      <div class="fb" id="fb4"></div>
+    </div>
+  </div>
+
+  <!-- SEND BUTTON (hidden) -->
+  <div id="send-section" style="display:none;text-align:center;margin-top:14px;">
+    <p style="font-family:'Press Start 2P',monospace;font-size:.44rem;color:var(--teal);margin-bottom:10px;">✨ PERGAMINHO COMPLETO!</p>
+    <button class="btn btn-teal" style="font-size:.5rem;" onclick="invokeOracle()">🔮 INVOCAR O ORÁCULO →</button>
+  </div>
+</div>
+</div>
+
+<!-- ════ RESPOSTA DA IA ════ -->
+<div class="scr" id="s-oracle">
+<div class="panel" style="max-width:860px;margin-top:14px;">
+
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px;">
+    <div><p class="ptitle" style="font-size:.48rem;text-align:left;">🔮 RESPOSTA DO ORÁCULO</p><p class="psub" style="text-align:left;margin-top:2px;">ESTIMATIVA IA · APLICATIVO DE TAVERNA</p></div>
+  </div>
+
+  <div class="npc">
+    <div class="nav">🔮</div>
+    <div><p class="nname">ORÁCULO DA GUILDA</p>
+      <p class="ntxt">Seu prompt estava <strong>perfeito</strong>! O Oráculo recebeu todas as 4 partes e gerou a estimativa completa. Observe como cada parte do prompt influenciou a resposta!</p>
+    </div>
+  </div>
+
+  <!-- THE PROMPT ASSEMBLED -->
+  <div style="background:#0a0816;border:1.5px solid rgba(206,147,216,.3);border-radius:10px;padding:15px;margin-bottom:14px;">
+    <p style="font-family:'Press Start 2P',monospace;font-size:.4rem;color:var(--purple);margin-bottom:10px;">📜 SEU PERGAMINHO ENVIADO</p>
+    <p style="font-family:'Fira Code',monospace;font-size:.78rem;line-height:1.8;color:#a090b8;">
+      <span class="c-p1">Atue como um Arquiteto de Software e Contador de Custos da nossa Guilda. Sua função é estimar o custo de desenvolvimento de aplicativos usando as regras contábeis que vou fornecer.</span><br><br>
+      <span class="c-p2">O projeto é um Aplicativo de Taverna com 3 módulos: (1) Login de guerreiros com autenticação, (2) Cardápio de poções virtuais com preços, (3) Sistema de agendamento de descanso por período.</span><br><br>
+      <span class="c-p3">Nossa regra contábil é clara e deve ser usada obrigatoriamente: o custo de desenvolvimento é de 50 moedas de ouro por hora trabalhada. Não use nenhum outro valor.</span><br><br>
+      <span class="c-p4">Devolva obrigatoriamente uma Tabela de Status com 3 colunas: (Nome do Módulo | Estimativa de Horas | Custo em Ouro). Inclua uma linha de TOTAL no final.</span>
+    </p>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;">
+      <span style="font-size:.7rem;font-weight:800;padding:3px 9px;border-radius:12px;background:rgba(206,147,216,.12);border:1px solid var(--p1);color:var(--p1);">🎭 Papel</span>
+      <span style="font-size:.7rem;font-weight:800;padding:3px 9px;border-radius:12px;background:rgba(64,196,255,.1);border:1px solid var(--p2);color:var(--p2);">🌍 Contexto</span>
+      <span style="font-size:.7rem;font-weight:800;padding:3px 9px;border-radius:12px;background:rgba(245,200,66,.1);border:1px solid var(--p3);color:var(--p3);">⚖️ Regra</span>
+      <span style="font-size:.7rem;font-weight:800;padding:3px 9px;border-radius:12px;background:rgba(0,230,118,.08);border:1px solid var(--p4);color:var(--p4);">📊 Saída</span>
+    </div>
+  </div>
+
+  <!-- AI RESPONSE -->
+  <div class="ai-response" id="ai-response" style="display:none;">
+    <div class="ai-top">
+      <div class="ai-dot"></div>
+      <span class="ai-badge">ORÁCULO IA — RESPONDENDO...</span>
+    </div>
+    <div class="ai-typing">
+      <p class="at-intro">Analisando o Aplicativo de Taverna com base nas regras da Guilda. Estimativa de horas por módulo:</p>
+    </div>
+    <div class="ai-table-wrap">
+      <table class="ai-tbl">
+        <thead>
+          <tr><th>NOME DO MÓDULO</th><th>ESTIMATIVA DE HORAS</th><th>CUSTO EM OURO</th></tr>
+        </thead>
+        <tbody id="ai-tbody"></tbody>
+      </table>
+    </div>
+    <div class="ai-total"><span class="at-val" id="ai-total-val">TOTAL: calculando...</span></div>
+  </div>
+
+  <!-- ANALYSIS -->
+  <div id="ai-analysis" style="display:none;margin-top:14px;">
+    <div class="notice nt-teal">
+      <span class="ni">🧠</span>
+      <span><strong>Por que a resposta foi boa?</strong> Porque o prompt tinha as 4 partes: a IA sabia o papel (Arquiteto), o que fazer (3 módulos), a regra (50/hora) e como formatar a resposta (tabela). Retire qualquer parte e a resposta piora!</span>
+    </div>
+
+    <div style="background:rgba(8,6,15,.9);border:1px solid var(--border);border-radius:10px;padding:14px;margin:12px 0;">
+      <p style="font-family:'Press Start 2P',monospace;font-size:.4rem;color:var(--purple);margin-bottom:10px;">📊 ANÁLISE DO PROMPT</p>
+      <div style="display:flex;flex-direction:column;gap:8px;font-size:.86rem;font-weight:700;color:#b0a8c8;line-height:1.55;">
+        <div style="display:flex;gap:9px;"><span style="color:var(--p1);">🎭</span><span>Papel → IA sabe <em>quem ela é</em> e qual é o objetivo dela</span></div>
+        <div style="display:flex;gap:9px;"><span style="color:var(--p2);">🌍</span><span>Contexto → IA sabe <em>o que precisa calcular</em> (3 módulos específicos)</span></div>
+        <div style="display:flex;gap:9px;"><span style="color:var(--p3);">⚖️</span><span>Regra → IA usa <em>o valor correto</em> (50/hora, não inventa)</span></div>
+        <div style="display:flex;gap:9px;"><span style="color:var(--p4);">📊</span><span>Saída → IA devolve <em>o formato certo</em> (tabela, não texto livre)</span></div>
+      </div>
+    </div>
+
+    <div style="text-align:center;margin-top:12px;">
+      <button class="btn btn-gold" onclick="go('s-result')">🏆 VER RESULTADO FINAL →</button>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<!-- ════ RESULTADO ════ -->
+<div class="scr" id="s-result">
+<div class="panel" style="max-width:680px;margin-top:14px;">
+  <div style="text-align:center;margin-bottom:14px;">
+    <div style="font-size:3rem;animation:fl 2.5s ease-in-out infinite;">🔮</div>
+    <p class="ptitle">ORÁCULO<br>DOMINADO!</p>
+    <p class="psub" style="margin-top:5px;">QUEST 2 COMPLETA</p>
+  </div>
+
+  <div class="res-frame">
+    <p style="font-family:'Press Start 2P',monospace;font-size:.44rem;color:var(--purple);text-align:center;margin-bottom:12px;">📜 PERGAMINHO PERFEITO</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+      <div style="border:1.5px solid var(--p1);border-radius:8px;padding:10px;background:rgba(206,147,216,.06);text-align:center;"><div style="font-size:.68rem;font-weight:900;color:var(--p1);">🎭 PAPEL</div><div style="font-size:.8rem;font-weight:700;color:#c8b8e0;margin-top:4px;">Arquiteto de Software</div></div>
+      <div style="border:1.5px solid var(--p2);border-radius:8px;padding:10px;background:rgba(64,196,255,.06);text-align:center;"><div style="font-size:.68rem;font-weight:900;color:var(--p2);">🌍 CONTEXTO</div><div style="font-size:.8rem;font-weight:700;color:#c8b8e0;margin-top:4px;">3 módulos detalhados</div></div>
+      <div style="border:1.5px solid var(--p3);border-radius:8px;padding:10px;background:rgba(245,200,66,.06);text-align:center;"><div style="font-size:.68rem;font-weight:900;color:var(--p3);">⚖️ REGRA</div><div style="font-size:.8rem;font-weight:700;color:#c8b8e0;margin-top:4px;">50 moedas/hora fixo</div></div>
+      <div style="border:1.5px solid var(--p4);border-radius:8px;padding:10px;background:rgba(0,230,118,.05);text-align:center;"><div style="font-size:.68rem;font-weight:900;color:var(--p4);">📊 SAÍDA</div><div style="font-size:.8rem;font-weight:700;color:#c8b8e0;margin-top:4px;">Tabela com 3 colunas</div></div>
+    </div>
+  </div>
+
+  <div style="background:rgba(8,6,15,.9);border:1px solid var(--border);border-radius:10px;padding:14px;margin:12px 0;">
+    <p style="font-family:'Press Start 2P',monospace;font-size:.4rem;color:var(--purple);margin-bottom:10px;">🧠 O QUE VOCÊ APRENDEU</p>
+    <div style="display:flex;flex-direction:column;gap:7px;font-size:.86rem;font-weight:700;color:#b0a8c8;line-height:1.55;">
+      <div style="display:flex;gap:8px;"><span>🤖</span><span><strong style="color:var(--purple2);">IA não adivinha</strong> — ela precisa de contexto preciso para dar respostas úteis</span></div>
+      <div style="display:flex;gap:8px;"><span>🎯</span><span><strong style="color:var(--purple2);">Engenharia de Prompt</strong> = a habilidade mais valiosa do Tech Lead de hoje</span></div>
+      <div style="display:flex;gap:8px;"><span>📊</span><span><strong style="color:var(--purple2);">Formato de saída</strong> é fundamental — tabela é mais útil que texto livre para análise</span></div>
+      <div style="display:flex;gap:8px;"><span>⚖️</span><span><strong style="color:var(--purple2);">Regras de negócio</strong> devem ser explícitas — sem elas, a IA usa valores inventados</span></div>
+    </div>
+  </div>
+
+  <div class="npc">
+    <div class="nav">🔮</div>
+    <div><p class="nname">ORÁCULO DA GUILDA</p>
+      <p class="ntxt"><strong>Parabéns, Tech Lead!</strong> Você dominou a Engenharia de Prompt! Agora você sabe que uma IA bem instruída pode estimar o custo de qualquer software em segundos. O poder da IA está na <strong>qualidade das instruções que você dá a ela</strong>!</p>
+    </div>
+  </div>
+
+  <div style="display:flex;gap:9px;flex-wrap:wrap;margin-top:12px;">
+    <button class="btn btn-gold" onclick="downloadCSV()">⬇ BAIXAR RESULTADO</button>
+    <button class="btn btn-ghost" onclick="fullReset()">↺ RECOMEÇAR</button>
+  </div>
+</div>
+</div>
+
+<script>
+// ════ DATA ════
+const CORRECT = { 1:'B', 2:'B', 3:'A', 4:'C' };
+const PART_TEXTS = {
+  1: { B: 'Atue como um Arquiteto de Software e Contador de Custos da nossa Guilda. Sua função é estimar o custo de desenvolvimento de aplicativos usando as regras contábeis que vou fornecer.' },
+  2: { B: 'O projeto é um Aplicativo de Taverna com 3 módulos: (1) Login de guerreiros com autenticação, (2) Cardápio de poções virtuais com preços, (3) Sistema de agendamento de descanso por período.' },
+  3: { A: 'Nossa regra contábil é clara e deve ser usada obrigatoriamente: o custo de desenvolvimento é de 50 moedas de ouro por hora trabalhada. Não use nenhum outro valor.' },
+  4: { C: 'Devolva obrigatoriamente uma Tabela de Status com 3 colunas: (Nome do Módulo | Estimativa de Horas | Custo em Ouro). Inclua uma linha de TOTAL no final.' }
+};
+const PART_COLORS = { 1: 'c-p1', 2: 'c-p2', 3: 'c-p3', 4: 'c-p4' };
+const PART_LABELS = { 1:'① PAPEL: ', 2:'② CONTEXTO: ', 3:'③ REGRA: ', 4:'④ SAÍDA: ' };
+const FEEDBACKS = {
+  1: {
+    B: '✅ Perfeito! Você deu à IA um papel específico (Arquiteto de Software + Contador). Ela agora sabe exatamente o que deve fazer!',
+    wrong: '❌ Muito vago! A IA precisa saber exatamente qual papel interpretar e qual é o objetivo. Escolha a opção mais completa!'
+  },
+  2: {
+    B: '✅ Excelente! Você descreveu os 3 módulos com clareza. A IA sabe exatamente o que precisa estimar!',
+    wrong: '❌ Contexto insuficiente! Sem saber o que o app precisa ter, a IA vai chute. Dê detalhes específicos dos módulos!'
+  },
+  3: {
+    A: '✅ Perfeito! Você foi explícito sobre a regra (50/hora) e proibiu outros valores. Prompt preciso = resultado confiável!',
+    wrong: '❌ Regra imprecisa! Se você não fixar o valor, a IA inventa um preço diferente. Sempre especifique a regra de negócio!'
+  },
+  4: {
+    C: '✅ Perfeito! Você exigiu uma tabela com 3 colunas específicas e um total. Agora a IA sabe exatamente como formatar!',
+    wrong: '❌ Formato muito vago! Sem definir o formato, a IA dá uma resposta em texto livre — difícil de analisar. Exija uma tabela!'
+  }
+};
+
+const AI_MODULES = [
+  { name: '🔐 Módulo de Login (Autenticação)', hours: 24, cost: 1200 },
+  { name: '🍵 Módulo de Cardápio de Poções', hours: 16, cost: 800 },
+  { name: '📅 Módulo de Agendamento de Descanso', hours: 20, cost: 1000 }
+];
+const AI_TOTAL = 3000;
+
+// ════ STATE ════
+let partsDone = 0;
+let results = [];
+
+// ════ PICK OPTION ════
+function pick(part, letter) {
+  const isCorrect = letter === CORRECT[part];
+  const opts = document.getElementById('opts' + part);
+  const fb = document.getElementById('fb' + part);
+
+  // Lock all options
+  opts.querySelectorAll('.opt-btn').forEach((btn, i) => {
+    btn.classList.add('locked');
+    const l = ['A','B','C'][i];
+    if (l === CORRECT[part]) btn.classList.add('reveal');
+    if (l === letter && !isCorrect) btn.classList.add('nok');
+    if (l === letter && isCorrect) btn.classList.add('ok');
+  });
+
+  // Feedback
+  const fbData = FEEDBACKS[part];
+  fb.style.display = 'block';
+  fb.className = 'fb ' + (isCorrect ? 'fb-ok' : 'fb-nok');
+  fb.innerHTML = isCorrect ? fbData[CORRECT[part]] : fbData.wrong;
+
+  if (isCorrect) {
+    partsDone++;
+    results.push({ part, letter, correct: true });
+
+    // Update preview
+    const ppEl = document.getElementById('pp' + part);
+    ppEl.className = 'pp-part filled ' + PART_COLORS[part];
+    ppEl.innerHTML = `<strong>${PART_LABELS[part]}</strong>${PART_TEXTS[part][letter]}`;
+
+    document.getElementById('pp-count').textContent = partsDone + '/4 partes';
+
+    // OV
+    showOv('✨ PARTE ' + part + ' ADICIONADA!', 'O Pergaminho está sendo montado!');
+    setTimeout(hideOv, 1300);
+
+    // Mark step done & unlock next
+    markDone(part - 1);
+    if (part < 4) {
+      markActive(part);
+      document.getElementById('pc' + (part+1)).classList.remove('locked-c');
+      document.getElementById('pc' + (part+1)).classList.add('active-c');
+      setTimeout(() => document.getElementById('pc'+(part+1)).scrollIntoView({behavior:'smooth',block:'nearest'}), 400);
+    } else {
+      markActive(4);
+      document.getElementById('send-section').style.display = 'block';
+      setTimeout(() => document.getElementById('send-section').scrollIntoView({behavior:'smooth',block:'nearest'}), 400);
+      setNpc('Pergaminho completo! Agora clique em <strong>INVOCAR O ORÁCULO</strong>!');
+    }
+
+    // Mark card done
+    document.getElementById('pc' + part).className = 'part-card p'+part+'-c done-c';
+  } else {
+    results.push({ part, letter, correct: false });
+    showOv('❌ PROMPT FRACO!', FEEDBACKS[part].wrong.replace('❌ ',''));
+    setTimeout(hideOv, 1600);
+    // Unlock retry
+    setTimeout(()=>{
+      opts.querySelectorAll('.opt-btn').forEach(btn=>{ btn.classList.remove('locked','ok','nok'); });
+      fb.style.display='none';
+    }, 2200);
+  }
+}
+
+// ════ INVOKE ORACLE ════
+function invokeOracle() {
+  go('s-oracle');
+  spawnConf();
+  setTimeout(() => {
+    document.getElementById('ai-response').style.display = 'block';
+    const tbody = document.getElementById('ai-tbody');
+    tbody.innerHTML = '';
+    AI_MODULES.forEach((m, i) => {
+      setTimeout(() => {
+        const tr = document.createElement('tr');
+        tr.style.animation = 'lineIn .4s ease';
+        tr.innerHTML = `<td class="nt">${m.name}</td><td class="nh">${m.hours} horas</td><td class="nc">${m.cost.toLocaleString('pt-BR')} 💰</td>`;
+        tbody.appendChild(tr);
+        if (i === AI_MODULES.length - 1) {
+          setTimeout(() => {
+            document.getElementById('ai-total-val').innerHTML = `TOTAL DO PROJETO: ${AI_TOTAL.toLocaleString('pt-BR')} MOEDAS DE OURO`;
+            document.getElementById('ai-analysis').style.display = 'block';
+            spawnConf();
+          }, 500);
+        }
+      }, i * 600);
+    });
+  }, 800);
+}
+
+// ════ UTILS ════
+function markDone(i)   { const d=document.getElementById('sd'+i); if(d) d.className='sd done'; }
+function markActive(i) { const d=document.getElementById('sd'+i); if(d) d.className='sd active'; }
+function setNpc(html)  { document.getElementById('npc-game').innerHTML = html; }
+function showOv(t,s)   { document.getElementById('ov').classList.add('on'); document.getElementById('ov-t').textContent=t; document.getElementById('ov-s').textContent=s; }
+function hideOv()      { document.getElementById('ov').classList.remove('on'); }
+
+function downloadCSV() {
+  const now = new Date();
+  let csv = 'sep=;\nQUEST 2: O CHAMADO AO ORÁCULO\n';
+  csv += `Data;${now.toLocaleDateString('pt-BR')}\nHora;${now.toLocaleTimeString('pt-BR')}\n\n`;
+  csv += 'PROMPT CONSTRUÍDO\n';
+  csv += `Parte 1 (Papel);Arquiteto de Software + Contador de Custos\n`;
+  csv += `Parte 2 (Contexto);Aplicativo de Taverna - Login + Cardápio + Agendamento\n`;
+  csv += `Parte 3 (Regra);50 moedas por hora\n`;
+  csv += `Parte 4 (Saída);Tabela: Módulo | Horas | Custo\n\n`;
+  csv += 'RESPOSTA DA IA\nMódulo;Horas;Custo\n';
+  AI_MODULES.forEach(m => csv += `${m.name};${m.hours};${m.cost}\n`);
+  csv += `TOTAL;;${AI_TOTAL}\n\n`;
+  csv += 'LIÇÃO\nEngenharia de Prompt requer: Papel + Contexto + Regras + Formato de Saída\n';
+  const blob = new Blob(['\uFEFF'+csv], {type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href=url; a.download=`quest2_oraculo_${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}.csv`;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+}
+
+function go(id) { document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on')); document.getElementById(id).classList.add('on'); window.scrollTo(0,0); }
+function fullReset() {
+  partsDone=0; results=[];
+  for(let i=1;i<=4;i++) {
+    const pc=document.getElementById('pc'+i);
+    if(pc){ pc.className=`part-card p${i}-c ${i===1?'active-c':'locked-c'}`; }
+    const fb=document.getElementById('fb'+i); if(fb) fb.style.display='none';
+    const opts=document.getElementById('opts'+i);
+    if(opts) opts.querySelectorAll('.opt-btn').forEach(b=>b.className='opt-btn');
+    const pp=document.getElementById('pp'+i);
+    const ph=['① [PAPEL MÁGICO] — ainda não preenchido...','② [CONTEXTO] — ainda não preenchido...','③ [REGRA DE OURO] — ainda não preenchido...','④ [TELA DE SAÍDA] — ainda não preenchido...'];
+    if(pp){ pp.className='pp-part pp-placeholder'; pp.textContent=ph[i-1]; }
+  }
+  document.getElementById('pp-count').textContent='0/4 partes';
+  document.getElementById('send-section').style.display='none';
+  document.getElementById('ai-response').style.display='none';
+  document.getElementById('ai-analysis').style.display='none';
+  document.getElementById('ai-tbody').innerHTML='';
+  document.getElementById('ai-total-val').textContent='TOTAL: calculando...';
+  for(let i=0;i<5;i++){const d=document.getElementById('sd'+i);if(d)d.className='sd'+(i===0?' active':' locked');}
+  go('s-intro');
+}
+
+function spawnConf() {
+  const c=document.getElementById('conf');
+  const cols=['#ce93d8','#f5c842','#1de9b6','#40c4ff','#ff9800','#00e676'];
+  for(let i=0;i<80;i++){const el=document.createElement('div');const sz=4+Math.random()*9;el.style.cssText=`position:absolute;width:${sz}px;height:${sz}px;background:${cols[Math.floor(Math.random()*cols.length)]};left:${Math.random()*100}%;top:-10px;border-radius:${Math.random()>.5?'50%':'2px'};animation:cf ${1.5+Math.random()*2}s ease ${Math.random()*.5}s both;`;c.appendChild(el);}
+  setTimeout(()=>c.innerHTML='',5500);
+}
+(()=>{const s=document.createElement('style');s.textContent='@keyframes cf{from{transform:translateY(0) rotate(0deg);opacity:1}to{transform:translateY(100vh) rotate(720deg);opacity:0}} @keyframes lineIn{from{opacity:0;transform:translateX(-6px)}to{opacity:1;transform:translateX(0)}}';document.head.appendChild(s);})();
+</script>
+</body>
+</html>

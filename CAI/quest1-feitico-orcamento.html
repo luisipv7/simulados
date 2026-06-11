@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Quest 1 — O Feitiço de Orçamento</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Nunito:wght@700;800;900&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:      #070a10;
+  --panel:   #0d1220;
+  --panel2:  #121a2e;
+  --border:  #1e2d50;
+  --border2: #2a3d6a;
+  --gold:    #f5c842;
+  --gold2:   #ffe082;
+  --green:   #00e676;
+  --green2:  #b9f6ca;
+  --red:     #ff5252;
+  --blue:    #40c4ff;
+  --blue2:   #b3e5fc;
+  --purple:  #ce93d8;
+  --orange:  #ff9800;
+  --white:   #e8edff;
+  --gray:    #6070a0;
+  --gray2:   #3a4a7a;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Nunito', sans-serif;
+  background: var(--bg);
+  color: var(--white);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Starfield */
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background-image:
+    radial-gradient(1px 1px at 8%  18%, rgba(255,255,255,.8) 0%, transparent 100%),
+    radial-gradient(1px 1px at 82% 12%, rgba(255,255,255,.6) 0%, transparent 100%),
+    radial-gradient(1px 1px at 50% 88%, rgba(255,255,255,.7) 0%, transparent 100%),
+    radial-gradient(1px 1px at 26% 55%, rgba(255,255,255,.5) 0%, transparent 100%),
+    radial-gradient(1px 1px at 72% 42%, rgba(255,255,255,.6) 0%, transparent 100%),
+    radial-gradient(1px 1px at 93% 78%, rgba(255,255,255,.4) 0%, transparent 100%),
+    radial-gradient(1px 1px at 38%  6%, rgba(255,255,255,.7) 0%, transparent 100%),
+    radial-gradient(1px 1px at 61% 62%, rgba(255,255,255,.4) 0%, transparent 100%);
+  pointer-events: none; z-index: 0;
+}
+
+.scr { display: none; position: relative; z-index: 1; min-height: 100vh; flex-direction: column; align-items: center; padding: 20px 14px 60px; }
+.scr.on { display: flex; }
+
+/* PANEL */
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 26px 30px;
+  max-width: 820px; width: 100%;
+  box-shadow: 0 0 60px rgba(245,200,66,.05), 0 16px 60px rgba(0,0,0,.9);
+}
+
+/* PIXEL */
+.ptitle { font-family: 'Press Start 2P', monospace; font-size: clamp(.5rem,1.6vw,.82rem); color: var(--gold); text-shadow: 2px 2px 0 rgba(0,0,0,.9), 0 0 20px rgba(245,200,66,.45); line-height: 2.1; text-align: center; }
+.psub   { font-family: 'Press Start 2P', monospace; font-size: .36rem; color: var(--gray); letter-spacing: 2px; text-align: center; }
+
+/* NPC */
+.npc { display: flex; gap: 13px; align-items: flex-start; background: rgba(7,10,16,.95); border: 1px solid rgba(245,200,66,.2); border-radius: 10px; padding: 14px 16px; margin-bottom: 16px; }
+.nav { width: 50px; height: 50px; border-radius: 8px; border: 1.5px solid var(--gold); background: linear-gradient(135deg,#1a0c02,#3a2206); display: flex; align-items: center; justify-content: center; font-size: 23px; flex-shrink: 0; animation: fl 3s ease-in-out infinite; box-shadow: 0 0 10px rgba(245,200,66,.18); }
+@keyframes fl { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-4px)} }
+.nname { font-family: 'Press Start 2P', monospace; font-size: .38rem; color: var(--gold); margin-bottom: 5px; }
+.ntxt  { font-size: .88rem; font-weight: 700; color: #b8c8e0; line-height: 1.75; }
+.ntxt strong { color: var(--gold2); }
+.ctip { font-family: 'Fira Code', monospace; font-size: .74rem; color: var(--green); background: rgba(0,230,118,.08); border: 1px solid rgba(0,230,118,.22); border-radius: 5px; padding: 3px 8px; display: inline-block; margin-top: 4px; }
+
+/* STEPS NAV */
+.snav { display: flex; gap: 6px; justify-content: center; margin-bottom: 14px; flex-wrap: wrap; }
+.sd { font-family: 'Press Start 2P', monospace; font-size: .32rem; padding: 5px 9px; border-radius: 5px; border: 1px solid; transition: all .3s; }
+.sd.done   { border-color: var(--green); background: rgba(0,230,118,.07); color: var(--green); }
+.sd.active { border-color: var(--gold);  background: rgba(245,200,66,.07); color: var(--gold); }
+.sd.locked { border-color: var(--border); color: rgba(255,255,255,.15); }
+
+/* NOTICE */
+.notice { border-radius: 10px; padding: 10px 14px; font-size: .84rem; font-weight: 700; line-height: 1.6; margin: 10px 0; display: flex; gap: 9px; align-items: flex-start; }
+.ni { font-size: 1.1rem; flex-shrink: 0; }
+.nt-blue   { background: rgba(64,196,255,.08);  border: 1.5px solid rgba(64,196,255,.25);  color: var(--blue2); }
+.nt-gold   { background: rgba(245,200,66,.08);  border: 1.5px solid rgba(245,200,66,.22);  color: var(--gold2); }
+.nt-green  { background: rgba(0,230,118,.08);   border: 1.5px solid rgba(0,230,118,.25);   color: var(--green2); }
+.nt-orange { background: rgba(255,152,0,.08);   border: 1.5px solid rgba(255,152,0,.25);   color: #ffe0b2; }
+
+/* ════ STAT CARDS ════ */
+.stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px,1fr)); gap: 10px; margin: 14px 0; }
+.stat-card {
+  border-radius: 10px; padding: 14px; text-align: center;
+  border: 1.5px solid; transition: border-color .3s, box-shadow .3s;
+}
+.sc-gold   { border-color: rgba(245,200,66,.4); background: rgba(245,200,66,.06); }
+.sc-blue   { border-color: rgba(64,196,255,.35); background: rgba(64,196,255,.06); }
+.sc-orange { border-color: rgba(255,152,0,.4);  background: rgba(255,152,0,.06); }
+.sc-green  { border-color: rgba(0,230,118,.4);  background: rgba(0,230,118,.06); animation: pulseGreen 2.5s ease-in-out infinite; }
+@keyframes pulseGreen { 0%,100%{box-shadow:0 0 10px rgba(0,230,118,.12)} 50%{box-shadow:0 0 24px rgba(0,230,118,.32)} }
+
+.sc-icon { font-size: 1.8rem; display: block; margin-bottom: 6px; }
+.sc-lbl  { font-family: 'Press Start 2P', monospace; font-size: .32rem; color: var(--gray); letter-spacing: 1px; margin-bottom: 5px; }
+.sc-val  { font-family: 'Press Start 2P', monospace; font-size: clamp(.7rem,2vw,.95rem); font-weight: 900; line-height: 1; }
+.sc-gold   .sc-val { color: var(--gold); }
+.sc-blue   .sc-val { color: var(--blue); }
+.sc-orange .sc-val { color: var(--orange); }
+.sc-green  .sc-val { color: var(--green); text-shadow: 0 0 10px rgba(0,230,118,.4); }
+
+/* ════ ALGORITHM BUILDER ════ */
+.algo-step {
+  display: flex; align-items: stretch; gap: 0;
+  margin-bottom: 14px;
+}
+.as-connector { display: flex; flex-direction: column; align-items: center; width: 44px; flex-shrink: 0; }
+.as-num { width: 32px; height: 32px; border-radius: 50%; border: 2px solid; display: flex; align-items: center; justify-content: center; font-family: 'Press Start 2P', monospace; font-size: .42rem; flex-shrink: 0; }
+.as-line { width: 2px; flex: 1; background: var(--border); margin-top: 4px; }
+
+.as-card {
+  flex: 1; border-radius: 10px; border: 1.5px solid var(--border);
+  padding: 13px 16px; background: rgba(13,18,32,.7);
+  transition: all .3s; margin-left: 8px;
+}
+.as-card.unlocked { border-color: rgba(64,196,255,.3); background: rgba(64,196,255,.04); }
+.as-card.done     { border-color: rgba(0,230,118,.4); background: rgba(0,230,118,.05); }
+.as-card.locked-card { opacity: .35; }
+
+.as-title { font-family: 'Press Start 2P', monospace; font-size: .42rem; margin-bottom: 8px; }
+.as-desc  { font-size: .86rem; font-weight: 700; color: #b0c0d8; line-height: 1.6; margin-bottom: 10px; }
+.as-desc strong { color: var(--gold2); }
+
+/* INPUT AREA */
+.calc-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
+.calc-lbl { font-family: 'Fira Code', monospace; font-size: .78rem; color: var(--gray); width: 160px; flex-shrink: 0; }
+.calc-inp {
+  background: rgba(0,0,0,.5); border: 1.5px solid var(--border2);
+  border-radius: 7px; padding: 8px 12px;
+  font-family: 'Fira Code', monospace; font-size: .9rem;
+  color: var(--gold2); outline: none; max-width: 140px;
+  transition: border-color .2s, box-shadow .2s;
+}
+.calc-inp:focus { border-color: var(--blue); box-shadow: 0 0 10px rgba(64,196,255,.2); }
+.calc-inp.correct { border-color: var(--green); box-shadow: 0 0 10px rgba(0,230,118,.25); color: var(--green); }
+.calc-inp.wrong   { border-color: var(--red); animation: shk .3s ease; }
+@keyframes shk { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-5px)} 75%{transform:translateX(5px)} }
+
+.eq-display {
+  background: rgba(0,0,0,.4); border: 1px solid var(--border2);
+  border-radius: 8px; padding: 10px 14px;
+  font-family: 'Fira Code', monospace; font-size: .82rem;
+  color: #8090b8; margin-bottom: 10px; line-height: 1.7;
+  transition: all .4s;
+}
+.eq-display.solved { color: var(--green); border-color: rgba(0,230,118,.3); background: rgba(0,230,118,.06); }
+.eq-display .ev { color: var(--gold2); font-weight: 600; }
+.eq-display .ef { color: var(--blue2); }
+.eq-display .er { color: var(--green); font-weight: 700; }
+
+/* FB */
+.fb { border-radius: 9px; padding: 10px 13px; font-size: .86rem; font-weight: 800; line-height: 1.6; display: none; margin-top: 8px; animation: pu .3s ease; }
+@keyframes pu { from{opacity:0;transform:translateY(4px)} to{opacity:1;transform:translateY(0)} }
+.fb-ok  { background: rgba(0,230,118,.1); border: 1.5px solid rgba(0,230,118,.35); color: var(--green2); }
+.fb-nok { background: rgba(255,82,82,.08); border: 1.5px solid rgba(255,82,82,.3); color: #ffd0d0; }
+
+/* CODE BLOCK */
+.codeblock {
+  background: #0a0f1a; border: 1px solid var(--border2);
+  border-radius: 10px; overflow: hidden; margin: 12px 0;
+}
+.cb-top { display: flex; align-items: center; gap: 9px; padding: 8px 14px; background: rgba(0,0,0,.5); border-bottom: 1px solid var(--border); }
+.cb-dots { display: flex; gap: 5px; }
+.cbd { width: 10px; height: 10px; border-radius: 50%; }
+.cbd-r{background:#ff5f56;} .cbd-y{background:#ffbd2e;} .cbd-g{background:#27c93f;}
+.cb-lang { font-family: 'Fira Code', monospace; font-size: .68rem; color: var(--gray); margin-left: auto; }
+.cb-body pre { font-family: 'Fira Code', monospace; font-size: .8rem; padding: 16px; line-height: 1.8; color: #a8c0e8; margin: 0; overflow-x: auto; }
+.kw { color: #93c5fd; } .fn { color: #86efac; } .st { color: #fde68a; } .cm { color: #4a6080; font-style: italic; }
+.num { color: #fdba74; } .op { color: #f9a8d4; } .var { color: #5eead4; }
+
+/* CODE TABS */
+.ctabs { display: flex; gap: 4px; margin-bottom: 0; }
+.ctab { font-family: 'Press Start 2P', monospace; font-size: .32rem; padding: 6px 11px; border-radius: 7px 7px 0 0; border: 1px solid var(--border); background: rgba(0,0,0,.4); color: var(--gray); cursor: pointer; transition: all .2s; border-bottom-color: transparent; }
+.ctab.active { background: #0a0f1a; border-color: var(--border2); border-bottom-color: #0a0f1a; color: var(--green); }
+
+/* RESULT BOX */
+.result-box {
+  border: 2px solid var(--gold); border-radius: 12px;
+  padding: 20px; text-align: center; margin: 14px 0;
+  background: linear-gradient(135deg,rgba(245,200,66,.06),rgba(0,230,118,.04));
+  animation: glow 2.5s ease-in-out infinite;
+}
+@keyframes glow { 0%,100%{box-shadow:0 0 20px rgba(245,200,66,.12)} 50%{box-shadow:0 0 42px rgba(245,200,66,.3)} }
+.rb-icon { font-size: 3rem; display: block; margin-bottom: 8px; animation: fl 2.5s ease-in-out infinite; }
+.rb-val  { font-family: 'Press Start 2P', monospace; font-size: clamp(.8rem,2.5vw,1.2rem); color: var(--gold); text-shadow: 0 0 14px rgba(245,200,66,.45); line-height: 1; margin-bottom: 8px; }
+.rb-msg  { font-size: .9rem; font-weight: 700; color: var(--green2); line-height: 1.6; }
+.rb-output { font-family: 'Fira Code', monospace; font-size: .82rem; background: rgba(0,0,0,.5); border: 1.5px solid rgba(0,230,118,.3); border-radius: 8px; padding: 12px 16px; margin-top: 12px; color: var(--green); text-align: left; }
+
+/* BUTTONS */
+.btn { display: inline-flex; align-items: center; gap: 7px; font-family: 'Press Start 2P', monospace; font-size: .45rem; border: 1px solid transparent; border-radius: 8px; padding: 11px 20px; cursor: pointer; transition: all .2s; color: white; }
+.btn-gold   { background: linear-gradient(135deg,#4a2c00,#9a6000); border-color: rgba(245,200,66,.4); color: #fef3c7; box-shadow: 0 4px 14px rgba(245,200,66,.2); }
+.btn-gold:hover   { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(245,200,66,.35); }
+.btn-green  { background: linear-gradient(135deg,#073a10,#155a20); border-color: rgba(0,230,118,.35); box-shadow: 0 4px 12px rgba(0,230,118,.2); }
+.btn-green:hover  { transform: translateY(-1px); }
+.btn-blue   { background: linear-gradient(135deg,#0a2a50,#164080); border-color: rgba(64,196,255,.35); box-shadow: 0 4px 12px rgba(64,196,255,.2); }
+.btn-blue:hover   { transform: translateY(-1px); }
+.btn-ghost  { background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.12); font-size: .38rem; }
+.btn-ghost:hover  { background: rgba(255,255,255,.1); }
+.btn:disabled { opacity: .32; cursor: not-allowed; transform: none; }
+
+/* CONF / OV */
+.conf { position: fixed; inset: 0; pointer-events: none; z-index: 400; }
+.ov { position: fixed; inset: 0; background: rgba(0,0,0,.9); z-index: 500; display: none; align-items: center; justify-content: center; flex-direction: column; }
+.ov.on { display: flex; }
+.ov-t { font-family: 'Press Start 2P', monospace; font-size: clamp(.65rem,3vw,1.2rem); text-align: center; animation: bp .5s ease; }
+@keyframes bp { 0%{transform:scale(.3);opacity:0} 70%{transform:scale(1.1)} 100%{transform:scale(1);opacity:1} }
+.ov-s { font-size: .88rem; font-weight: 700; color: white; text-align: center; margin-top: 10px; max-width: 380px; line-height: 1.7; padding: 0 14px; }
+
+@media(max-width:540px) { .panel{padding:16px 12px;} .stat-grid{grid-template-columns:1fr 1fr;} .calc-lbl{width:100%;} }
+</style>
+</head>
+<body>
+<div class="conf" id="conf"></div>
+<div class="ov" id="ov"><div class="ov-t" id="ov-t" style="color:var(--gold);">🏆 ACERTO!</div><div class="ov-s" id="ov-s"></div></div>
+
+<!-- ════ INTRO ════ -->
+<div class="scr on" id="s-intro">
+<div class="panel" style="max-width:740px;margin-top:16px;">
+
+  <div style="text-align:center;margin-bottom:14px;">
+    <div style="font-size:3rem;animation:fl 2.5s ease-in-out infinite;margin-bottom:8px;">⚗️</div>
+    <p class="ptitle">QUEST 1</p>
+    <p class="ptitle" style="color:var(--blue);font-size:clamp(.38rem,1.2vw,.56rem);">O FEITIÇO DE ORÇAMENTO</p>
+    <p class="psub" style="margin-top:5px;">ENGENHARIA DE CUSTOS · ALGORITMO</p>
+  </div>
+
+  <div class="npc">
+    <div class="nav">🧙</div>
+    <div><p class="nname">MESTRE ARQUITETO</p>
+      <p class="ntxt">Herói! O Rei encomendou um <strong>Sistema de Defesa Digital do Castelo</strong>!<br><br>
+      Mas antes de começar, precisamos calcular quanto vai custar. <strong>Tempo é Ouro</strong> — literalmente! Você vai construir o algoritmo que faz esse cálculo automaticamente!
+      <span class="ctip">algoritmo = receita mágica que o computador executa</span>
+      </p>
+    </div>
+  </div>
+
+  <!-- MISSION BRIEF -->
+  <div style="background:rgba(7,10,16,.9);border:1px solid rgba(245,200,66,.25);border-radius:10px;padding:16px;margin-bottom:14px;">
+    <p style="font-family:'Press Start 2P',monospace;font-size:.44rem;color:var(--gold);margin-bottom:12px;">📜 BRIEFING DA MISSÃO</p>
+    <div class="stat-grid">
+      <div class="stat-card sc-gold"><span class="sc-icon">🧙</span><div class="sc-lbl">CUSTO / HORA</div><div class="sc-val">50 💰</div></div>
+      <div class="stat-card sc-blue"><span class="sc-icon">⏱️</span><div class="sc-lbl">HORAS DO PROJETO</div><div class="sc-val">80 h</div></div>
+      <div class="stat-card sc-orange"><span class="sc-icon">🗼</span><div class="sc-lbl">TORRE DE CRISTAL</div><div class="sc-val">+300 💰</div></div>
+      <div class="stat-card sc-green"><span class="sc-icon">🏆</span><div class="sc-lbl">CUSTO TOTAL</div><div class="sc-val">??? 💰</div></div>
+    </div>
+  </div>
+
+  <div class="notice nt-gold">
+    <span class="ni">📌</span>
+    <span>Esta quest tem <strong>3 passos</strong>: você vai calcular cada parte da fórmula passo a passo, e no final vai ver o código Python e JavaScript completo que faz o mesmo cálculo!</span>
+  </div>
+
+  <div style="text-align:center;margin-top:16px;">
+    <button class="btn btn-gold" onclick="go('s-game')">⚗️ INICIAR O FEITIÇO →</button>
+  </div>
+</div>
+</div>
+
+<!-- ════ JOGO ════ -->
+<div class="scr" id="s-game">
+<div class="panel" style="max-width:820px;margin-top:14px;">
+
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px;">
+    <div><p class="ptitle" style="font-size:.48rem;text-align:left;">⚗️ FEITIÇO DE ORÇAMENTO</p><p class="psub" style="text-align:left;margin-top:2px;">ALGORITMO DE CUSTOS · GUILDA TECHSOLUTIONS</p></div>
+    <button class="btn btn-ghost" onclick="go('s-intro')">← INTRO</button>
+  </div>
+
+  <div class="snav">
+    <div class="sd active" id="sd0">💰 PASSO 1</div>
+    <div class="sd locked" id="sd1">🗼 PASSO 2</div>
+    <div class="sd locked" id="sd2">⚡ TOTAL</div>
+    <div class="sd locked" id="sd3">💻 CÓDIGO</div>
+  </div>
+
+  <div class="npc">
+    <div class="nav">🧙</div>
+    <div><p class="nname">MESTRE ARQUITETO</p>
+      <p class="ntxt" id="npc-game">Herói, o primeiro feitiço é o mais simples! Multiplique as <strong>horas do projeto</strong> pelo <strong>custo do mago por hora</strong> para saber quanto pagamos pelos programadores!</p>
+    </div>
+  </div>
+
+  <!-- STEP 1 -->
+  <div class="algo-step">
+    <div class="as-connector">
+      <div class="as-num" style="border-color:var(--blue);color:var(--blue);">1</div>
+      <div class="as-line"></div>
+    </div>
+    <div class="as-card unlocked" id="card1">
+      <p class="as-title" style="color:var(--blue);">CUSTO DOS MAGOS DO CÓDIGO</p>
+      <p class="as-desc">Cada mago cobra <strong>50 moedas por hora</strong>. O projeto dura <strong>80 horas</strong>. Quanto custam os magos?</p>
+      <div class="eq-display" id="eq1">horas × custo_hora = <span class="ev">80</span> × <span class="ev">50</span> = <span class="ef">___</span></div>
+      <div class="calc-row">
+        <span class="calc-lbl">80 × 50 =</span>
+        <input class="calc-inp" id="inp1" type="number" placeholder="?" min="0" oninput="updateEq1()">
+        <button class="btn btn-blue" style="font-size:.38rem;" onclick="check1()">✅ CONFIRMAR</button>
+      </div>
+      <div class="fb" id="fb1"></div>
+    </div>
+  </div>
+
+  <!-- STEP 2 -->
+  <div class="algo-step">
+    <div class="as-connector">
+      <div class="as-num" style="border-color:var(--orange);color:var(--orange);">2</div>
+      <div class="as-line"></div>
+    </div>
+    <div class="as-card locked-card" id="card2">
+      <p class="as-title" style="color:var(--orange);">TAXA DA TORRE DE CRISTAL (SERVIDOR)</p>
+      <p class="as-desc">A Torre tem uma taxa <strong>fixa de +300 moedas</strong>. Some essa taxa ao custo dos magos que você calculou no Passo 1.</p>
+      <div class="eq-display" id="eq2">custo_magos + taxa_torre = <span class="ef" id="eq2-a">___</span> + <span class="ev">300</span> = <span class="ef">___</span></div>
+      <div class="calc-row">
+        <span class="calc-lbl"><span id="lbl2">???</span> + 300 =</span>
+        <input class="calc-inp" id="inp2" type="number" placeholder="?" min="0" oninput="updateEq2()">
+        <button class="btn btn-blue" style="font-size:.38rem;" onclick="check2()">✅ CONFIRMAR</button>
+      </div>
+      <div class="fb" id="fb2"></div>
+    </div>
+  </div>
+
+  <!-- STEP 3 — TOTAL -->
+  <div class="algo-step">
+    <div class="as-connector">
+      <div class="as-num" style="border-color:var(--green);color:var(--green);">3</div>
+    </div>
+    <div class="as-card locked-card" id="card3">
+      <p class="as-title" style="color:var(--green);">CUSTO TOTAL DO PROJETO</p>
+      <p class="as-desc">Você já calculou os dois valores. O <strong>Custo Total</strong> é o resultado do Passo 2. Qual é o valor final que a guilda vai cobrar do Rei?</p>
+      <div class="eq-display" id="eq3">CUSTO_TOTAL = horas × custo_hora + taxa_torre<br>CUSTO_TOTAL = <span class="ev">80</span> × <span class="ev">50</span> + <span class="ev">300</span> = <span class="ef" id="eq3-r">???</span></div>
+      <div class="calc-row">
+        <span class="calc-lbl">Custo Total =</span>
+        <input class="calc-inp" id="inp3" type="number" placeholder="?" min="0" oninput="updateEq3()">
+        <button class="btn btn-gold" style="font-size:.38rem;" onclick="check3()">⚗️ FINALIZAR FEITIÇO</button>
+      </div>
+      <div class="fb" id="fb3"></div>
+    </div>
+  </div>
+
+  <!-- RESULT (hidden) -->
+  <div id="result-section" style="display:none;">
+    <div class="result-box">
+      <span class="rb-icon">🏆</span>
+      <div class="rb-val">4.300 MOEDAS DE OURO</div>
+      <p class="rb-msg">O feitiço foi executado com sucesso! O orçamento do projeto está calculado!</p>
+      <div class="rb-output">
+        &gt; Executando orçamento_castelo.py...<br>
+        &gt; Horas: 80 | Custo/hora: 50 | Taxa servidor: 300<br>
+        &gt; Calculando...<br>
+        &gt; <strong>"O Custo Total do Projeto será de 4.300 moedas de ouro."</strong>
+      </div>
+    </div>
+
+    <div style="text-align:center;margin:14px 0;">
+      <p style="font-family:'Press Start 2P',monospace;font-size:.44rem;color:var(--blue);margin-bottom:10px;">💻 VER O CÓDIGO QUE FAZ ISSO</p>
+      <div class="ctabs">
+        <div class="ctab active" id="ct-py" onclick="showCode('py')">🐍 Python</div>
+        <div class="ctab" id="ct-js" onclick="showCode('js')">⚡ JavaScript</div>
+        <div class="ctab" id="ct-vg" onclick="showCode('vg')">📋 VisualG</div>
+      </div>
+      <div class="codeblock">
+        <div class="cb-top"><div class="cb-dots"><div class="cbd cbd-r"></div><div class="cbd cbd-y"></div><div class="cbd cbd-g"></div></div><span class="cb-lang" id="cb-lang">orcamento.py</span></div>
+        <div class="cb-body"><pre id="code-display"></pre></div>
+      </div>
+    </div>
+
+    <div style="text-align:center;margin-top:10px;">
+      <button class="btn btn-green" onclick="go('s-result')">🏆 VER RESULTADO FINAL →</button>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<!-- ════ RESULTADO ════ -->
+<div class="scr" id="s-result">
+<div class="panel" style="max-width:680px;margin-top:14px;">
+  <div style="text-align:center;margin-bottom:14px;">
+    <div style="font-size:3rem;animation:fl 2.5s ease-in-out infinite;">🏆</div>
+    <p class="ptitle">FEITIÇO<br>CONCLUÍDO!</p>
+    <p class="psub" style="margin-top:5px;">QUEST 1 COMPLETA</p>
+  </div>
+
+  <div class="result-box">
+    <span class="rb-icon">👑</span>
+    <div class="rb-val">4.300 MOEDAS DE OURO</div>
+    <div class="rb-output" style="margin-top:12px;">
+      custo_magos   = 80 horas × 50 = 4.000 💰<br>
+      taxa_torre    = + 300 💰 (fixa)<br>
+      ─────────────────────────────<br>
+      CUSTO_TOTAL   = 4.300 💰 ✓
+    </div>
+  </div>
+
+  <div style="background:rgba(7,10,16,.9);border:1px solid var(--border);border-radius:10px;padding:14px;margin:12px 0;">
+    <p style="font-family:'Press Start 2P',monospace;font-size:.4rem;color:var(--gold);margin-bottom:10px;">🧠 O QUE VOCÊ APRENDEU</p>
+    <div style="display:flex;flex-direction:column;gap:7px;font-size:.86rem;font-weight:700;color:#b0c8d8;line-height:1.55;">
+      <div style="display:flex;gap:8px;"><span>⚙️</span><span><strong style="color:var(--gold2);">Algoritmo</strong> = sequência de passos para resolver um problema. O computador segue à risca!</span></div>
+      <div style="display:flex;gap:8px;"><span>💰</span><span><strong style="color:var(--gold2);">Custo de Software</strong> = horas × valor/hora + custos fixos (infraestrutura)</span></div>
+      <div style="display:flex;gap:8px;"><span>🐍</span><span><strong style="color:var(--gold2);">Python/JS</strong> fazem este cálculo em 3 linhas — o mesmo que você fez manualmente!</span></div>
+      <div style="display:flex;gap:8px;"><span>🗼</span><span><strong style="color:var(--gold2);">Servidor na Nuvem</strong> (Torre de Cristal) = custo fixo que existe independente das horas</span></div>
+    </div>
+  </div>
+
+  <div class="npc">
+    <div class="nav">🧙</div>
+    <div><p class="nname">MESTRE ARQUITETO</p>
+      <p class="ntxt"><strong>Excelente, Herói!</strong> Você dominou o Feitiço de Orçamento! Agora você sabe que qualquer projeto de software tem um custo calculável: <strong>horas × valor + infraestrutura</strong>. Na Quest 2, você vai usar o Oráculo (IA) para estimar projetos mais complexos!</p>
+    </div>
+  </div>
+
+  <div style="display:flex;gap:9px;flex-wrap:wrap;margin-top:12px;">
+    <button class="btn btn-gold" onclick="downloadCSV()">⬇ BAIXAR RESULTADO</button>
+    <button class="btn btn-ghost" onclick="fullReset()">↺ RECOMEÇAR</button>
+  </div>
+</div>
+</div>
+
+<script>
+// ════ DATA ════
+const CODES = {
+  py: {
+    lang: 'orcamento.py',
+    code: `<span class="cm"># ⚗️ Feitiço de Orçamento — Python</span>
+<span class="cm"># Regras da Contabilidade da Guilda</span>
+
+<span class="var">custo_por_hora</span> <span class="op">=</span> <span class="num">50</span>        <span class="cm"># moedas por hora</span>
+<span class="var">horas_projeto</span>  <span class="op">=</span> <span class="num">80</span>        <span class="cm"># horas de desenvolvimento</span>
+<span class="var">taxa_torre</span>     <span class="op">=</span> <span class="num">300</span>       <span class="cm"># Torre de Cristal (nuvem)</span>
+
+<span class="cm"># O algoritmo:</span>
+<span class="var">custo_magos</span> <span class="op">=</span> <span class="var">horas_projeto</span> <span class="op">*</span> <span class="var">custo_por_hora</span>
+<span class="var">total</span>       <span class="op">=</span> <span class="var">custo_magos</span> <span class="op">+</span> <span class="var">taxa_torre</span>
+
+<span class="kw">print</span>(<span class="st">f"O Custo Total do Projeto será de {total} moedas de ouro."</span>)
+<span class="cm"># Saída: O Custo Total do Projeto será de 4300 moedas de ouro.</span>`
+  },
+  js: {
+    lang: 'orcamento.js',
+    code: `<span class="cm">// ⚗️ Feitiço de Orçamento — JavaScript</span>
+
+<span class="kw">const</span> <span class="var">custoPorHora</span> <span class="op">=</span> <span class="num">50</span>;   <span class="cm">// moedas por hora</span>
+<span class="kw">const</span> <span class="var">horasProjeto</span>  <span class="op">=</span> <span class="num">80</span>;   <span class="cm">// horas de desenvolvimento</span>
+<span class="kw">const</span> <span class="var">taxaTorre</span>     <span class="op">=</span> <span class="num">300</span>;  <span class="cm">// Torre de Cristal (servidor)</span>
+
+<span class="cm">// O algoritmo:</span>
+<span class="kw">const</span> <span class="var">custoMagos</span> <span class="op">=</span> <span class="var">horasProjeto</span> <span class="op">*</span> <span class="var">custoPorHora</span>;
+<span class="kw">const</span> <span class="var">total</span>       <span class="op">=</span> <span class="var">custoMagos</span> <span class="op">+</span> <span class="var">taxaTorre</span>;
+
+<span class="fn">console</span>.<span class="fn">log</span>(<span class="st">\`O Custo Total do Projeto será de \${total} moedas de ouro.\`</span>);
+<span class="cm">// Saída: O Custo Total do Projeto será de 4300 moedas de ouro.</span>`
+  },
+  vg: {
+    lang: 'orcamento.alg',
+    code: `<span class="cm">{ ⚗️ Feitiço de Orçamento — VisualG }</span>
+
+<span class="kw">algoritmo</span> <span class="st">"OrcamentoCastelo"</span>
+<span class="kw">var</span>
+   <span class="var">custoPorHora</span> : <span class="fn">inteiro</span>
+   <span class="var">horasProjeto</span> : <span class="fn">inteiro</span>
+   <span class="var">taxaTorre</span>    : <span class="fn">inteiro</span>
+   <span class="var">custoMagos</span>   : <span class="fn">inteiro</span>
+   <span class="var">total</span>        : <span class="fn">inteiro</span>
+<span class="kw">inicio</span>
+   <span class="var">custoPorHora</span> <span class="op">&lt;-</span> <span class="num">50</span>
+   <span class="var">horasProjeto</span> <span class="op">&lt;-</span> <span class="num">80</span>
+   <span class="var">taxaTorre</span>    <span class="op">&lt;-</span> <span class="num">300</span>
+
+   <span class="var">custoMagos</span> <span class="op">&lt;-</span> <span class="var">horasProjeto</span> <span class="op">*</span> <span class="var">custoPorHora</span>
+   <span class="var">total</span>      <span class="op">&lt;-</span> <span class="var">custoMagos</span> <span class="op">+</span> <span class="var">taxaTorre</span>
+
+   <span class="fn">escreval</span>(<span class="st">"O Custo Total do Projeto será de "</span>, <span class="var">total</span>, <span class="st">" moedas de ouro."</span>)
+<span class="kw">fimalgoritmo</span>`
+  }
+};
+
+// ════ STATE ════
+let step = 1;
+let v1 = 0, v2 = 0, v3 = 0;
+
+// ════ STEP 1 ════
+function updateEq1() {
+  const v = document.getElementById('inp1').value;
+  const eq = document.getElementById('eq1');
+  eq.innerHTML = `horas × custo_hora = <span class="ev">80</span> × <span class="ev">50</span> = <span class="${v?'ef':'ef'}">${v||'___'}</span>`;
+}
+
+function check1() {
+  const v = parseInt(document.getElementById('inp1').value);
+  const fb = document.getElementById('fb1');
+  if (isNaN(v)) { showFb(fb,'nok','⚠️ Digite um número!'); return; }
+  if (v === 4000) {
+    v1 = 4000;
+    document.getElementById('inp1').classList.add('correct');
+    document.getElementById('eq1').innerHTML = `horas × custo_hora = <span class="ev">80</span> × <span class="ev">50</span> = <span class="er">4.000</span>`;
+    document.getElementById('eq1').classList.add('solved');
+    showFb(fb,'ok','✅ Correto! 80 × 50 = 4.000 moedas para os Magos do Código!');
+    unlockStep(2);
+    markDone(0); markActive(1);
+    showOv('✅ +4.000 MOEDAS!','80 horas × 50 moedas/hora = 4.000 moedas para os magos!');
+    setTimeout(hideOv, 1400);
+    setNpc('Ótimo! Agora some a <strong>taxa da Torre de Cristal</strong> ao custo dos magos!');
+    // update step 2
+    document.getElementById('eq2-a').textContent = '4.000';
+    document.getElementById('lbl2').textContent = '4.000';
+  } else {
+    document.getElementById('inp1').classList.add('wrong');
+    setTimeout(()=>document.getElementById('inp1').classList.remove('wrong'),400);
+    showFb(fb,'nok',`❌ Não é ${v.toLocaleString('pt-BR')}. Lembre: 80 × 50. Quanto é 80 vezes 50?`);
+  }
+}
+
+// ════ STEP 2 ════
+function updateEq2() {
+  const v = document.getElementById('inp2').value;
+  document.getElementById('eq2').innerHTML = `custo_magos + taxa_torre = <span class="er">4.000</span> + <span class="ev">300</span> = <span class="${v?'ef':'ef'}">${v||'___'}</span>`;
+}
+
+function check2() {
+  const v = parseInt(document.getElementById('inp2').value);
+  const fb = document.getElementById('fb2');
+  if (isNaN(v)) { showFb(fb,'nok','⚠️ Digite um número!'); return; }
+  if (v === 4300) {
+    v2 = 4300;
+    document.getElementById('inp2').classList.add('correct');
+    document.getElementById('eq2').innerHTML = `custo_magos + taxa_torre = <span class="er">4.000</span> + <span class="ev">300</span> = <span class="er">4.300</span>`;
+    document.getElementById('eq2').classList.add('solved');
+    showFb(fb,'ok','✅ Correto! 4.000 + 300 = 4.300 moedas — o custo total!');
+    unlockStep(3);
+    markDone(1); markActive(2);
+    showOv('✅ +300 MOEDAS DA TORRE!','4.000 + 300 = 4.300 moedas de ouro!');
+    setTimeout(hideOv, 1400);
+    setNpc('Incrível! Agora confirme o <strong>Custo Total</strong> do projeto no Passo 3!');
+    document.getElementById('eq3-r').textContent = '???';
+  } else {
+    document.getElementById('inp2').classList.add('wrong');
+    setTimeout(()=>document.getElementById('inp2').classList.remove('wrong'),400);
+    showFb(fb,'nok',`❌ Não é ${v.toLocaleString('pt-BR')}. Lembre: 4.000 + 300 = ?`);
+  }
+}
+
+// ════ STEP 3 ════
+function updateEq3() {
+  const v = document.getElementById('inp3').value;
+  document.getElementById('eq3-r').textContent = v || '???';
+}
+
+function check3() {
+  const v = parseInt(document.getElementById('inp3').value);
+  const fb = document.getElementById('fb3');
+  if (isNaN(v)) { showFb(fb,'nok','⚠️ Digite um número!'); return; }
+  if (v === 4300) {
+    v3 = 4300;
+    document.getElementById('inp3').classList.add('correct');
+    document.getElementById('eq3-r').textContent = '4.300 ✓';
+    document.getElementById('eq3').classList.add('solved');
+    showFb(fb,'ok','🏆 FEITIÇO COMPLETO! 4.300 moedas de ouro — o algoritmo funcionou!');
+    markDone(2); markActive(3);
+    showOv('🏆 FEITIÇO CONCLUÍDO!','O Custo Total do Projeto: 4.300 moedas de ouro!');
+    setTimeout(()=>{ hideOv(); revealResult(); }, 2000);
+    spawnConf();
+    setNpc('Perfeito! O feitiço foi executado! Veja agora o <strong>código real</strong> que faz isso em Python, JavaScript e VisualG!');
+  } else {
+    document.getElementById('inp3').classList.add('wrong');
+    setTimeout(()=>document.getElementById('inp3').classList.remove('wrong'),400);
+    showFb(fb,'nok',`❌ Não é ${v.toLocaleString('pt-BR')}. O total é 80×50 + 300. Qual foi o resultado do Passo 2?`);
+  }
+}
+
+function revealResult() {
+  document.getElementById('result-section').style.display = 'block';
+  showCode('py');
+  document.getElementById('result-section').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function showCode(lang) {
+  const info = CODES[lang];
+  document.getElementById('code-display').innerHTML = info.code;
+  document.getElementById('cb-lang').textContent = info.lang;
+  ['py','js','vg'].forEach(l => {
+    document.getElementById('ct-'+l).className = 'ctab' + (l===lang?' active':'');
+  });
+  markActive(3);
+}
+
+// ════ UTILS ════
+function unlockStep(n) {
+  const card = document.getElementById('card'+n);
+  if (card) { card.classList.remove('locked-card'); card.classList.add('unlocked'); card.scrollIntoView({behavior:'smooth',block:'nearest'}); }
+}
+function markDone(i)   { const d=document.getElementById('sd'+i); if(d) d.className='sd done'; }
+function markActive(i) { const d=document.getElementById('sd'+i); if(d) d.className='sd active'; }
+function showFb(el, type, msg) { el.style.display='block'; el.className='fb fb-'+type; el.innerHTML=msg; }
+function setNpc(html) { document.getElementById('npc-game').innerHTML=html; }
+function showOv(t,s) { document.getElementById('ov').classList.add('on'); document.getElementById('ov-t').textContent=t; document.getElementById('ov-s').textContent=s; }
+function hideOv() { document.getElementById('ov').classList.remove('on'); }
+
+function downloadCSV() {
+  const now = new Date();
+  let csv = 'sep=;\nQUEST 1: FEITIÇO DE ORÇAMENTO\n';
+  csv += `Data;${now.toLocaleDateString('pt-BR')}\nHora;${now.toLocaleTimeString('pt-BR')}\n\n`;
+  csv += 'CÁLCULO\n';
+  csv += `Horas do projeto;80\nCusto por hora;50\nCusto dos Magos;4000\nTaxa da Torre;300\nCusto Total;4300\n\n`;
+  csv += 'FÓRMULA\nCUSTO_TOTAL = horas × custo_hora + taxa_servidor\nCUSTO_TOTAL = 80 × 50 + 300 = 4300\n';
+  const blob = new Blob(['\uFEFF'+csv], {type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href=url; a.download=`quest1_orcamento_${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}.csv`;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+}
+
+function go(id) { document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on')); document.getElementById(id).classList.add('on'); window.scrollTo(0,0); }
+function fullReset() {
+  step=1; v1=0; v2=0; v3=0;
+  ['inp1','inp2','inp3'].forEach(id=>{const el=document.getElementById(id);if(el){el.value='';el.className='calc-inp';}});
+  ['fb1','fb2','fb3'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='none';});
+  document.getElementById('eq1').innerHTML='horas × custo_hora = <span class="ev">80</span> × <span class="ev">50</span> = <span class="ef">___</span>';
+  document.getElementById('eq1').className='eq-display';
+  document.getElementById('eq2').innerHTML='custo_magos + taxa_torre = <span class="ef" id="eq2-a">___</span> + <span class="ev">300</span> = <span class="ef">___</span>';
+  document.getElementById('eq2').className='eq-display';
+  document.getElementById('result-section').style.display='none';
+  document.getElementById('card2').className='as-card locked-card';
+  document.getElementById('card3').className='as-card locked-card';
+  for(let i=0;i<4;i++){const d=document.getElementById('sd'+i);if(d)d.className='sd'+(i===0?' active':' locked');}
+  go('s-intro');
+}
+
+function spawnConf() {
+  const c=document.getElementById('conf');
+  const cols=['#f5c842','#00e676','#40c4ff','#ff9800','#ce93d8','#ff5252'];
+  for(let i=0;i<80;i++){const el=document.createElement('div');const sz=4+Math.random()*9;el.style.cssText=`position:absolute;width:${sz}px;height:${sz}px;background:${cols[Math.floor(Math.random()*cols.length)]};left:${Math.random()*100}%;top:-10px;border-radius:${Math.random()>.5?'50%':'2px'};animation:cf ${1.5+Math.random()*2}s ease ${Math.random()*.5}s both;`;c.appendChild(el);}
+  setTimeout(()=>c.innerHTML='',5500);
+}
+(()=>{const s=document.createElement('style');s.textContent='@keyframes cf{from{transform:translateY(0) rotate(0deg);opacity:1}to{transform:translateY(100vh) rotate(720deg);opacity:0}}';document.head.appendChild(s);})();
+</script>
+</body>
+</html>
