@@ -1,0 +1,909 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>A Grande Prova do Mestre do Jogo — Avaliação Final CAI</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Nunito:wght@700;800;900&family=Fira+Code:wght@500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:      #070a12;
+  --panel:   #0c1022;
+  --panel2:  #111830;
+  --border:  #1c2848;
+  --border2: #28386a;
+  --gold:    #f5c842; --gold2: #ffe082; --gold3: #fff8dc;
+  --green:   #00e676; --green2: #b9f6ca;
+  --red:     #ff5252; --red2:   #ffd0d0;
+  --blue:    #40c4ff; --blue2:  #b3e5fc;
+  --purple:  #ce93d8; --purple2:#f3d9ff;
+  --orange:  #ff9800; --orange2:#ffe0b2;
+  --teal:    #1de9b6;
+  --white:   #e6ecff; --gray: #5a70a0; --gray2: #3a4880;
+
+  --s1: #40c4ff;  /* inventário */
+  --s2: #f5c842;  /* servidor */
+  --s3: #1de9b6;  /* cofre */
+  --s4: #ce93d8;  /* custo */
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Nunito', sans-serif;
+  background: var(--bg);
+  color: var(--white);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* starfield */
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background-image:
+    radial-gradient(1px 1px at 7%  18%, rgba(255,255,255,.9) 0%,transparent 100%),
+    radial-gradient(1px 1px at 85% 12%, rgba(255,255,255,.7) 0%,transparent 100%),
+    radial-gradient(1px 1px at 48% 88%, rgba(255,255,255,.8) 0%,transparent 100%),
+    radial-gradient(1px 1px at 24% 58%, rgba(255,255,255,.6) 0%,transparent 100%),
+    radial-gradient(1px 1px at 70% 40%, rgba(255,255,255,.7) 0%,transparent 100%),
+    radial-gradient(1px 1px at 92% 76%, rgba(255,255,255,.5) 0%,transparent 100%),
+    radial-gradient(1px 1px at 38%  6%, rgba(255,255,255,.7) 0%,transparent 100%),
+    radial-gradient(1px 1px at 60% 62%, rgba(255,255,255,.4) 0%,transparent 100%),
+    radial-gradient(1px 1px at 16% 78%, rgba(255,255,255,.6) 0%,transparent 100%);
+  pointer-events: none; z-index: 0;
+}
+
+.scr { display: none; position: relative; z-index: 1; min-height: 100vh; flex-direction: column; align-items: center; padding: 20px 14px 60px; }
+.scr.on { display: flex; }
+
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 26px 30px;
+  max-width: 860px; width: 100%;
+  box-shadow: 0 0 60px rgba(245,200,66,.05), 0 16px 60px rgba(0,0,0,.9);
+}
+
+.ptitle { font-family: 'Press Start 2P', monospace; font-size: clamp(.48rem,1.5vw,.8rem); color: var(--gold); text-shadow: 2px 2px 0 rgba(0,0,0,.9), 0 0 20px rgba(245,200,66,.45); line-height: 2.1; text-align: center; }
+.psub   { font-family: 'Press Start 2P', monospace; font-size: .35rem; color: var(--gray); letter-spacing: 2px; text-align: center; }
+
+/* NPC */
+.npc { display: flex; gap: 13px; align-items: flex-start; background: rgba(7,10,18,.96); border: 1px solid rgba(245,200,66,.18); border-radius: 10px; padding: 13px 15px; margin-bottom: 14px; }
+.nav { width: 50px; height: 50px; border-radius: 8px; border: 1.5px solid var(--gold); background: linear-gradient(135deg,#1a0c02,#3a2206); display: flex; align-items: center; justify-content: center; font-size: 23px; flex-shrink: 0; animation: fl 3s ease-in-out infinite; box-shadow: 0 0 10px rgba(245,200,66,.18); }
+@keyframes fl { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-4px)} }
+.nname { font-family: 'Press Start 2P', monospace; font-size: .38rem; color: var(--gold); margin-bottom: 5px; }
+.ntxt  { font-size: .88rem; font-weight: 700; color: #b0c0d8; line-height: 1.75; }
+.ntxt strong { color: var(--gold2); }
+.ctip  { font-family: 'Fira Code', monospace; font-size: .74rem; color: var(--green); background: rgba(0,230,118,.08); border: 1px solid rgba(0,230,118,.22); border-radius: 5px; padding: 3px 8px; display: inline-block; margin-top: 4px; }
+
+/* ═══ TIMER BAR ═══ */
+.timer-bar {
+  display: flex; align-items: center; gap: 12px;
+  background: rgba(7,10,18,.9); border: 1px solid var(--border2);
+  border-radius: 8px; padding: 10px 14px; margin-bottom: 14px;
+}
+.timer-icon { font-size: 1.4rem; }
+.timer-track { flex: 1; height: 10px; background: rgba(255,255,255,.08); border-radius: 5px; overflow: hidden; }
+.timer-fill  { height: 100%; border-radius: 5px; transition: width .5s linear, background .5s; }
+.timer-fill.t-ok   { background: linear-gradient(90deg,var(--green),var(--teal)); }
+.timer-fill.t-warn { background: linear-gradient(90deg,var(--orange),var(--gold)); }
+.timer-fill.t-crit { background: linear-gradient(90deg,var(--red),var(--orange)); animation: timerPulse .6s infinite; }
+@keyframes timerPulse { 0%,100%{opacity:1} 50%{opacity:.6} }
+.timer-val { font-family: 'Press Start 2P', monospace; font-size: .52rem; color: var(--white); min-width: 52px; text-align: right; }
+
+/* ═══ QUESTION PROGRESS ═══ */
+.q-progress { display: flex; gap: 5px; margin-bottom: 14px; flex-wrap: wrap; }
+.qp-dot {
+  width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--border2);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Press Start 2P', monospace; font-size: .3rem; color: var(--gray2);
+  transition: all .3s; cursor: pointer;
+}
+.qp-dot.answered { border-color: var(--green); background: rgba(0,230,118,.1); color: var(--green); }
+.qp-dot.current  { border-color: var(--gold);  background: rgba(245,200,66,.12); color: var(--gold); }
+.qp-dot.unanswered{ border-color: var(--red); }
+
+/* ═══ SECTION BADGE ═══ */
+.sec-badge {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 7px 14px; border-radius: 20px; border: 1.5px solid;
+  font-family: 'Press Start 2P', monospace; font-size: .38rem;
+  margin-bottom: 12px;
+}
+.sb-1 { border-color: rgba(64,196,255,.4); background: rgba(64,196,255,.08); color: var(--s1); }
+.sb-2 { border-color: rgba(245,200,66,.4); background: rgba(245,200,66,.08); color: var(--s2); }
+.sb-3 { border-color: rgba(29,233,182,.4); background: rgba(29,233,182,.08); color: var(--s3); }
+.sb-4 { border-color: rgba(206,147,216,.4); background: rgba(206,147,216,.08); color: var(--s4); }
+
+/* ═══ QUESTION CARD ═══ */
+.q-card {
+  background: rgba(7,10,18,.8); border: 1.5px solid var(--border2);
+  border-radius: 12px; padding: 18px 20px; margin-bottom: 14px;
+}
+.q-num { font-family: 'Press Start 2P', monospace; font-size: .4rem; color: var(--gray); margin-bottom: 8px; display: flex; align-items: center; gap: 7px; }
+.q-num .qn-icon { font-size: 1.1rem; }
+.q-stem { font-size: .92rem; font-weight: 800; color: var(--white); line-height: 1.75; margin-bottom: 14px; }
+.q-stem strong { color: var(--gold2); }
+.q-stem code { font-family: 'Fira Code', monospace; font-size: .85rem; background: rgba(0,0,0,.4); border-radius: 4px; padding: 1px 6px; color: var(--teal); }
+
+/* MC OPTIONS */
+.opts { display: flex; flex-direction: column; gap: 9px; }
+.opt {
+  display: flex; align-items: flex-start; gap: 12px;
+  background: rgba(255,255,255,.03); border: 1.5px solid var(--border);
+  border-radius: 9px; padding: 12px 15px;
+  cursor: pointer; transition: all .2s; width: 100%;
+  font-size: .9rem; font-weight: 700; color: #a0b0c8; text-align: left;
+}
+.opt:hover:not(.locked) { border-color: var(--gold); color: var(--white); background: rgba(245,200,66,.07); }
+.opt .opt-l { font-family: 'Press Start 2P', monospace; font-size: .36rem; color: var(--gray2); flex-shrink: 0; margin-top: 2px; width: 22px; }
+.opt.selected { border-color: var(--blue); background: rgba(64,196,255,.1); color: var(--white); }
+.opt.ok  { border-color: var(--green)!important; background: rgba(0,230,118,.12)!important; color: var(--green2)!important; }
+.opt.nok { border-color: var(--red)!important;   background: rgba(255,82,82,.1)!important;  color: var(--red2)!important; }
+.opt.reveal { border-color: rgba(0,230,118,.5)!important; background: rgba(0,230,118,.05)!important; }
+.opt.locked { cursor: default; }
+
+/* DISCURSIVE */
+.disc-ta {
+  width: 100%; background: rgba(0,0,0,.5);
+  border: 1.5px solid var(--border2); border-radius: 8px;
+  padding: 12px 14px; font-family: 'Nunito', sans-serif;
+  font-size: .9rem; font-weight: 700; color: var(--white);
+  line-height: 1.7; outline: none; resize: vertical; min-height: 120px;
+  caret-color: var(--gold); transition: border-color .2s;
+}
+.disc-ta:focus { border-color: var(--gold); box-shadow: 0 0 10px rgba(245,200,66,.15); }
+.disc-ta.answered { border-color: rgba(0,230,118,.4); }
+.disc-hint {
+  font-size: .78rem; font-weight: 700; color: var(--gray);
+  margin-top: 6px; line-height: 1.6; font-style: italic;
+}
+.disc-hint strong { color: var(--gold2); font-style: normal; }
+
+/* GABARITO REVEAL */
+.gabarito {
+  background: rgba(0,230,118,.06); border: 1.5px solid rgba(0,230,118,.3);
+  border-radius: 9px; padding: 12px 14px; margin-top: 10px;
+  display: none; animation: pu .3s ease;
+}
+@keyframes pu { from{opacity:0;transform:translateY(4px)} to{opacity:1;transform:translateY(0)} }
+.gab-title { font-family: 'Press Start 2P', monospace; font-size: .38rem; color: var(--green); margin-bottom: 7px; }
+.gab-text  { font-size: .85rem; font-weight: 700; color: var(--green2); line-height: 1.7; }
+
+/* FEEDBACK */
+.q-fb { border-radius: 9px; padding: 10px 13px; font-size: .86rem; font-weight: 800; line-height: 1.6; display: none; margin-top: 10px; animation: pu .3s ease; }
+.fb-ok  { background: rgba(0,230,118,.1); border: 1.5px solid rgba(0,230,118,.35); color: var(--green2); }
+.fb-nok { background: rgba(255,82,82,.08); border: 1.5px solid rgba(255,82,82,.3); color: var(--red2); }
+.fb-disc{ background: rgba(245,200,66,.08); border: 1.5px solid rgba(245,200,66,.25); color: var(--gold2); }
+
+/* NAV */
+.q-nav { display: flex; justify-content: space-between; align-items: center; margin-top: 16px; flex-wrap: wrap; gap: 8px; }
+.btn { display: inline-flex; align-items: center; gap: 7px; font-family: 'Press Start 2P', monospace; font-size: .44rem; border: 1px solid transparent; border-radius: 8px; padding: 11px 20px; cursor: pointer; transition: all .2s; color: white; }
+.btn-gold   { background: linear-gradient(135deg,#4a2c00,#9a6000); border-color: rgba(245,200,66,.4); color: #fef3c7; box-shadow: 0 4px 12px rgba(245,200,66,.2); }
+.btn-gold:hover   { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(245,200,66,.35); }
+.btn-green  { background: linear-gradient(135deg,#073a10,#155a20); border-color: rgba(0,230,118,.35); box-shadow: 0 4px 12px rgba(0,230,118,.2); }
+.btn-green:hover  { transform: translateY(-1px); }
+.btn-blue   { background: linear-gradient(135deg,#0a2a50,#164080); border-color: rgba(64,196,255,.35); box-shadow: 0 4px 12px rgba(64,196,255,.2); }
+.btn-blue:hover   { transform: translateY(-1px); }
+.btn-ghost  { background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.12); font-size: .38rem; }
+.btn-ghost:hover  { background: rgba(255,255,255,.1); }
+.btn:disabled { opacity: .3; cursor: not-allowed; transform: none; }
+
+/* ═══ RESULT ═══ */
+.xp-ring {
+  width: 130px; height: 130px; border-radius: 50%; margin: 0 auto 14px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  border: 4px solid var(--gold);
+  box-shadow: 0 0 30px rgba(245,200,66,.3);
+  animation: rpulse 2.5s ease-in-out infinite;
+}
+@keyframes rpulse { 0%,100%{box-shadow:0 0 20px rgba(245,200,66,.2)} 50%{box-shadow:0 0 50px rgba(245,200,66,.5)} }
+.xp-num { font-family: 'Press Start 2P', monospace; font-size: 1.4rem; color: var(--gold); line-height: 1; }
+.xp-lbl { font-family: 'Press Start 2P', monospace; font-size: .4rem; color: var(--gray); margin-top: 4px; }
+
+.res-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(130px,1fr)); gap: 10px; margin: 14px 0; }
+.rbox { border-radius: 10px; padding: 13px; text-align: center; border: 1.5px solid; }
+.rbox .rv { font-family: 'Press Start 2P', monospace; font-size: .9rem; line-height: 1; margin-bottom: 4px; }
+.rbox .rl { font-size: .66rem; font-weight: 800; color: var(--gray); }
+.rbox.hi { border-color: var(--green); background: rgba(0,230,118,.07); } .rbox.hi .rv { color: var(--green); }
+.rbox.md { border-color: var(--gold);  background: rgba(245,200,66,.07); } .rbox.md .rv { color: var(--gold); }
+.rbox.lo { border-color: var(--red);   background: rgba(255,82,82,.07); }  .rbox.lo .rv { color: var(--red); }
+.rbox.info{border-color: var(--blue);  background: rgba(64,196,255,.07); } .rbox.info .rv { color: var(--blue); }
+
+.r-badge {
+  border-radius: 12px; padding: 14px 18px; text-align: center;
+  font-size: .95rem; font-weight: 800; line-height: 1.5; border: 2px solid; margin-bottom: 14px;
+}
+.rb-gold   { border-color: var(--gold);  background: rgba(245,200,66,.1);  color: var(--gold2); }
+.rb-green  { border-color: var(--green); background: rgba(0,230,118,.1);   color: var(--green2); }
+.rb-orange { border-color: var(--orange);background: rgba(255,152,0,.1);   color: var(--orange2); }
+.rb-red    { border-color: var(--red);   background: rgba(255,82,82,.1);   color: var(--red2); }
+
+/* REVIEW */
+.rev-item { border-radius: 10px; border: 1.5px solid; padding: 12px 14px; margin-bottom: 8px; }
+.rev-item.ok  { border-color: rgba(0,230,118,.35); background: rgba(0,230,118,.05); }
+.rev-item.nok { border-color: rgba(255,82,82,.3);  background: rgba(255,82,82,.05); }
+.rev-item.disc{ border-color: rgba(245,200,66,.3);  background: rgba(245,200,66,.05); }
+.ri-top { display: flex; align-items: center; gap: 9px; margin-bottom: 5px; }
+.ri-num { font-family: 'Press Start 2P', monospace; font-size: .38rem; }
+.rev-item.ok  .ri-num { color: var(--green); }
+.rev-item.nok .ri-num { color: var(--red); }
+.rev-item.disc .ri-num { color: var(--gold); }
+.ri-icon { font-size: 1.1rem; }
+.ri-q { font-size: .82rem; font-weight: 800; color: #b0c0d8; }
+.ri-ans{ font-size: .78rem; font-weight: 700; color: var(--gray); margin-top: 3px; }
+.ri-correct { color: var(--green); font-weight: 800; }
+
+/* TEACHER PANEL */
+.teacher-panel {
+  background: rgba(255,152,0,.06); border: 2px solid rgba(255,152,0,.3);
+  border-radius: 12px; padding: 16px 18px; margin-top: 14px;
+}
+.tp-title { font-family: 'Press Start 2P', monospace; font-size: .44rem; color: var(--orange); margin-bottom: 10px; display: flex; align-items: center; gap: 7px; }
+.tp-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid rgba(255,152,0,.15); font-size: .85rem; font-weight: 700; color: #c8b0a0; }
+.tp-row:last-child { border-bottom: none; }
+.tp-val { font-family: 'Fira Code', monospace; font-size: .82rem; color: var(--gold2); }
+.tp-disc-ans { background: rgba(0,0,0,.3); border-radius: 7px; padding: 9px 12px; margin: 5px 0; font-size: .82rem; font-weight: 700; color: #c8c0a0; line-height: 1.6; font-style: italic; border: 1px solid rgba(255,152,0,.2); }
+
+/* OV */
+.conf { position: fixed; inset: 0; pointer-events: none; z-index: 400; }
+.ov { position: fixed; inset: 0; background: rgba(0,0,0,.9); z-index: 500; display: none; align-items: center; justify-content: center; flex-direction: column; }
+.ov.on { display: flex; }
+.ov-t { font-family: 'Press Start 2P', monospace; font-size: clamp(.6rem,3vw,1.2rem); text-align: center; animation: bp .5s ease; }
+@keyframes bp { 0%{transform:scale(.3);opacity:0} 70%{transform:scale(1.1)} 100%{transform:scale(1);opacity:1} }
+.ov-s { font-size: .9rem; font-weight: 700; color: white; text-align: center; margin-top: 10px; max-width: 380px; line-height: 1.7; padding: 0 14px; }
+
+@media(max-width:540px) { .panel{padding:16px 12px;} .btn{font-size:.38rem;padding:10px 14px;} }
+</style>
+</head>
+<body>
+<div class="conf" id="conf"></div>
+<div class="ov" id="ov"><div class="ov-t" id="ov-t" style="color:var(--gold);">✅ RESPOSTA CORRETA!</div><div class="ov-s" id="ov-s"></div></div>
+
+<!-- ════ INTRO ════ -->
+<div class="scr on" id="s-intro">
+<div class="panel" style="max-width:760px;margin-top:16px;">
+
+  <div style="text-align:center;margin-bottom:14px;">
+    <div style="font-size:3rem;animation:fl 2.5s ease-in-out infinite;margin-bottom:8px;">👑</div>
+    <p class="ptitle">A GRANDE PROVA</p>
+    <p class="ptitle" style="color:var(--blue);font-size:clamp(.38rem,1.2vw,.56rem);">DO MESTRE DO JOGO</p>
+    <p class="psub" style="margin-top:5px;">AVALIAÇÃO FINAL CAI · GUILDA TECHSOLUTIONS</p>
+  </div>
+
+  <div class="npc">
+    <div class="nav">👑</div>
+    <div><p class="nname">REI ARTUR — AVALIADOR DO REINO</p>
+      <p class="ntxt"><strong>Parabéns, Herói!</strong> Você chegou ao final da temporada!<br><br>
+      Nesta missão avaliativa, você assume o papel de <strong>Tech Lead e Guardião do Ouro</strong> da Guilda. Responda os 6 desafios usando seus conhecimentos de Inventário, Servidor Central, Cofre de Dados e Custos Mágicos.
+      <span class="ctip">4 questões objetivas + 2 questões discursivas = 100 XP possíveis</span>
+      </p>
+    </div>
+  </div>
+
+  <!-- SECTIONS OVERVIEW -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;">
+    <div style="border:1.5px solid rgba(64,196,255,.3);border-radius:10px;padding:12px;background:rgba(64,196,255,.05);">
+      <p style="font-family:'Press Start 2P',monospace;font-size:.38rem;color:var(--s1);margin-bottom:6px;">📦 SEÇÃO 1</p>
+      <p style="font-size:.84rem;font-weight:800;color:var(--white);">O Inventário da Guilda</p>
+      <p style="font-size:.76rem;font-weight:700;color:var(--gray);">Patrimônio · Balanço · PL</p>
+    </div>
+    <div style="border:1.5px solid rgba(245,200,66,.3);border-radius:10px;padding:12px;background:rgba(245,200,66,.05);">
+      <p style="font-family:'Press Start 2P',monospace;font-size:.38rem;color:var(--s2);margin-bottom:6px;">🖥️ SEÇÃO 2</p>
+      <p style="font-size:.84rem;font-weight:800;color:var(--white);">O Servidor Central</p>
+      <p style="font-size:.76rem;font-weight:700;color:var(--gray);">ERP · Módulo Contábil</p>
+    </div>
+    <div style="border:1.5px solid rgba(29,233,182,.3);border-radius:10px;padding:12px;background:rgba(29,233,182,.05);">
+      <p style="font-family:'Press Start 2P',monospace;font-size:.38rem;color:var(--s3);margin-bottom:6px;">🏦 SEÇÃO 3</p>
+      <p style="font-size:.84rem;font-weight:800;color:var(--white);">O Cofre de Dados</p>
+      <p style="font-size:.76rem;font-weight:700;color:var(--gray);">PostgreSQL · Chaves · FK</p>
+    </div>
+    <div style="border:1.5px solid rgba(206,147,216,.3);border-radius:10px;padding:12px;background:rgba(206,147,216,.05);">
+      <p style="font-family:'Press Start 2P',monospace;font-size:.38rem;color:var(--s4);margin-bottom:6px;">⚗️ SEÇÃO 4</p>
+      <p style="font-size:.84rem;font-weight:800;color:var(--white);">O Custo da Magia</p>
+      <p style="font-size:.76rem;font-weight:700;color:var(--gray);">Algoritmo · Prompt · IA</p>
+    </div>
+  </div>
+
+  <!-- RULES -->
+  <div style="background:rgba(7,10,18,.85);border:1px solid var(--border2);border-radius:10px;padding:14px;margin-bottom:18px;">
+    <p style="font-family:'Press Start 2P',monospace;font-size:.42rem;color:var(--gold);margin-bottom:10px;">📜 REGRAS DA PROVA</p>
+    <div style="display:flex;flex-direction:column;gap:8px;font-size:.88rem;font-weight:700;color:#a0b0c8;line-height:1.6;">
+      <div style="display:flex;gap:9px;"><span>1️⃣</span><span><strong style="color:var(--white);">Q1 a Q4</strong> — Questões objetivas. Você pode tentar mais de uma vez se errar, mas a pontuação cai.</span></div>
+      <div style="display:flex;gap:9px;"><span>2️⃣</span><span><strong style="color:var(--white);">Q5 e Q6</strong> — Questões discursivas. Escreva com suas palavras. O professor verá sua resposta.</span></div>
+      <div style="display:flex;gap:9px;"><span>🕐</span><span>O <strong style="color:var(--white);">timer</strong> é opcional — você pode ignorá-lo. Ele está lá para você se organizar.</span></div>
+      <div style="display:flex;gap:9px;"><span>💡</span><span>Use as dicas das questões se travar. Elas não tiram pontos.</span></div>
+    </div>
+  </div>
+
+  <div style="text-align:center;">
+    <button class="btn btn-gold" style="font-size:.5rem;" onclick="startExam()">👑 INICIAR A GRANDE PROVA →</button>
+  </div>
+</div>
+</div>
+
+<!-- ════ PROVA ════ -->
+<div class="scr" id="s-exam">
+<div class="panel" style="max-width:860px;margin-top:14px;">
+
+  <!-- HEADER -->
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px;">
+    <div><p class="ptitle" style="font-size:.46rem;text-align:left;">👑 A GRANDE PROVA DO MESTRE</p><p class="psub" style="text-align:left;margin-top:2px;">AVALIAÇÃO FINAL · GUILDA TECHSOLUTIONS</p></div>
+    <div style="display:flex;gap:6px;">
+      <button class="btn btn-ghost" onclick="confirmEnd()">🏁 FINALIZAR</button>
+    </div>
+  </div>
+
+  <!-- TIMER -->
+  <div class="timer-bar">
+    <span class="timer-icon">⏱️</span>
+    <div class="timer-track"><div class="timer-fill t-ok" id="timer-fill" style="width:100%;"></div></div>
+    <span class="timer-val" id="timer-val">40:00</span>
+  </div>
+
+  <!-- QUESTION PROGRESS -->
+  <div class="q-progress" id="q-progress">
+    <div class="qp-dot current" id="qp0">1</div>
+    <div class="qp-dot" id="qp1">2</div>
+    <div class="qp-dot" id="qp2">3</div>
+    <div class="qp-dot" id="qp3">4</div>
+    <div class="qp-dot" id="qp4">5</div>
+    <div class="qp-dot" id="qp5">6</div>
+  </div>
+
+  <!-- NPC -->
+  <div class="npc" style="margin-bottom:12px;">
+    <div class="nav">🧙</div>
+    <div><p class="nname">MESTRE AVALIADOR</p>
+      <p class="ntxt" id="npc-exam">Questão 1 de 6! Seção: <strong>O Inventário da Guilda</strong>. Leia com atenção e escolha a opção mais completa!</p>
+    </div>
+  </div>
+
+  <!-- QUESTIONS (one at a time) -->
+  <div id="question-area"></div>
+
+  <!-- NAVIGATION -->
+  <div class="q-nav" id="q-nav">
+    <button class="btn btn-ghost" id="btn-prev" onclick="prevQ()" disabled>← ANTERIOR</button>
+    <div style="font-family:'Press Start 2P',monospace;font-size:.38rem;color:var(--gray);" id="q-counter">Q 1 / 6</div>
+    <button class="btn btn-gold" id="btn-next" onclick="nextQ()">PRÓXIMA →</button>
+  </div>
+
+</div>
+</div>
+
+<!-- ════ RESULTADO ════ -->
+<div class="scr" id="s-result">
+<div class="panel" style="max-width:780px;margin-top:14px;">
+
+  <div style="text-align:center;margin-bottom:14px;">
+    <div style="font-size:3rem;animation:fl 2.5s ease-in-out infinite;">🏆</div>
+    <p class="ptitle">PROVA<br>CONCLUÍDA!</p>
+    <p class="psub" style="margin-top:5px;">RELATÓRIO DO MESTRE DO JOGO</p>
+  </div>
+
+  <div id="r-badge-wrap"></div>
+
+  <div style="width:130px;height:130px;border-radius:50%;margin:0 auto 14px;display:flex;flex-direction:column;align-items:center;justify-content:center;border:4px solid var(--gold);background:radial-gradient(circle,rgba(245,200,66,.15),rgba(12,16,34,.9));box-shadow:0 0 30px rgba(245,200,66,.3);animation:rpulse 2.5s ease-in-out infinite;">
+    <span style="font-family:'Press Start 2P',monospace;font-size:1.3rem;color:var(--gold);line-height:1;" id="r-xp">—</span>
+    <span style="font-family:'Press Start 2P',monospace;font-size:.38rem;color:var(--gray);margin-top:4px;">XP TOTAL</span>
+  </div>
+
+  <div class="res-grid" id="r-grid"></div>
+
+  <div style="border-top:1px solid var(--border);padding-top:14px;margin-top:4px;">
+    <p style="font-family:'Press Start 2P',monospace;font-size:.4rem;color:var(--gray);margin-bottom:10px;">📋 REVISÃO POR QUESTÃO</p>
+    <div id="r-review"></div>
+  </div>
+
+  <!-- TEACHER PANEL -->
+  <div class="teacher-panel" id="teacher-panel">
+    <p class="tp-title">👨‍🏫 PAINEL DO PROFESSOR</p>
+    <div id="teacher-data"></div>
+  </div>
+
+  <div class="npc" style="margin-top:14px;">
+    <div class="nav">👑</div>
+    <div><p class="nname">REI ARTUR</p>
+      <p class="ntxt" id="r-npc-msg">—</p>
+    </div>
+  </div>
+
+  <div style="display:flex;gap:9px;flex-wrap:wrap;margin-top:14px;">
+    <button class="btn btn-gold" onclick="downloadCSV()">⬇ BAIXAR RELATÓRIO (CSV)</button>
+    <button class="btn btn-ghost" onclick="fullReset()">↺ REFAZER PROVA</button>
+  </div>
+</div>
+</div>
+
+<script>
+// ══════════════════════════════════════
+// QUESTIONS DATA
+// ══════════════════════════════════════
+const QUESTIONS = [
+  {
+    id: 1, type: 'mc', section: 1,
+    secLabel: '📦 SEÇÃO 1 · O Inventário da Guilda', secClass: 'sb-1',
+    icon: '💻',
+    stem: 'A Guilda comprou <strong>5 Supercomputadores Físicos (Hardware)</strong> e também registrou a patente de um novo <strong>Feitiço de Código (Software)</strong> desenvolvido pela equipe. Como esses itens são classificados no Balanço Patrimonial (Inventário)?',
+    opts: [
+      'Ambos são Dano (Despesas), pois gastaram ouro da guilda.',
+      'Ambos são Dívidas (Passivo), pois a guilda terá que dar manutenção.',
+      'Os computadores são Bens Tangíveis (físicos) e o Feitiço de Código é um Bem Intangível (sem forma física), sendo ambos classificados como Ativos (Loot positivo).',
+      'Os computadores são Ativos e o Feitiço é classificado como Patrimônio Líquido.'
+    ],
+    correct: 2,
+    xpFull: 15, xpPartial: 7,
+    feedOk: '✅ Perfeito! Hardware = tangível (você pode tocar). Software = intangível (não tem forma física). Ambos são ATIVOS — bens que a guilda POSSUI!',
+    feedNok: '❌ Revise! Lembre: ATIVO = o que a guilda TEM. Tanto o computador (físico) quanto o software (intangível) são bens que a guilda possui.',
+    tip: '💡 Dica: "Ativo" = tudo que a guilda TEM e que tem valor. Hardware é físico (tangível), software é intangível. Mas ambos são ATIVOS!'
+  },
+  {
+    id: 2, type: 'mc', section: 1,
+    secLabel: '📦 SEÇÃO 1 · O Inventário da Guilda', secClass: 'sb-1',
+    icon: '⚖️',
+    stem: 'O sistema do Baú da Guilda mostra: <strong>10.000 moedas em computadores</strong> + <strong>5.000 moedas no baú</strong> (Total ATIVO = 15.000). A guilda tem um <strong>Pergaminho de Dívida de 3.000 moedas</strong>. Usando a fórmula <code>Ativo − Passivo = PL</code>, qual é o Power Level (Patrimônio Líquido) exato?',
+    opts: [
+      '15.000 moedas',
+      '12.000 moedas',
+      '8.000 moedas',
+      '3.000 moedas'
+    ],
+    correct: 1,
+    xpFull: 15, xpPartial: 7,
+    feedOk: '✅ Correto! 15.000 (Ativo) − 3.000 (Passivo) = 12.000 moedas de Patrimônio Líquido. O Power Level da guilda!',
+    feedNok: '❌ Tente de novo! A fórmula é: ATIVO (15.000) − PASSIVO (3.000) = PL. O que sobra depois de pagar as dívidas?',
+    tip: '💡 Dica: ATIVO total = 10.000 + 5.000 = 15.000. PASSIVO = 3.000 (dívida). PL = ATIVO − PASSIVO.'
+  },
+  {
+    id: 3, type: 'mc', section: 2,
+    secLabel: '🖥️ SEÇÃO 2 · O Servidor Central (ERP)', secClass: 'sb-2',
+    icon: '🖥️',
+    stem: 'O Rei pediu para instalar um <strong>Servidor Central (ERP)</strong>. Você precisa explicar para os cavaleiros qual é a função do <strong>Módulo Contábil</strong> (o "Painel do Mestre do Jogo") dentro desse sistema. Qual opção explica melhor?',
+    opts: [
+      'O módulo contábil é offline e não se comunica com os outros jogadores.',
+      'O módulo contábil serve apenas para calcular o dano das espadas.',
+      'O módulo contábil é o local onde o ouro "deságua"; ele recebe as ações de todos os outros módulos (Loja, Banco, Inventário) automaticamente para gerar a Tela de Status (Relatórios).',
+      'O módulo contábil serve apenas para criar a tela de login do jogo.'
+    ],
+    correct: 2,
+    xpFull: 15, xpPartial: 7,
+    feedOk: '✅ Exato! O Módulo Contábil é o "rio final" — toda ação financeira do ERP (venda, compra, pagamento) flui automaticamente para ele, gerando os relatórios!',
+    feedNok: '❌ Não é essa! O Módulo Contábil é o ponto central onde TODAS as informações financeiras se encontram. Ele recebe dados de todos os outros módulos.',
+    tip: '💡 Dica: Pensa no Módulo Contábil como o "Painel do Mestre do Jogo" — é onde você vê o RESULTADO de tudo que aconteceu nos outros módulos.'
+  },
+  {
+    id: 4, type: 'mc', section: 4,
+    secLabel: '⚗️ SEÇÃO 4 · O Custo da Magia', secClass: 'sb-4',
+    icon: '⚗️',
+    stem: 'A Guilda aceitou uma Quest para programar um <strong>Aplicativo de Defesa</strong>. A missão exige <strong>80 horas de trabalho</strong>. O <strong>Mago do Código custa 50 moedas/hora</strong>. Além disso, há uma <strong>taxa fixa de 300 moedas</strong> para alugar a Torre de Cristal (Nuvem). Qual será o custo total na Tela de Resultados (DRE)?',
+    opts: [
+      '4.000 moedas',
+      '4.300 moedas',
+      '4.500 moedas',
+      '300 moedas'
+    ],
+    correct: 1,
+    xpFull: 15, xpPartial: 7,
+    feedOk: '✅ Correto! 80h × 50 moedas = 4.000 + 300 (taxa fixa) = 4.300 moedas. O algoritmo funcionou!',
+    feedNok: '❌ Tente de novo! Lembra a fórmula: horas × custo_hora + taxa_fixa. Calcule: 80 × 50 = ? Depois some + 300.',
+    tip: '💡 Dica: PASSO 1: 80 × 50 = ? PASSO 2: resultado + 300 = ?'
+  },
+  {
+    id: 5, type: 'disc', section: 3,
+    secLabel: '🏦 SEÇÃO 3 · O Cofre de Dados (PostgreSQL)', secClass: 'sb-3',
+    icon: '🔑',
+    stem: 'Como Guardião do Cofre Mestre (PostgreSQL), você está forjando o <strong>Baú de Missões (Tabela FATURA)</strong>. O Mestre avisou: você <strong>NÃO pode</strong> digitar o nome do Rei toda vez, mas sim usar o <strong>"ID do Aliado" (Chave Estrangeira)</strong>.\n\nExplique com suas palavras por que usar o ID numérico é melhor do que guardar o nome do Rei diretamente na tabela de faturas.',
+    xp: 20,
+    placeholder: 'Escreva sua resposta aqui... (Ex: "Usar o ID é melhor porque...")',
+    gabarito: 'Usar o ID evita repetição do nome (redundância) e impede erros de digitação que "bugariam" o sistema. O ID é como um código de barras que liga o Baú de Faturas ao Baú de Clientes com segurança. Se o nome do Rei mudar, só precisa atualizar em 1 lugar (no Baú de Clientes). O banco fica menor e mais rápido!'
+  },
+  {
+    id: 6, type: 'disc', section: 4,
+    secLabel: '⚗️ SEÇÃO 4 · O Custo da Magia', secClass: 'sb-4',
+    icon: '🔮',
+    stem: 'Fazer os cálculos de custo na mão demora muito. Escreva o <strong>"Pergaminho de Prompt" perfeito</strong> que você digitaria no Oráculo (IA / ChatGPT) para que ele calcule sozinho as horas e custos de um novo <strong>Aplicativo de Taverna</strong>.\n\nLembre-se: o prompt precisa ter as 4 partes mágicas para o feitiço não falhar!',
+    xp: 20,
+    placeholder: 'Escreva seu prompt aqui... (Inclua: Papel + Contexto + Regra de Ouro + Formato de Saída)',
+    gabarito: 'PAPEL: "Atue como Arquiteto de Software e Contador de Custos da Guilda."\nCONTEXTO: "Preciso estimar o custo do Aplicativo de Taverna com 3 módulos: login, cardápio de poções e agendamento."\nREGRA: "O custo de desenvolvimento é de 50 moedas por hora. Não use outro valor."\nSAÍDA: "Devolva uma tabela com: Nome do Módulo | Horas Estimadas | Custo em Ouro."'
+  }
+];
+
+// ══════════════════════════════════════
+// STATE
+// ══════════════════════════════════════
+let currentQ = 0;
+let answers  = {}; // { qIdx: { answer, correct, score, attempts } }
+let discAnswers = {}; // { qIdx: text }
+let timerInterval = null;
+let timeLeft = 40 * 60; // 40 min
+let examStarted = false;
+
+// ══════════════════════════════════════
+// START
+// ══════════════════════════════════════
+function startExam() {
+  go('s-exam');
+  examStarted = true;
+  startTimer();
+  renderQuestion(0);
+}
+
+// ══════════════════════════════════════
+// TIMER
+// ══════════════════════════════════════
+function startTimer() {
+  updateTimerUI();
+  timerInterval = setInterval(() => {
+    timeLeft--;
+    updateTimerUI();
+    if (timeLeft <= 0) { clearInterval(timerInterval); endExam(); }
+  }, 1000);
+}
+
+function updateTimerUI() {
+  const m = Math.floor(timeLeft / 60);
+  const s = timeLeft % 60;
+  document.getElementById('timer-val').textContent = `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+  const pct = timeLeft / (40*60) * 100;
+  const fill = document.getElementById('timer-fill');
+  fill.style.width = pct + '%';
+  fill.className = 'timer-fill ' + (pct > 50 ? 't-ok' : pct > 20 ? 't-warn' : 't-crit');
+}
+
+// ══════════════════════════════════════
+// RENDER QUESTION
+// ══════════════════════════════════════
+function renderQuestion(idx) {
+  currentQ = idx;
+  const q = QUESTIONS[idx];
+  const area = document.getElementById('question-area');
+
+  // update progress dots
+  for (let i = 0; i < QUESTIONS.length; i++) {
+    const dot = document.getElementById('qp' + i);
+    dot.className = 'qp-dot';
+    if (answers[i] !== undefined || discAnswers[i] !== undefined)
+      dot.className += ' answered';
+    else if (i === idx)
+      dot.className += ' current';
+    else if (answers[i] === undefined && discAnswers[i] === undefined)
+      dot.className += ' unanswered';
+  }
+  document.getElementById('qp' + idx).className = 'qp-dot current';
+
+  document.getElementById('q-counter').textContent = `Q ${idx+1} / ${QUESTIONS.length}`;
+  document.getElementById('btn-prev').disabled = idx === 0;
+  document.getElementById('btn-next').textContent = idx === QUESTIONS.length - 1 ? '🏁 FINALIZAR' : 'PRÓXIMA →';
+
+  // NPC hint
+  const npcMsgs = [
+    'Questão 1 de 6! Seção: <strong>O Inventário da Guilda</strong>. Leia com atenção!',
+    'Questão 2 de 6! Use a <strong>fórmula Ativo − Passivo = PL</strong>!',
+    'Questão 3 de 6! Seção: <strong>O Servidor Central (ERP)</strong>. Qual é o papel do Módulo Contábil?',
+    'Questão 4 de 6! Seção: <strong>O Custo da Magia</strong>. Aplique a fórmula passo a passo!',
+    'Questão 5 de 6! Questão <strong>discursiva</strong>. Escreva com suas palavras — não há resposta certa ou errada, o raciocínio é o que importa!',
+    'Última questão! <strong>Escreva o Prompt perfeito</strong> com as 4 partes: Papel + Contexto + Regra + Saída!'
+  ];
+  document.getElementById('npc-exam').innerHTML = npcMsgs[idx];
+
+  if (q.type === 'mc') {
+    area.innerHTML = renderMC(q, idx);
+    // restore state
+    if (answers[idx] !== undefined) {
+      const state = answers[idx];
+      lockMC(idx, state.answer, state.correct);
+    }
+  } else {
+    area.innerHTML = renderDisc(q, idx);
+    const ta = document.getElementById('disc-ta-' + idx);
+    if (discAnswers[idx]) {
+      ta.value = discAnswers[idx];
+      ta.classList.add('answered');
+    }
+    ta.addEventListener('input', () => {
+      discAnswers[idx] = ta.value.trim();
+      ta.classList.toggle('answered', ta.value.trim().length > 20);
+      document.getElementById('qp'+idx).className = 'qp-dot ' + (ta.value.trim().length>20?'answered':'current');
+    });
+  }
+}
+
+function renderMC(q, idx) {
+  const opts = q.opts.map((o, i) => {
+    const letters = ['A','B','C','D'];
+    return `<button class="opt" id="opt${idx}_${i}" onclick="pickOpt(${idx},${i})">
+      <span class="opt-l">${letters[i]}</span>
+      <span>${o}</span>
+    </button>`;
+  }).join('');
+
+  return `
+    <div class="q-card">
+      <div class="sec-badge ${q.secClass}">${q.secLabel}</div>
+      <div class="q-num"><span class="qn-icon">${q.icon}</span> QUESTÃO ${q.id} — ${q.xpFull} XP possíveis</div>
+      <p class="q-stem">${q.stem.replace(/\n/g,'<br>')}</p>
+      <div class="opts" id="opts-${idx}">${opts}</div>
+      <p class="disc-hint" style="margin-top:8px;">💡 <a href="#" onclick="toggleTip(${idx});return false;" style="color:var(--gold);text-decoration:none;">Mostrar dica</a></p>
+      <div id="tip-${idx}" style="display:none;" class="disc-hint"><strong>Dica:</strong> ${q.tip}</div>
+      <div class="q-fb" id="qfb-${idx}"></div>
+    </div>`;
+}
+
+function renderDisc(q, idx) {
+  return `
+    <div class="q-card">
+      <div class="sec-badge ${q.secClass}">${q.secLabel}</div>
+      <div class="q-num"><span class="qn-icon">${q.icon}</span> QUESTÃO ${q.id} — ${q.xp} XP (discursiva)</div>
+      <p class="q-stem">${q.stem.replace(/\n/g,'<br>')}</p>
+      <textarea class="disc-ta" id="disc-ta-${idx}" placeholder="${q.placeholder}"></textarea>
+      <p class="disc-hint">📝 Escreva com suas próprias palavras. Mínimo 20 caracteres. O professor vai avaliar o seu raciocínio!</p>
+      <div style="margin-top:10px;"><button class="btn btn-ghost" onclick="toggleGabarito(${idx})">👀 VER GABARITO ESPERADO</button></div>
+      <div class="gabarito" id="gab-${idx}">
+        <p class="gab-title">📋 GABARITO DO PROFESSOR</p>
+        <p class="gab-text">${q.gabarito.replace(/\n/g,'<br>')}</p>
+      </div>
+    </div>`;
+}
+
+function toggleTip(idx) {
+  const el = document.getElementById('tip-' + idx);
+  if (el) el.style.display = el.style.display === 'none' ? 'block' : 'none';
+}
+function toggleGabarito(idx) {
+  const el = document.getElementById('gab-' + idx);
+  if (el) el.style.display = el.style.display === 'none' ? 'block' : 'none';
+}
+
+// ══════════════════════════════════════
+// MC PICKING
+// ══════════════════════════════════════
+function pickOpt(qIdx, optIdx) {
+  const q = QUESTIONS[qIdx];
+  if (answers[qIdx]?.locked) return;
+
+  const attempts = answers[qIdx]?.attempts || 0;
+  const isCorrect = optIdx === q.correct;
+
+  if (!answers[qIdx]) answers[qIdx] = { attempts: 0, score: q.xpFull };
+  answers[qIdx].attempts = attempts + 1;
+
+  if (isCorrect) {
+    const score = attempts === 0 ? q.xpFull : q.xpPartial;
+    answers[qIdx] = { answer: optIdx, correct: true, score, attempts: attempts + 1, locked: true };
+    lockMC(qIdx, optIdx, true);
+    showFb(qIdx, 'ok', q.feedOk);
+    document.getElementById('qp'+qIdx).className = 'qp-dot answered';
+    showOv('✅ CORRETO! +'+ score +' XP', q.feedOk.replace('✅ ',''));
+    setTimeout(hideOv, 1600);
+    spawnConf();
+  } else {
+    // mark wrong, don't lock
+    document.querySelectorAll(`[id^="opt${qIdx}_"]`).forEach(b => b.classList.remove('selected','nok'));
+    document.getElementById(`opt${qIdx}_${optIdx}`).classList.add('nok');
+    if (!answers[qIdx]) answers[qIdx] = { attempts: 1, score: q.xpPartial };
+    else answers[qIdx].score = q.xpPartial;
+    showFb(qIdx, 'nok', q.feedNok);
+  }
+}
+
+function lockMC(qIdx, correctPick, correct) {
+  const q = QUESTIONS[qIdx];
+  document.querySelectorAll(`[id^="opt${qIdx}_"]`).forEach((btn, i) => {
+    btn.classList.add('locked');
+    if (i === q.correct) btn.classList.add('ok');
+    else if (i === correctPick && !correct) btn.classList.add('nok');
+  });
+}
+
+function showFb(qIdx, type, msg) {
+  const fb = document.getElementById('qfb-' + qIdx);
+  if (!fb) return;
+  fb.style.display = 'block';
+  fb.className = 'q-fb fb-' + type;
+  fb.innerHTML = msg;
+}
+
+// ══════════════════════════════════════
+// NAV
+// ══════════════════════════════════════
+function nextQ() {
+  if (currentQ === QUESTIONS.length - 1) { confirmEnd(); return; }
+  renderQuestion(currentQ + 1);
+}
+function prevQ() {
+  if (currentQ > 0) renderQuestion(currentQ - 1);
+}
+
+function confirmEnd() {
+  const unanswered = QUESTIONS.filter((q,i) => {
+    if (q.type === 'mc') return answers[i] === undefined;
+    return !discAnswers[i] || discAnswers[i].length < 20;
+  }).length;
+  if (unanswered > 0) {
+    showOv('⚠️ ATENÇÃO!', `Você ainda tem ${unanswered} questão(ões) sem resposta. Deseja mesmo finalizar?`);
+    document.querySelector('.ov').innerHTML += '<div style="margin-top:14px;display:flex;gap:10px;justify-content:center;"><button class="btn btn-gold" onclick="endExam()">✅ FINALIZAR</button><button class="btn btn-ghost" onclick="hideOv()">← VOLTAR</button></div>';
+  } else {
+    endExam();
+  }
+}
+
+// ══════════════════════════════════════
+// END
+// ══════════════════════════════════════
+function endExam() {
+  clearInterval(timerInterval);
+  // save disc answers
+  QUESTIONS.forEach((q, i) => {
+    if (q.type === 'disc') {
+      const ta = document.getElementById('disc-ta-' + i);
+      if (ta && ta.value.trim()) discAnswers[i] = ta.value.trim();
+    }
+  });
+  buildResult();
+  go('s-result');
+  spawnConf();
+}
+
+function buildResult() {
+  // calc score
+  let mcScore = 0, mcTotal = 0, discTotal = 0;
+  QUESTIONS.forEach((q, i) => {
+    if (q.type === 'mc') {
+      mcTotal += q.xpFull;
+      if (answers[i]?.correct) mcScore += answers[i].score;
+    } else {
+      discTotal += q.xp;
+    }
+  });
+  const maxXP = mcTotal + discTotal;
+  const earnedXP = mcScore;
+  const pct = Math.round(earnedXP / mcTotal * 100);
+
+  document.getElementById('r-xp').textContent = earnedXP + '/' + maxXP;
+
+  // badge
+  const badgeEl = document.getElementById('r-badge-wrap');
+  let badge, npcMsg;
+  if (pct === 100) {
+    badge = '<div class="r-badge rb-gold">🏆 PERFEITO! RANK S — MESTRE DO JOGO SUPREMO! Você dominou tudo!</div>';
+    npcMsg = 'Incrível! Você acertou 100% das questões objetivas! Você provou que é o Tech Lead que a Guilda precisava. Parabéns, Mestre do Jogo!';
+  } else if (pct >= 70) {
+    badge = `<div class="r-badge rb-green">⚔️ APROVADO! RANK A — GUARDIÃO DA GUILDA! ${pct}% de aproveitamento!</div>`;
+    npcMsg = `Muito bem! Você aproveitou ${pct}% das questões objetivas. A Guilda tem orgulho de você, Herói!`;
+  } else if (pct >= 50) {
+    badge = `<div class="r-badge rb-orange">🛡️ PARCIAL — RANK B — Continue Treinando! ${pct}% de aproveitamento!</div>`;
+    npcMsg = `Você acertou ${pct}%. Revise os conteúdos das questões que errou e tente de novo. A Guilda acredita em você!`;
+  } else {
+    badge = `<div class="r-badge rb-red">💪 REQUER REFORÇO — ${pct}% de aproveitamento. Refaça as missões!</div>`;
+    npcMsg = 'Não desanime! Volte para as missões de prática e revisite os conceitos. Cada herói tem seu tempo de evolução!';
+  }
+  badgeEl.innerHTML = badge;
+  document.getElementById('r-npc-msg').innerHTML = npcMsg;
+
+  // stats grid
+  const cls = pct >= 70 ? 'hi' : pct >= 50 ? 'md' : 'lo';
+  document.getElementById('r-grid').innerHTML = `
+    <div class="rbox ${cls}"><div class="rv">${earnedXP}/${mcTotal}</div><div class="rl">XP OBJETIVAS</div></div>
+    <div class="rbox ${cls}"><div class="rv">${pct}%</div><div class="rl">APROVEIT.</div></div>
+    <div class="rbox info"><div class="rv">${discTotal}</div><div class="rl">XP DISCURSIVAS</div></div>
+    <div class="rbox ${cls}"><div class="rv">${Object.values(answers).filter(a=>a.correct).length}/4</div><div class="rl">MC CORRETAS</div></div>`;
+
+  // review
+  let rev = '';
+  QUESTIONS.forEach((q, i) => {
+    if (q.type === 'mc') {
+      const state = answers[i];
+      const ok = state?.correct;
+      const given = state?.answer !== undefined ? q.opts[state.answer] : 'Não respondida';
+      rev += `<div class="rev-item ${ok ? 'ok' : 'nok'}">
+        <div class="ri-top">
+          <span class="ri-icon">${ok ? '✅' : '❌'}</span>
+          <span class="ri-num">Q${i+1} — ${ok ? '+' + state.score + ' XP' : '0 XP'}</span>
+        </div>
+        <div class="ri-q">${q.stem.replace(/<[^>]+>/g,'').substring(0,80)}...</div>
+        <div class="ri-ans">Sua resposta: <strong>${given.substring(0,50)}...</strong></div>
+        ${!ok ? `<div class="ri-ans">Correta: <span class="ri-correct">${q.opts[q.correct].substring(0,60)}...</span></div>` : ''}
+      </div>`;
+    } else {
+      const txt = discAnswers[i] || '(sem resposta)';
+      rev += `<div class="rev-item disc">
+        <div class="ri-top">
+          <span class="ri-icon">📝</span>
+          <span class="ri-num">Q${i+1} — Discursiva (${q.xp} XP · avaliação do professor)</span>
+        </div>
+        <div class="ri-q">${q.stem.replace(/<[^>]+>/g,'').substring(0,70)}...</div>
+        <div class="ri-ans">Sua resposta: "<em>${txt.substring(0,80)}${txt.length>80?'...':''}</em>"</div>
+      </div>`;
+    }
+  });
+  document.getElementById('r-review').innerHTML = rev;
+
+  // teacher panel
+  const timeSpent = 40*60 - timeLeft;
+  const tm = Math.floor(timeSpent/60), ts = timeSpent%60;
+  let tpHtml = `
+    <div class="tp-row"><span>Tempo utilizado</span><span class="tp-val">${tm.toString().padStart(2,'0')}:${ts.toString().padStart(2,'0')}</span></div>
+    <div class="tp-row"><span>Questões objetivas corretas</span><span class="tp-val">${Object.values(answers).filter(a=>a.correct).length}/4</span></div>
+    <div class="tp-row"><span>XP objetivas conquistado</span><span class="tp-val">${earnedXP}/${mcTotal}</span></div>
+    <div class="tp-row"><span>Aproveitamento objetivo</span><span class="tp-val">${pct}%</span></div>
+    <hr style="border-color:rgba(255,152,0,.15);margin:8px 0;">
+    <p style="font-family:'Press Start 2P',monospace;font-size:.34rem;color:var(--orange);margin:8px 0;">📝 RESPOSTAS DISCURSIVAS DO ALUNO</p>`;
+
+  QUESTIONS.filter(q => q.type === 'disc').forEach((q, i) => {
+    const realIdx = QUESTIONS.indexOf(q);
+    const txt = discAnswers[realIdx] || '(sem resposta)';
+    tpHtml += `
+      <p style="font-family:'Press Start 2P',monospace;font-size:.32rem;color:var(--gray);margin:8px 0;">Q${q.id}: ${q.stem.replace(/<[^>]+>/g,'').substring(0,50)}...</p>
+      <div class="tp-disc-ans">${txt}</div>
+      <p style="font-family:'Press Start 2P',monospace;font-size:.3rem;color:var(--green);margin:4px 0 10px;">📋 GABARITO ESPERADO:</p>
+      <div class="tp-disc-ans" style="border-color:rgba(0,230,118,.2);color:var(--green2);">${q.gabarito.replace(/\n/g,'<br>')}</div>`;
+  });
+
+  document.getElementById('teacher-data').innerHTML = tpHtml;
+}
+
+// ══════════════════════════════════════
+// DOWNLOAD CSV
+// ══════════════════════════════════════
+function downloadCSV() {
+  const now = new Date();
+  const timeSpent = 40*60 - timeLeft;
+  const tm = Math.floor(timeSpent/60), ts = timeSpent%60;
+  let mc = 0;
+  QUESTIONS.forEach((q,i)=>{ if(q.type==='mc'&&answers[i]?.correct) mc+=answers[i].score; });
+
+  let csv = 'sep=;\nAVALIAÇÃO FINAL CAI — A GRANDE PROVA DO MESTRE DO JOGO\n';
+  csv += `Data;${now.toLocaleDateString('pt-BR')}\nHora;${now.toLocaleTimeString('pt-BR')}\n`;
+  csv += `Tempo utilizado;${tm.toString().padStart(2,'0')}:${ts.toString().padStart(2,'0')}\n\n`;
+  csv += 'QUESTÕES OBJETIVAS\n';
+  csv += 'Questão;Seção;Resposta;Correta;XP\n';
+  QUESTIONS.filter(q=>q.type==='mc').forEach((q,i)=>{
+    const ri = QUESTIONS.indexOf(q);
+    const state = answers[ri];
+    const given = state?.answer !== undefined ? ['A','B','C','D'][state.answer] : '—';
+    csv += `Q${q.id};Seção ${q.section};${given};${state?.correct?'SIM':'NÃO'};${state?.correct?state.score:0}\n`;
+  });
+  csv += `\nTOTAL MC;${mc}/60\n\nQUESTÕES DISCURSIVAS\nQuestão;Resposta do Aluno\n`;
+  QUESTIONS.filter(q=>q.type==='disc').forEach(q=>{
+    const ri = QUESTIONS.indexOf(q);
+    const txt = (discAnswers[ri]||'(sem resposta)').replace(/;/g,',');
+    csv += `Q${q.id};"${txt}"\n`;
+  });
+  csv += '\nGABARITO\nQ5;Usar ID evita redundância e erros de digitação. FK = código de barras entre tabelas.\n';
+  csv += 'Q6;Prompt perfeito: Papel (Arquiteto) + Contexto (3 módulos) + Regra (50/hora) + Saída (tabela).\n';
+
+  const blob = new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `avaliacao_final_cai_${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}.csv`;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+}
+
+// ══════════════════════════════════════
+// UTILS
+// ══════════════════════════════════════
+function go(id) { document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on')); document.getElementById(id).classList.add('on'); window.scrollTo(0,0); }
+function showOv(t,s) { document.getElementById('ov').classList.add('on'); document.getElementById('ov-t').textContent=t; document.getElementById('ov-s').textContent=s; }
+function hideOv() { document.getElementById('ov').classList.remove('on'); }
+
+function fullReset() {
+  clearInterval(timerInterval);
+  answers={}; discAnswers={}; currentQ=0; timeLeft=40*60; examStarted=false;
+  go('s-intro');
+}
+
+function spawnConf() {
+  const c=document.getElementById('conf');
+  const cols=['#f5c842','#ffe082','#00e676','#40c4ff','#ff9800','#ce93d8','#ff5252','#1de9b6'];
+  for(let i=0;i<70;i++){const el=document.createElement('div');const sz=4+Math.random()*9;el.style.cssText=`position:absolute;width:${sz}px;height:${sz}px;background:${cols[Math.floor(Math.random()*cols.length)]};left:${Math.random()*100}%;top:-10px;border-radius:${Math.random()>.5?'50%':'2px'};animation:cf ${1.5+Math.random()*2}s ease ${Math.random()*.5}s both;`;c.appendChild(el);}
+  setTimeout(()=>c.innerHTML='',5500);
+}
+(()=>{const s=document.createElement('style');s.textContent='@keyframes cf{from{transform:translateY(0) rotate(0deg);opacity:1}to{transform:translateY(100vh) rotate(720deg);opacity:0}}';document.head.appendChild(s);})();
+</script>
+</body>
+</html>
