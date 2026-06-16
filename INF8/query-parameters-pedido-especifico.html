@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>O Pedido Específico — Query Parameters</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&family=Press+Start+2P&family=Fira+Code:wght@500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:      #f0f5ff;
+  --white:   #ffffff;
+  --navy:    #1e3a5f;
+  --navy2:   #2d5f9e;
+  --border:  #e2e8f0;
+  --text:    #0f172a;
+  --text2:   #334155;
+  --gray:    #64748b;
+  --gl:      #f8fafc;
+
+  --blue:    #2563eb; --blue-p: #dbeafe;
+  --green:   #16a34a; --green-p:#dcfce7;
+  --red:     #dc2626; --red-p:  #fee2e2;
+  --gold:    #d97706; --gold-p: #fef3c7;
+  --orange:  #ea580c; --orange-p:#ffedd5;
+  --purple:  #7c3aed; --purple-p:#ede9fe;
+  --teal:    #0d9488; --teal-p: #ccfbf1;
+
+  /* URL part colors */
+  --c-base:  #1e3a5f;
+  --c-path:  #7c3aed;
+  --c-mark:  #dc2626;
+  --c-key:   #2563eb;
+  --c-eq:    #64748b;
+  --c-val:   #16a34a;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Nunito', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+.scr { display: none; min-height: 100vh; flex-direction: column; align-items: center; padding: 24px 16px 60px; }
+.scr.on { display: flex; }
+
+/* ── CARD ── */
+.card {
+  background: var(--white);
+  border-radius: 16px;
+  box-shadow: 0 2px 16px rgba(0,0,0,.08), 0 0 0 1px rgba(0,0,0,.04);
+  padding: 32px 36px;
+  max-width: 820px; width: 100%;
+}
+
+/* ── SCHOOL HEADER ── */
+.sh { display: flex; align-items: center; gap: 14px; padding-bottom: 14px; margin-bottom: 14px; border-bottom: 3px solid var(--navy); }
+.sl { width: 50px; height: 50px; background: var(--navy); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; }
+.sn { font-size: .92rem; font-weight: 900; color: var(--navy); line-height: 1.3; }
+.ss { font-size: .72rem; color: var(--gray); margin-top: 2px; }
+.sb { background: var(--navy); color: white; font-size: .62rem; font-weight: 800; padding: 4px 10px; border-radius: 20px; text-transform: uppercase; letter-spacing: .5px; white-space: nowrap; margin-left: auto; }
+
+/* ── TYPOGRAPHY ── */
+h1.mt { font-size: clamp(1.2rem,3.5vw,1.9rem); font-weight: 900; color: var(--navy); margin-bottom: 4px; }
+.sub  { font-size: .82rem; font-weight: 700; color: var(--gray); margin-bottom: 16px; }
+h2.sec{ font-size: 1rem; font-weight: 900; color: var(--navy); margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+.divider { height: 2px; background: var(--border); margin: 18px 0; }
+
+/* ── NPC ── */
+.npc-wrap { display: flex; gap: 14px; align-items: flex-start; background: var(--navy); border-radius: 12px; padding: 16px 18px; margin-bottom: 18px; }
+.npc-av { width: 52px; height: 52px; border-radius: 50%; background: rgba(255,255,255,.15); border: 2px solid rgba(255,255,255,.3); display: flex; align-items: center; justify-content: center; font-size: 24px; flex-shrink: 0; animation: bob 3s ease-in-out infinite; }
+@keyframes bob { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-5px)} }
+.npc-name { font-family: 'Press Start 2P', monospace; font-size: .42rem; color: #fde68a; margin-bottom: 5px; }
+.npc-txt  { font-size: .92rem; font-weight: 700; color: rgba(255,255,255,.95); line-height: 1.7; }
+.npc-txt strong { color: #fde68a; }
+
+/* ── STEP PROGRESS ── */
+.sbar { display: flex; gap: 6px; margin-bottom: 16px; flex-wrap: wrap; }
+.sp { font-weight: 800; font-size: .7rem; padding: 5px 12px; border-radius: 20px; border: 2px solid; transition: all .3s; }
+.sp.done   { border-color: var(--green); background: var(--green-p); color: var(--green); }
+.sp.active { border-color: var(--blue);  background: var(--blue-p);  color: var(--blue); }
+.sp.wait   { border-color: var(--border); color: var(--gray); background: var(--gl); }
+
+/* ── RESTAURANT CARD ── */
+.rest-card { border-radius: 12px; border: 2px solid; padding: 16px 18px; margin-bottom: 12px; display: flex; gap: 14px; align-items: flex-start; }
+.rc-icon { font-size: 2.4rem; flex-shrink: 0; }
+.rc-body {}
+.rc-label { font-size: .7rem; font-weight: 900; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 4px; }
+.rc-title { font-size: 1rem; font-weight: 900; margin-bottom: 4px; }
+.rc-desc  { font-size: .86rem; font-weight: 700; color: var(--text2); line-height: 1.55; }
+.rc-code  { font-family: 'Fira Code', monospace; font-size: .8rem; background: rgba(0,0,0,.06); border-radius: 6px; padding: 5px 10px; display: block; margin-top: 8px; }
+
+.rc-general { border-color: rgba(37,99,235,.3); background: var(--blue-p); }
+.rc-general .rc-label { color: var(--blue); }
+.rc-general .rc-title { color: var(--blue); }
+
+.rc-specific { border-color: rgba(22,163,74,.35); background: var(--green-p); }
+.rc-specific .rc-label { color: var(--green); }
+.rc-specific .rc-title { color: var(--green); }
+
+/* ── URL ANATOMY ── */
+.url-anatomy-card { background: #1e293b; border-radius: 12px; overflow: hidden; margin: 14px 0; }
+.ua-top { display: flex; align-items: center; gap: 8px; padding: 9px 16px; background: rgba(0,0,0,.3); border-bottom: 1px solid rgba(255,255,255,.08); }
+.ua-dot { width: 10px; height: 10px; border-radius: 50%; }
+.ua-d-r { background: #ff5f56; }
+.ua-d-y { background: #ffbd2e; }
+.ua-d-g { background: #27c93f; }
+.ua-label { font-family: 'Fira Code', monospace; font-size: .68rem; color: #64748b; margin-left: auto; }
+
+.ua-body { padding: 20px; }
+.ua-url  { font-family: 'Fira Code', monospace; font-size: clamp(.78rem,2vw,.96rem); line-height: 1.5; display: flex; flex-wrap: wrap; align-items: baseline; gap: 0; margin-bottom: 16px; }
+.ua-url .p-base { color: #93c5fd; }
+.ua-url .p-path { color: #c4b5fd; }
+.ua-url .p-mark { color: #f87171; font-weight: 700; }
+.ua-url .p-key  { color: #93c5fd; }
+.ua-url .p-eq   { color: #94a3b8; }
+.ua-url .p-val  { color: #86efac; font-weight: 600; }
+
+.ua-legend { display: flex; flex-wrap: wrap; gap: 10px; }
+.ua-leg-item { display: flex; align-items: center; gap: 6px; font-size: .78rem; font-weight: 800; }
+.ua-dot-sm { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
+
+/* ── URL BUILDER ── */
+.url-builder { background: var(--gl); border: 2px solid var(--border); border-radius: 12px; padding: 18px; margin: 14px 0; }
+.ub-title { font-weight: 900; font-size: .92rem; color: var(--navy); margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+
+.ub-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
+.ub-lab { font-size: .82rem; font-weight: 800; color: var(--text2); width: 130px; flex-shrink: 0; }
+
+.ub-sel {
+  font-family: 'Fira Code', monospace; font-size: .82rem;
+  background: white; border: 2px solid var(--border); border-radius: 8px;
+  padding: 8px 12px; color: var(--text); outline: none; cursor: pointer;
+  transition: border-color .2s;
+}
+.ub-sel:focus { border-color: var(--blue); }
+
+.ub-inp {
+  font-family: 'Fira Code', monospace; font-size: .82rem;
+  background: white; border: 2px solid var(--border); border-radius: 8px;
+  padding: 8px 12px; color: var(--text); outline: none; flex: 1; max-width: 200px;
+  transition: border-color .2s;
+}
+.ub-inp:focus { border-color: var(--green); }
+
+/* live URL preview */
+.url-preview {
+  background: #1e293b; border-radius: 9px; padding: 14px 16px; margin-top: 12px;
+  font-family: 'Fira Code', monospace; font-size: .82rem; line-height: 1.6;
+  display: flex; flex-wrap: wrap; align-items: baseline; gap: 0;
+  min-height: 46px; word-break: break-all;
+}
+.up-base { color: #93c5fd; }
+.up-path { color: #c4b5fd; }
+.up-mark { color: #f87171; font-weight: 700; }
+.up-key  { color: #93c5fd; }
+.up-eq   { color: #94a3b8; }
+.up-val  { color: #86efac; font-weight: 600; }
+.up-ph   { color: rgba(255,255,255,.25); font-style: italic; }
+
+/* ── EXAMPLES ── */
+.ex-card {
+  border-radius: 10px; border: 1.5px solid; padding: 13px 15px; margin-bottom: 10px;
+  display: flex; align-items: flex-start; gap: 12px;
+}
+.ex-num { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: 'Press Start 2P', monospace; font-size: .42rem; font-weight: 700; flex-shrink: 0; color: white; }
+.ex-body {}
+.ex-title { font-size: .88rem; font-weight: 900; margin-bottom: 5px; }
+.ex-url { font-family: 'Fira Code', monospace; font-size: .8rem; background: rgba(0,0,0,.06); border-radius: 6px; padding: 5px 10px; display: block; margin: 5px 0; line-height: 1.6; word-break: break-all; }
+.ex-desc { font-size: .82rem; font-weight: 700; color: var(--text2); line-height: 1.55; }
+.ex-desc strong { color: inherit; }
+
+.ex-status { border-color: rgba(37,99,235,.3); background: var(--blue-p); }
+.ex-status .ex-num { background: var(--blue); }
+.ex-status .ex-title { color: var(--blue); }
+
+.ex-owner { border-color: rgba(22,163,74,.35); background: var(--green-p); }
+.ex-owner .ex-num { background: var(--green); }
+.ex-owner .ex-title { color: var(--green); }
+
+/* ── NOTICE ── */
+.notice { border-radius: 10px; padding: 12px 15px; font-size: .85rem; font-weight: 700; line-height: 1.65; margin: 10px 0; display: flex; gap: 10px; align-items: flex-start; }
+.ni { font-size: 1.1rem; flex-shrink: 0; }
+.nt-blue   { background: var(--blue-p);   border: 2px solid rgba(37,99,235,.3);  color: #1e40af; }
+.nt-gold   { background: var(--gold-p);   border: 2px solid rgba(217,119,6,.3);  color: #92400e; }
+.nt-green  { background: var(--green-p);  border: 2px solid rgba(22,163,74,.3);  color: #14532d; }
+.nt-purple { background: var(--purple-p); border: 2px solid rgba(124,58,237,.3); color: #4c1d95; }
+
+/* ── QUIZ ── */
+.quiz-wrap { background: var(--gl); border: 2px solid var(--border); border-radius: 12px; padding: 18px; margin: 12px 0; }
+.q-title { font-weight: 900; font-size: .92rem; color: var(--navy); margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+.q-stem  { font-size: .95rem; font-weight: 800; color: var(--text); line-height: 1.75; margin-bottom: 14px; }
+.q-stem strong { color: var(--navy); }
+.q-stem code  { font-family: 'Fira Code', monospace; font-size: .88rem; background: rgba(0,0,0,.07); border-radius: 5px; padding: 2px 7px; color: var(--teal); }
+
+.q-opts { display: flex; flex-direction: column; gap: 9px; }
+.q-opt {
+  display: flex; align-items: flex-start; gap: 10px;
+  background: white; border: 2px solid var(--border); border-radius: 10px;
+  padding: 12px 14px; cursor: pointer; font-size: .9rem; font-weight: 700;
+  color: var(--text2); transition: all .2s; width: 100%;
+}
+.q-opt:hover:not(.locked) { border-color: var(--navy); color: var(--text); background: var(--blue-p); }
+.q-opt .ql { font-family: 'Press Start 2P', monospace; font-size: .38rem; color: var(--gray); flex-shrink: 0; margin-top: 2px; }
+.q-opt.ok  { border-color: var(--green)!important; background: var(--green-p)!important; color: var(--green)!important; }
+.q-opt.nok { border-color: var(--red)!important;   background: var(--red-p)!important;   color: var(--red)!important; }
+.q-opt.rev { border-color: var(--green); background: rgba(22,163,74,.05); }
+.q-opt.locked { cursor: default; }
+
+.q-fb { border-radius: 10px; padding: 12px 15px; font-size: .88rem; font-weight: 800; line-height: 1.6; display: none; margin-top: 10px; animation: popUp .3s ease; }
+@keyframes popUp { from{opacity:0;transform:translateY(4px)} to{opacity:1;transform:translateY(0)} }
+.fb-ok  { background: var(--green-p); border: 2px solid var(--green); color: var(--green); }
+.fb-nok { background: var(--red-p);   border: 2px solid var(--red);   color: var(--red); }
+
+/* ── BUTTONS ── */
+.btn { display: inline-flex; align-items: center; gap: 7px; font-weight: 900; font-size: .82rem; border: none; border-radius: 10px; padding: 12px 22px; cursor: pointer; transition: all .18s; letter-spacing: .3px; }
+.btn-navy   { background: var(--navy); color: white; }
+.btn-navy:hover   { background: var(--navy2); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(30,58,95,.3); }
+.btn-green  { background: var(--green); color: white; }
+.btn-green:hover  { background: #15803d; transform: translateY(-1px); }
+.btn-blue   { background: var(--blue); color: white; }
+.btn-blue:hover   { background: #1d4ed8; transform: translateY(-1px); }
+.btn-outline{ background: transparent; border: 2px solid var(--navy); color: var(--navy); font-size: .74rem; }
+.btn-outline:hover{ background: var(--navy); color: white; }
+.btn:disabled { opacity: .35; cursor: not-allowed; transform: none; }
+
+/* ── RESULT ── */
+.result-ring { width: 110px; height: 110px; border-radius: 50%; margin: 0 auto 14px; background: radial-gradient(circle,#fef9c3,#fffbeb); border: 4px solid var(--gold); display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 0 22px rgba(217,119,6,.22); animation: rp 2.5s ease-in-out infinite; }
+@keyframes rp { 0%,100%{box-shadow:0 0 16px rgba(217,119,6,.18)} 50%{box-shadow:0 0 34px rgba(217,119,6,.4)} }
+.rn { font-family: 'Press Start 2P', monospace; font-size: 1.2rem; color: var(--gold); line-height: 1; }
+.rl { font-size: .58rem; font-weight: 800; color: var(--gray); margin-top: 4px; }
+
+.r-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(130px,1fr)); gap: 10px; margin: 12px 0; }
+.rbox { border-radius: 10px; padding: 13px; text-align: center; border: 2px solid; }
+.rbox .rv { font-family: 'Press Start 2P', monospace; font-size: .88rem; line-height: 1; margin-bottom: 4px; }
+.rbox .rl2 { font-size: .66rem; font-weight: 800; color: var(--gray); }
+.rbox.hi { border-color: var(--green); background: var(--green-p); } .rbox.hi .rv { color: var(--green); }
+.rbox.md { border-color: var(--gold);  background: var(--gold-p);  } .rbox.md .rv { color: var(--gold); }
+.rbox.lo { border-color: var(--red);   background: var(--red-p);   } .rbox.lo .rv { color: var(--red); }
+.rbox.info{ border-color: var(--blue); background: var(--blue-p);  } .rbox.info .rv { color: var(--blue); }
+
+/* CONF */
+.conf { position: fixed; inset: 0; pointer-events: none; z-index: 400; }
+
+@media(max-width:540px){
+  .card{padding:18px 13px;}
+  .ub-lab{width:100%;}
+  .ua-url{font-size:.72rem;}
+  .url-preview{font-size:.72rem;}
+}
+</style>
+</head>
+<body>
+<div class="conf" id="conf"></div>
+
+<!-- ════ TELA 1: INTRO ════ -->
+<div class="scr on" id="s-intro">
+<div class="card" style="max-width:760px;margin-top:18px;">
+
+  <div class="sh">
+    <div class="sl">🎓</div>
+    <div><div class="sn">ETE Marechal Mascarenhas de Moraes</div><div class="ss">Desenvolvimento Web · Módulo 1</div></div>
+    <div class="sb">Aula</div>
+  </div>
+
+  <h1 class="mt">🍹 O Pedido Específico</h1>
+  <p class="sub">Query Parameters — Como pedir só o que você quer</p>
+
+  <div class="npc-wrap">
+    <div class="npc-av">👨‍🏫</div>
+    <div>
+      <p class="npc-name">PROFESSOR</p>
+      <p class="npc-txt">Nas aulas passadas você aprendeu que o <strong>fetch()</strong> é o garçom e a <strong>API Python</strong> é a cozinha.<br><br>
+      Hoje vamos aprender a fazer um pedido <strong>específico</strong> — não "me traga suco", mas "me traga <strong>suco de laranja com gelo</strong>". Esse detalhe extra se chama <strong>Query Parameter</strong>!</p>
+    </div>
+  </div>
+
+  <!-- RESTAURANT COMPARISON -->
+  <h2 class="sec">🍽️ A Regra do Restaurante</h2>
+
+  <div class="rest-card rc-general">
+    <span class="rc-icon">🧃</span>
+    <div class="rc-body">
+      <span class="rc-label">Pedido Geral</span>
+      <div class="rc-title">— Me traga um suco.</div>
+      <p class="rc-desc">O garçom não sabe qual suco você quer. Pode trazer qualquer um!</p>
+      <code class="rc-code">http://site.com/suco</code>
+    </div>
+  </div>
+
+  <div class="rest-card rc-specific">
+    <span class="rc-icon">🍊</span>
+    <div class="rc-body">
+      <span class="rc-label">Pedido Específico (com Query Parameter)</span>
+      <div class="rc-title">— Me traga um suco <strong>de laranja</strong>!</div>
+      <p class="rc-desc">Agora o garçom sabe exatamente o que você quer. O detalhe extra fica depois do <strong>?</strong> na URL.</p>
+      <code class="rc-code">http://site.com/suco<strong>?tipo=laranja</strong></code>
+    </div>
+  </div>
+
+  <div class="notice nt-gold" style="margin-top:12px;">
+    <span class="ni">📌</span>
+    <span>Esta aula tem <strong>3 partes</strong>: (1) Entender a anatomia da URL, (2) Montar URLs com o construtor interativo, (3) Quiz de fixação.</span>
+  </div>
+
+  <div style="text-align:center;margin-top:18px;">
+    <button class="btn btn-navy" onclick="go('s-anatomia')">🔍 APRENDER A ANATOMIA DA URL →</button>
+  </div>
+</div>
+</div>
+
+<!-- ════ TELA 2: ANATOMIA ════ -->
+<div class="scr" id="s-anatomia">
+<div class="card" style="max-width:820px;margin-top:18px;">
+
+  <div class="sh" style="padding-bottom:12px;margin-bottom:12px;">
+    <div class="sl" style="width:42px;height:42px;font-size:17px;">🎓</div>
+    <div><div class="sn" style="font-size:.88rem;">Parte 1 — A Anatomia da URL</div><div class="ss">Query Parameters · Desenvolvimento Web</div></div>
+  </div>
+
+  <div class="sbar">
+    <div class="sp done">🍽️ Intro</div>
+    <div class="sp active">🔍 Anatomia</div>
+    <div class="sp wait">🛠️ Construtor</div>
+    <div class="sp wait">🧠 Quiz</div>
+  </div>
+
+  <div class="npc-wrap">
+    <div class="npc-av">👨‍🏫</div>
+    <div>
+      <p class="npc-name">PROFESSOR</p>
+      <p class="npc-txt">Veja a URL abaixo separada em <strong>partes coloridas</strong>. Cada cor tem uma função diferente. Passe o dedo ou mouse sobre a URL para entender cada pedaço!</p>
+    </div>
+  </div>
+
+  <!-- URL ANATOMY DISPLAY -->
+  <div class="url-anatomy-card">
+    <div class="ua-top">
+      <div class="ua-dot ua-d-r"></div>
+      <div class="ua-dot ua-d-y"></div>
+      <div class="ua-dot ua-d-g"></div>
+      <span class="ua-label">URL com Query Parameter</span>
+    </div>
+    <div class="ua-body">
+      <div class="ua-url">
+        <span class="p-base">http://127.0.0.1:8000</span><span class="p-path">/tasks</span><span class="p-mark">?</span><span class="p-key">status</span><span class="p-eq">=</span><span class="p-val">pendente</span>
+      </div>
+      <div class="ua-legend">
+        <div class="ua-leg-item"><div class="ua-dot-sm" style="background:#93c5fd;"></div><span style="color:#1e40af;">Base URL (endereço do servidor)</span></div>
+        <div class="ua-leg-item"><div class="ua-dot-sm" style="background:#c4b5fd;"></div><span style="color:#4c1d95;">/tasks (rota da API)</span></div>
+        <div class="ua-leg-item"><div class="ua-dot-sm" style="background:#f87171;"></div><span style="color:#991b1b;">? (início dos parâmetros)</span></div>
+        <div class="ua-leg-item"><div class="ua-dot-sm" style="background:#93c5fd;"></div><span style="color:#1e40af;">status (chave do filtro)</span></div>
+        <div class="ua-leg-item"><div class="ua-dot-sm" style="background:#94a3b8;"></div><span style="color:#475569;">= (igual)</span></div>
+        <div class="ua-leg-item"><div class="ua-dot-sm" style="background:#86efac;"></div><span style="color:#15803d;">pendente (valor que você quer)</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- EXPLANATION TABLE -->
+  <h2 class="sec" style="margin-top:16px;">🗺️ O Mapa da URL</h2>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
+    <div class="notice nt-blue" style="flex-direction:column;gap:5px;">
+      <span style="font-family:'Fira Code',monospace;font-size:.82rem;font-weight:800;">http://127.0.0.1:8000</span>
+      <span style="font-size:.82rem;">🏠 Endereço do servidor. É o "endereço do restaurante".</span>
+    </div>
+    <div class="notice nt-purple" style="flex-direction:column;gap:5px;">
+      <span style="font-family:'Fira Code',monospace;font-size:.82rem;font-weight:800;">/tasks</span>
+      <span style="font-size:.82rem;">📋 A rota — diz QUE baú de dados você quer abrir.</span>
+    </div>
+    <div style="grid-column:span 2;" class="notice" style="border:2px solid var(--red);background:var(--red-p);color:#991b1b;flex-direction:column;gap:5px;">
+      <div style="display:flex;gap:8px;align-items:flex-start;">
+        <span class="ni">❓</span>
+        <div>
+          <span style="font-family:'Fira Code',monospace;font-size:.82rem;font-weight:800;color:#dc2626;">?</span>
+          <span style="font-size:.82rem;color:#7f1d1d;font-weight:700;display:block;margin-top:3px;">O ponto de interrogação é o <strong>sinal</strong> que separa a rota dos filtros. Sempre vem um único <strong>?</strong> antes do primeiro parâmetro.</span>
+        </div>
+      </div>
+    </div>
+    <div class="notice nt-green" style="flex-direction:column;gap:5px;">
+      <span style="font-family:'Fira Code',monospace;font-size:.82rem;font-weight:800;">status=pendente</span>
+      <span style="font-size:.82rem;"><strong>chave=valor</strong> — o filtro. Aqui: "me dê só as tarefas com status = pendente".</span>
+    </div>
+    <div style="background:#f8fafc;border:2px solid #e2e8f0;border-radius:10px;padding:12px;font-size:.82rem;font-weight:700;color:var(--text2);">
+      <strong style="color:var(--navy);">E se quiser 2 filtros?</strong><br>Use <code style="font-family:'Fira Code';background:rgba(0,0,0,.07);border-radius:4px;padding:1px 5px;">&amp;</code> entre eles:<br>
+      <span style="font-family:'Fira Code';font-size:.76rem;color:var(--teal);">/tasks?status=pendente&amp;owner=Luis</span>
+    </div>
+  </div>
+
+  <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:16px;justify-content:space-between;">
+    <button class="btn btn-outline" onclick="go('s-intro')">← Voltar</button>
+    <button class="btn btn-navy" onclick="go('s-builder')">🛠️ CONSTRUTOR DE URL →</button>
+  </div>
+</div>
+</div>
+
+<!-- ════ TELA 3: CONSTRUTOR ════ -->
+<div class="scr" id="s-builder">
+<div class="card" style="max-width:820px;margin-top:18px;">
+
+  <div class="sh" style="padding-bottom:12px;margin-bottom:12px;">
+    <div class="sl" style="width:42px;height:42px;font-size:17px;">🎓</div>
+    <div><div class="sn" style="font-size:.88rem;">Parte 2 — Construtor de URL</div><div class="ss">Monte sua Query em tempo real</div></div>
+  </div>
+
+  <div class="sbar">
+    <div class="sp done">🍽️ Intro</div>
+    <div class="sp done">🔍 Anatomia</div>
+    <div class="sp active">🛠️ Construtor</div>
+    <div class="sp wait">🧠 Quiz</div>
+  </div>
+
+  <div class="npc-wrap">
+    <div class="npc-av">👨‍🏫</div>
+    <div>
+      <p class="npc-name">PROFESSOR</p>
+      <p class="npc-txt">Agora você monta a URL! Escolha a <strong>rota</strong>, a <strong>chave</strong> do filtro e o <strong>valor</strong>. A URL vai sendo gerada em tempo real abaixo!</p>
+    </div>
+  </div>
+
+  <!-- BUILDER -->
+  <div class="url-builder">
+    <p class="ub-title">🛠️ MONTE SUA URL COM QUERY PARAMETER</p>
+
+    <div class="ub-row">
+      <span class="ub-lab">🏠 Servidor (fixo)</span>
+      <span style="font-family:'Fira Code',monospace;font-size:.82rem;color:var(--navy);background:var(--blue-p);border-radius:7px;padding:6px 12px;">http://127.0.0.1:8000</span>
+    </div>
+
+    <div class="ub-row">
+      <span class="ub-lab">📋 Rota (endpoint)</span>
+      <select class="ub-sel" id="sel-rota" onchange="buildURL()">
+        <option value="/tasks">🗂️ /tasks (tarefas)</option>
+        <option value="/usuarios">👥 /usuarios (usuários)</option>
+        <option value="/projetos">📁 /projetos (projetos)</option>
+      </select>
+    </div>
+
+    <div class="ub-row">
+      <span class="ub-lab">🔑 Chave do filtro</span>
+      <select class="ub-sel" id="sel-chave" onchange="buildURL()">
+        <option value="status">status</option>
+        <option value="owner">owner</option>
+        <option value="prioridade">prioridade</option>
+        <option value="categoria">categoria</option>
+      </select>
+    </div>
+
+    <div class="ub-row">
+      <span class="ub-lab">🎯 Valor</span>
+      <input class="ub-inp" id="inp-valor" placeholder="Ex: pendente, Luis, alta..." oninput="buildURL()" value="pendente">
+    </div>
+
+    <p style="font-family:'Press Start 2P',monospace;font-size:.36rem;color:var(--gray);margin-top:12px;margin-bottom:6px;">URL GERADA EM TEMPO REAL:</p>
+    <div class="url-preview" id="url-preview">
+      <span class="up-ph">← preencha os campos acima</span>
+    </div>
+
+    <div style="margin-top:12px;background:var(--gold-p);border:1.5px solid rgba(217,119,6,.3);border-radius:9px;padding:10px 13px;">
+      <p style="font-size:.82rem;font-weight:700;color:#92400e;line-height:1.6;" id="url-meaning">🧠 Significado: selecione os campos para ver a explicação aqui.</p>
+    </div>
+  </div>
+
+  <!-- EXAMPLES -->
+  <h2 class="sec" style="margin-top:18px;">📋 Exemplos da Prática Guiada</h2>
+
+  <div class="ex-card ex-status">
+    <div class="ex-num">1</div>
+    <div class="ex-body">
+      <div class="ex-title">Buscar tarefas "pendentes"</div>
+      <code class="ex-url">http://127.0.0.1:8000/tasks<strong style="color:#dc2626;">?</strong>status=pendente</code>
+      <p class="ex-desc">O <strong style="color:#2563eb;">status</strong> é a chave do filtro. O valor <strong style="color:#16a34a;">pendente</strong> é o que você quer buscar.</p>
+    </div>
+  </div>
+
+  <div class="ex-card ex-owner">
+    <div class="ex-num">2</div>
+    <div class="ex-body">
+      <div class="ex-title">Buscar tarefas do usuário "Luis"</div>
+      <code class="ex-url">http://127.0.0.1:8000/tasks<strong style="color:#dc2626;">?</strong>owner=Luis</code>
+      <p class="ex-desc">Mudou só a chave (<strong style="color:#2563eb;">owner</strong>) e o valor (<strong style="color:#16a34a;">Luis</strong>). A rota e o servidor são os mesmos!</p>
+    </div>
+  </div>
+
+  <div class="notice nt-purple">
+    <span class="ni">💻</span>
+    <span>No JavaScript, o <code style="font-family:'Fira Code';font-size:.82rem;background:rgba(0,0,0,.08);border-radius:4px;padding:1px 5px;">fetch()</code> monta essa URL automaticamente quando você usa um campo de busca. O usuário digita o valor — o código coloca na URL!</span>
+  </div>
+
+  <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:16px;justify-content:space-between;">
+    <button class="btn btn-outline" onclick="go('s-anatomia')">← Anatomia</button>
+    <button class="btn btn-navy" onclick="go('s-quiz')">🧠 FAZER O QUIZ →</button>
+  </div>
+</div>
+</div>
+
+<!-- ════ TELA 4: QUIZ ════ -->
+<div class="scr" id="s-quiz">
+<div class="card" style="max-width:760px;margin-top:18px;">
+
+  <div class="sh" style="padding-bottom:12px;margin-bottom:12px;">
+    <div class="sl" style="width:42px;height:42px;font-size:17px;">🎓</div>
+    <div><div class="sn" style="font-size:.88rem;">Parte 3 — Quiz de Fixação</div><div class="ss">Exercício de Múltipla Escolha</div></div>
+  </div>
+
+  <div class="sbar">
+    <div class="sp done">🍽️ Intro</div>
+    <div class="sp done">🔍 Anatomia</div>
+    <div class="sp done">🛠️ Construtor</div>
+    <div class="sp active">🧠 Quiz</div>
+  </div>
+
+  <div class="npc-wrap">
+    <div class="npc-av">👨‍🏫</div>
+    <div>
+      <p class="npc-name">PROFESSOR</p>
+      <p class="npc-txt">Hora de fixar o que você aprendeu! <strong>3 questões</strong> sobre Query Parameters. Leia com atenção — você pode voltar para as telas anteriores se precisar!</p>
+    </div>
+  </div>
+
+  <!-- Q1 -->
+  <div class="quiz-wrap">
+    <p class="q-title">🧠 QUESTÃO 1 DE 3</p>
+    <p class="q-stem">Quando queremos buscar apenas as tarefas <strong>concluídas</strong>, onde colocamos a palavra <code>concluido</code> usando o método GET?</p>
+    <div class="q-opts" id="opts-q1">
+      <button class="q-opt" onclick="pickQ(1,'A')"><span class="ql">A</span><span>Dentro do Banco de Dados, escondido no servidor.</span></button>
+      <button class="q-opt" onclick="pickQ(1,'B')"><span class="ql">B</span><span>No final da URL (endereço web), usando o ponto de interrogação (<strong>?status=concluido</strong>).</span></button>
+      <button class="q-opt" onclick="pickQ(1,'C')"><span class="ql">C</span><span>No cabeçalho (Header) de segurança da requisição.</span></button>
+    </div>
+    <div class="q-fb" id="fb-q1"></div>
+  </div>
+
+  <!-- Q2 -->
+  <div class="quiz-wrap">
+    <p class="q-title">🧠 QUESTÃO 2 DE 3</p>
+    <p class="q-stem">Na URL <code>http://127.0.0.1:8000/tasks?status=pendente</code>, qual é a função do símbolo <code>?</code> (ponto de interrogação)?</p>
+    <div class="q-opts" id="opts-q2">
+      <button class="q-opt" onclick="pickQ(2,'A')"><span class="ql">A</span><span>Indica que a URL está com erro e não vai funcionar.</span></button>
+      <button class="q-opt" onclick="pickQ(2,'B')"><span class="ql">B</span><span>Termina a URL — tudo depois do <strong>?</strong> é ignorado pelo servidor.</span></button>
+      <button class="q-opt" onclick="pickQ(2,'C')"><span class="ql">C</span><span>É o separador — ele avisa ao servidor que os filtros (Query Parameters) começam a partir daí.</span></button>
+    </div>
+    <div class="q-fb" id="fb-q2"></div>
+  </div>
+
+  <!-- Q3 -->
+  <div class="quiz-wrap">
+    <p class="q-title">🧠 QUESTÃO 3 DE 3</p>
+    <p class="q-stem">Qual URL busca as tarefas com <code>status=concluido</code> <strong>E</strong> dono <code>owner=Ana</code> ao mesmo tempo?</p>
+    <div class="q-opts" id="opts-q3">
+      <button class="q-opt" onclick="pickQ(3,'A')"><span class="ql">A</span><span><code>/tasks?status=concluido?owner=Ana</code> (dois pontos de interrogação)</span></button>
+      <button class="q-opt" onclick="pickQ(3,'B')"><span class="ql">B</span><span><code>/tasks?status=concluido&amp;owner=Ana</code> (usa o & para combinar filtros)</span></button>
+      <button class="q-opt" onclick="pickQ(3,'C')"><span class="ql">C</span><span><code>/tasks/status/concluido/owner/Ana</code> (parâmetros viram rotas)</span></button>
+    </div>
+    <div class="q-fb" id="fb-q3"></div>
+  </div>
+
+  <div id="quiz-done-btn" style="display:none;text-align:center;margin-top:14px;">
+    <button class="btn btn-green" onclick="showResult()">🏆 VER RESULTADO →</button>
+  </div>
+
+  <div style="margin-top:12px;">
+    <button class="btn btn-outline" onclick="go('s-builder')">← Voltar ao Construtor</button>
+  </div>
+</div>
+</div>
+
+<!-- ════ TELA 5: RESULTADO ════ -->
+<div class="scr" id="s-result">
+<div class="card" style="max-width:720px;margin-top:18px;">
+
+  <div class="sh" style="padding-bottom:12px;margin-bottom:12px;">
+    <div class="sl" style="width:42px;height:42px;font-size:17px;">🎓</div>
+    <div><div class="sn" style="font-size:.88rem;">Resultado</div><div class="ss">Query Parameters · Aula de Hoje</div></div>
+  </div>
+
+  <div class="sbar">
+    <div class="sp done">🍽️ Intro</div>
+    <div class="sp done">🔍 Anatomia</div>
+    <div class="sp done">🛠️ Construtor</div>
+    <div class="sp done">🧠 Quiz</div>
+  </div>
+
+  <div style="text-align:center;margin-bottom:14px;">
+    <div class="result-ring"><span class="rn" id="r-score">0/3</span><span class="rl">ACERTOS</span></div>
+  </div>
+
+  <div class="r-grid" id="r-grid"></div>
+
+  <div style="border-top:2px solid var(--border);padding-top:13px;margin-top:4px;">
+    <h2 class="sec">📋 Revisão</h2>
+    <div id="r-review"></div>
+  </div>
+
+  <div style="background:var(--blue-p);border:2px solid rgba(37,99,235,.3);border-radius:12px;padding:14px;margin:14px 0;">
+    <p style="font-weight:900;color:#1e40af;margin-bottom:8px;">🧠 Resumo da Aula</p>
+    <div style="display:flex;flex-direction:column;gap:7px;font-size:.86rem;font-weight:700;color:#1e3a8a;line-height:1.6;">
+      <div style="display:flex;gap:8px;"><span>❓</span><span>O <strong>?</strong> na URL separa a rota dos parâmetros de busca</span></div>
+      <div style="display:flex;gap:8px;"><span>🔑</span><span><strong>chave=valor</strong> é o formato do Query Parameter</span></div>
+      <div style="display:flex;gap:8px;"><span>&amp;</span><span>O <strong>&amp;</strong> combina dois ou mais filtros na mesma URL</span></div>
+      <div style="display:flex;gap:8px;"><span>🏃</span><span>O <strong>fetch()</strong> do JavaScript usa esses parâmetros para filtrar dados da API</span></div>
+    </div>
+  </div>
+
+  <div class="npc-wrap">
+    <div class="npc-av">👨‍🏫</div>
+    <div>
+      <p class="npc-name">PROFESSOR</p>
+      <p class="npc-txt" id="r-npc">—</p>
+    </div>
+  </div>
+
+  <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;">
+    <button class="btn btn-navy" onclick="downloadCSV()">⬇ Baixar Resultado (CSV)</button>
+    <button class="btn btn-outline" onclick="fullReset()">↺ Refazer Quiz</button>
+  </div>
+</div>
+</div>
+
+<script>
+// ══════════════════════════════════════
+// URL BUILDER
+// ══════════════════════════════════════
+function buildURL() {
+  const rota  = document.getElementById('sel-rota').value;
+  const chave = document.getElementById('sel-chave').value;
+  const valor = document.getElementById('inp-valor').value.trim();
+
+  const prev = document.getElementById('url-preview');
+  const mean = document.getElementById('url-meaning');
+
+  if (!valor) {
+    prev.innerHTML = '<span class="up-ph">← digite um valor no campo acima</span>';
+    mean.textContent = '🧠 Significado: preencha o valor para ver a explicação.';
+    return;
+  }
+
+  prev.innerHTML = `<span class="up-base">http://127.0.0.1:8000</span><span class="up-path">${rota}</span><span class="up-mark">?</span><span class="up-key">${chave}</span><span class="up-eq">=</span><span class="up-val">${valor}</span>`;
+
+  const routeNames = { '/tasks':'tarefas', '/usuarios':'usuários', '/projetos':'projetos' };
+  mean.textContent = `🧠 Esta URL busca ${routeNames[rota]||rota.slice(1)} onde "${chave}" seja igual a "${valor}". O servidor vai filtrar e devolver só os registros que corresponderem!`;
+}
+
+// ══════════════════════════════════════
+// QUIZ
+// ══════════════════════════════════════
+const CORRECT = { 1:'B', 2:'C', 3:'B' };
+const EXPLANATIONS = {
+  1: { B: '✅ Correto! O Query Parameter vai no final da URL, depois do ?, como em ?status=concluido. O método GET coloca os filtros direto na URL!' },
+  2: { C: '✅ Certo! O ? é o "aviso" de que os parâmetros começam aqui. Tudo antes do ? é rota. Tudo depois são os filtros.' },
+  3: { B: '✅ Perfeito! O & combina dois parâmetros: ?status=concluido&owner=Ana. Sempre um único ? e & para separar os filtros seguintes.' }
+};
+const WRONG_MSGS = {
+  1: '❌ Não é essa! Os Query Parameters ficam na URL, não no banco ou no header. Procura a opção com o ponto de interrogação na URL!',
+  2: '❌ Não é essa! O ? é fundamental — sem ele o servidor não sabe que os filtros começam. Ele separa a rota dos parâmetros!',
+  3: '❌ Não é essa! Não se usa dois ? e também não se colocam parâmetros como rotas. O & é o caractere correto para combinar filtros!'
+};
+
+let quizAnswers = {};
+let results = [];
+
+function pickQ(qNum, letter) {
+  if (quizAnswers[qNum] !== undefined) return;
+  const isOk = letter === CORRECT[qNum];
+  quizAnswers[qNum] = { letter, correct: isOk };
+
+  // lock all options
+  const opts = document.querySelectorAll(`#opts-q${qNum} .q-opt`);
+  opts.forEach((btn, i) => {
+    btn.classList.add('locked');
+    const l = ['A','B','C'][i];
+    if (l === CORRECT[qNum]) btn.classList.add('ok');
+    if (l === letter && !isOk) btn.classList.add('nok');
+  });
+
+  const fb = document.getElementById('fb-q' + qNum);
+  fb.style.display = 'block';
+  if (isOk) {
+    fb.className = 'q-fb fb-ok';
+    fb.innerHTML = EXPLANATIONS[qNum][letter];
+    spawnConf();
+  } else {
+    fb.className = 'q-fb fb-nok';
+    fb.innerHTML = WRONG_MSGS[qNum];
+  }
+
+  // check if all answered
+  if (Object.keys(quizAnswers).length === 3) {
+    document.getElementById('quiz-done-btn').style.display = 'block';
+  }
+}
+
+function showResult() {
+  const correct = Object.values(quizAnswers).filter(a => a.correct).length;
+  const total = 3;
+
+  document.getElementById('r-score').textContent = correct + '/' + total;
+
+  const cls = correct === 3 ? 'hi' : correct >= 2 ? 'md' : 'lo';
+  document.getElementById('r-grid').innerHTML = `
+    <div class="rbox ${cls}"><div class="rv">${correct}/3</div><div class="rl2">ACERTOS</div></div>
+    <div class="rbox ${cls}"><div class="rv">${Math.round(correct/3*100)}%</div><div class="rl2">APROVEIT.</div></div>
+    <div class="rbox info"><div class="rv">3</div><div class="rl2">CONCEITOS</div></div>`;
+
+  const qLabels = [
+    'Onde colocar o filtro "concluido" na URL',
+    'Função do símbolo ? na URL',
+    'Como combinar dois filtros na mesma URL'
+  ];
+  let rev = '';
+  [1,2,3].forEach((q,i) => {
+    const ans = quizAnswers[q];
+    const ok = ans?.correct;
+    const given = ans?.letter || '—';
+    const corrLetter = CORRECT[q];
+    rev += `<div style="display:flex;align-items:flex-start;gap:10px;padding:11px 13px;border-radius:10px;border:2px solid ${ok?'var(--green)':'var(--red)'};background:${ok?'var(--green-p)':'var(--red-p)'};margin-bottom:8px;">
+      <span style="font-size:1.2rem;">${ok?'✅':'❌'}</span>
+      <div style="flex:1;">
+        <div style="font-size:.84rem;font-weight:900;color:${ok?'var(--green)':'var(--red)'};">Q${q}: ${qLabels[i]}</div>
+        <div style="font-size:.78rem;font-weight:700;color:var(--text2);margin-top:2px;">Sua resposta: <strong>${given}</strong> · Correta: <strong>${corrLetter}</strong></div>
+      </div>
+    </div>`;
+  });
+  document.getElementById('r-review').innerHTML = rev;
+
+  let npcMsg;
+  if (correct === 3) npcMsg = 'Perfeito! Você dominou os Query Parameters! Agora sabe que o <strong>?</strong> separa a rota dos filtros, que cada filtro é <strong>chave=valor</strong> e que o <strong>&</strong> combina múltiplos filtros!';
+  else if (correct >= 2) npcMsg = 'Muito bem! Você entendeu quase tudo. Releia os itens que erraste — preste atenção no papel do <strong>?</strong> e do <strong>&</strong> na URL!';
+  else npcMsg = 'Continue praticando! Volte ao Construtor de URL e tente montar algumas URLs manualmente. Ver a URL sendo gerada em tempo real ajuda muito!';
+  document.getElementById('r-npc').innerHTML = npcMsg;
+
+  if (correct === 3) spawnConf();
+  go('s-result');
+}
+
+// ══════════════════════════════════════
+// CSV
+// ══════════════════════════════════════
+function downloadCSV() {
+  const correct = Object.values(quizAnswers).filter(a => a.correct).length;
+  const now = new Date();
+  let csv = 'sep=;\nATIVIDADE: O PEDIDO ESPECÍFICO — QUERY PARAMETERS\n';
+  csv += `Data;${now.toLocaleDateString('pt-BR')}\nHora;${now.toLocaleTimeString('pt-BR')}\n`;
+  csv += `Acertos Quiz;${correct}\nTotal;3\nAproveitamento;${Math.round(correct/3*100)}%\n\n`;
+  csv += 'QUESTÃO;RESPOSTA;CORRETA;RESULTADO\n';
+  const labels = ['Onde colocar filtro concluido','Função do ? na URL','Combinar dois filtros'];
+  [1,2,3].forEach((q,i) => {
+    const ans = quizAnswers[q];
+    csv += `${labels[i]};${ans?.letter||'—'};${CORRECT[q]};${ans?.correct?'CORRETO':'INCORRETO'}\n`;
+  });
+  csv += '\nCONCEITOS APRENDIDOS\n';
+  csv += '?;Separa a rota dos parâmetros na URL\n';
+  csv += 'chave=valor;Formato do Query Parameter\n';
+  csv += '&;Combina múltiplos parâmetros na mesma URL\n';
+  csv += 'GET;Método HTTP que coloca os filtros na URL (visível)\n';
+  const blob = new Blob(['\uFEFF'+csv], {type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `query_parameters_${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}.csv`;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+}
+
+// ══════════════════════════════════════
+// UTILS
+// ══════════════════════════════════════
+function go(id) {
+  document.querySelectorAll('.scr').forEach(s => s.classList.remove('on'));
+  document.getElementById(id).classList.add('on');
+  window.scrollTo(0, 0);
+}
+
+function fullReset() {
+  quizAnswers = {}; results = [];
+  [1,2,3].forEach(q => {
+    const opts = document.querySelectorAll(`#opts-q${q} .q-opt`);
+    opts.forEach(b => b.className = 'q-opt');
+    const fb = document.getElementById('fb-q'+q);
+    if (fb) fb.style.display = 'none';
+  });
+  document.getElementById('quiz-done-btn').style.display = 'none';
+  go('s-intro');
+}
+
+function spawnConf() {
+  const c = document.getElementById('conf');
+  const cols = ['#f5c842','#2563eb','#16a34a','#7c3aed','#ea580c','#0d9488'];
+  for (let i = 0; i < 60; i++) {
+    const el = document.createElement('div');
+    const sz = 4 + Math.random() * 8;
+    el.style.cssText = `position:absolute;width:${sz}px;height:${sz}px;background:${cols[Math.floor(Math.random()*cols.length)]};left:${Math.random()*100}%;top:-10px;border-radius:${Math.random()>.5?'50%':'2px'};animation:cf ${1.5+Math.random()*2}s ease ${Math.random()*.5}s both;`;
+    c.appendChild(el);
+  }
+  setTimeout(() => c.innerHTML = '', 5000);
+}
+(()=>{ const s=document.createElement('style'); s.textContent='@keyframes cf{from{transform:translateY(0) rotate(0deg);opacity:1}to{transform:translateY(100vh) rotate(720deg);opacity:0}}'; document.head.appendChild(s); })();
+
+// INIT
+buildURL();
+</script>
+</body>
+</html>
