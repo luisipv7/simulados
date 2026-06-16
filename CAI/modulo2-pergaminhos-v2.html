@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Módulo 2 — Versão 2 · Os Pergaminhos Revisitados</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Nunito:wght@700;800;900&family=Fira+Code:wght@500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#080607;--panel:#150f0a;--panel2:#1e160f;--border:#322010;--border2:#4a3018;
+  --gold:#f5c842;--gold2:#ffe082;--green:#00e676;--green2:#b9f6ca;
+  --red:#ff5252;--red2:#ffd0d0;--blue:#40c4ff;--blue2:#b3e5fc;
+  --purple:#ce93d8;--orange:#ff9800;--orange2:#ffe0b2;
+  --amber:#ffb300;--amber2:#fff8e1;
+  --teal:#1de9b6;--white:#fff3dc;--gray:#806040;--gray2:#503020;
+
+  --a4:#ce93d8;--a5:#40c4ff;--a6:#f5c842;--a7:#00e676;--a8:#ff9800;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--white);min-height:100vh;overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;
+  background-image:
+    radial-gradient(circle at 25% 25%,rgba(245,200,66,.05) 0%,transparent 55%),
+    radial-gradient(circle at 75% 75%,rgba(206,147,216,.04) 0%,transparent 55%),
+    radial-gradient(1px 1px at 10% 20%,rgba(255,255,255,.9) 0%,transparent 100%),
+    radial-gradient(1px 1px at 85% 15%,rgba(255,255,255,.7) 0%,transparent 100%),
+    radial-gradient(1px 1px at 50% 90%,rgba(255,255,255,.8) 0%,transparent 100%),
+    radial-gradient(1px 1px at 25% 60%,rgba(255,255,255,.6) 0%,transparent 100%),
+    radial-gradient(1px 1px at 70% 40%,rgba(255,255,255,.7) 0%,transparent 100%),
+    radial-gradient(1px 1px at 40% 10%,rgba(255,255,255,.6) 0%,transparent 100%);
+  pointer-events:none;z-index:0;}
+.scr{display:none;position:relative;z-index:1;min-height:100vh;flex-direction:column;align-items:center;padding:20px 14px 60px;}
+.scr.on{display:flex;}
+.panel{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:26px 30px;max-width:860px;width:100%;box-shadow:0 0 60px rgba(245,200,66,.06),0 16px 60px rgba(0,0,0,.95);}
+.ptitle{font-family:'Press Start 2P',monospace;font-size:clamp(.48rem,1.5vw,.78rem);color:var(--amber);text-shadow:2px 2px 0 rgba(0,0,0,.9),0 0 20px rgba(255,179,0,.45);line-height:2.1;text-align:center;}
+.psub{font-family:'Press Start 2P',monospace;font-size:.35rem;color:var(--gray);letter-spacing:2px;text-align:center;}
+.npc{display:flex;gap:13px;align-items:flex-start;background:rgba(8,6,7,.97);border:1px solid rgba(245,200,66,.2);border-radius:10px;padding:13px 15px;margin-bottom:14px;}
+.nav{width:50px;height:50px;border-radius:8px;border:1.5px solid var(--amber);background:linear-gradient(135deg,#1a1002,#3a2808);display:flex;align-items:center;justify-content:center;font-size:23px;flex-shrink:0;animation:fl 3s ease-in-out infinite;box-shadow:0 0 10px rgba(255,179,0,.2);}
+@keyframes fl{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+.nname{font-family:'Press Start 2P',monospace;font-size:.38rem;color:var(--amber);margin-bottom:5px;}
+.ntxt{font-size:.88rem;font-weight:700;color:#d8c8a0;line-height:1.75;}
+.ntxt strong{color:var(--amber2);}
+.ctip{font-family:'Fira Code',monospace;font-size:.74rem;color:var(--green);background:rgba(0,230,118,.08);border:1px solid rgba(0,230,118,.22);border-radius:5px;padding:3px 8px;display:inline-block;margin-top:4px;}
+/* open book */
+.ob-banner{background:linear-gradient(135deg,rgba(255,179,0,.12),rgba(245,200,66,.08));border:2px solid rgba(255,179,0,.45);border-radius:12px;padding:14px 18px;margin-bottom:14px;display:flex;align-items:center;gap:14px;}
+.ob-icon{font-size:2.5rem;flex-shrink:0;animation:fl 3s ease-in-out infinite;}
+.ob-title{font-family:'Press Start 2P',monospace;font-size:.44rem;color:var(--amber);margin-bottom:5px;}
+.ob-desc{font-size:.86rem;font-weight:700;color:#d8c8a0;line-height:1.6;}
+.ob-desc strong{color:var(--amber2);}
+/* timer */
+.timer-bar{display:flex;align-items:center;gap:11px;background:rgba(8,6,7,.9);border:1px solid var(--border2);border-radius:8px;padding:10px 14px;margin-bottom:12px;}
+.timer-track{flex:1;height:10px;background:rgba(255,255,255,.07);border-radius:5px;overflow:hidden;}
+.timer-fill{height:100%;border-radius:5px;transition:width .5s linear,background .5s;}
+.t-ok{background:linear-gradient(90deg,var(--amber),var(--gold));}
+.t-warn{background:linear-gradient(90deg,var(--orange),var(--amber));}
+.t-crit{background:linear-gradient(90deg,var(--red),var(--orange));animation:tp .6s infinite;}
+@keyframes tp{0%,100%{opacity:1}50%{opacity:.6}}
+.timer-val{font-family:'Press Start 2P',monospace;font-size:.5rem;color:var(--white);min-width:52px;text-align:right;}
+/* progress dots */
+.q-progress{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap;}
+.qp-dot{width:30px;height:30px;border-radius:50%;border:2px solid var(--border2);display:flex;align-items:center;justify-content:center;font-family:'Press Start 2P',monospace;font-size:.32rem;color:var(--gray2);transition:all .3s;cursor:pointer;}
+.qp-dot.answered{border-color:var(--green);background:rgba(0,230,118,.1);color:var(--green);}
+.qp-dot.current{border-color:var(--amber);background:rgba(255,179,0,.12);color:var(--amber);}
+.qp-dot.unans{border-color:var(--red);}
+/* badges */
+.sec-badge{display:inline-flex;align-items:center;gap:7px;padding:6px 13px;border-radius:20px;border:1.5px solid;font-family:'Press Start 2P',monospace;font-size:.34rem;margin-bottom:11px;}
+.sb4{border-color:rgba(206,147,216,.4);background:rgba(206,147,216,.07);color:var(--a4);}
+.sb5{border-color:rgba(64,196,255,.4);background:rgba(64,196,255,.07);color:var(--a5);}
+.sb6{border-color:rgba(245,200,66,.4);background:rgba(245,200,66,.07);color:var(--a6);}
+.sb7{border-color:rgba(0,230,118,.4);background:rgba(0,230,118,.07);color:var(--a7);}
+.sb8{border-color:rgba(255,152,0,.4);background:rgba(255,152,0,.07);color:var(--a8);}
+/* q card */
+.q-card{background:rgba(8,6,7,.82);border:1.5px solid var(--border2);border-radius:12px;padding:18px 20px;margin-bottom:14px;}
+.q-num{font-family:'Press Start 2P',monospace;font-size:.38rem;color:var(--gray);margin-bottom:8px;display:flex;align-items:center;gap:7px;}
+.qi{font-size:1.1rem;}
+.q-stem{font-size:.92rem;font-weight:800;color:var(--white);line-height:1.75;margin-bottom:14px;}
+.q-stem strong{color:var(--amber2);}
+.q-stem code{font-family:'Fira Code',monospace;font-size:.85rem;background:rgba(0,0,0,.4);border-radius:4px;padding:1px 6px;color:var(--teal);}
+/* DRE mini */
+.dre-mini{background:rgba(0,0,0,.5);border:1px solid var(--border2);border-radius:9px;padding:12px 14px;margin:10px 0;font-family:'Fira Code',monospace;font-size:.82rem;line-height:2.1;}
+.dre-rec{color:var(--green);}
+.dre-desp{color:var(--red);}
+.dre-line{border-top:1px solid var(--border2);margin:6px 0;}
+.dre-res{color:var(--gold);font-weight:700;}
+/* options */
+.opts{display:flex;flex-direction:column;gap:9px;}
+.opt{display:flex;align-items:flex-start;gap:12px;background:rgba(255,255,255,.03);border:1.5px solid var(--border);border-radius:9px;padding:12px 15px;cursor:pointer;transition:all .2s;width:100%;font-size:.9rem;font-weight:700;color:#c0b090;text-align:left;}
+.opt:hover:not(.locked){border-color:var(--amber);color:var(--white);background:rgba(255,179,0,.07);}
+.opt .opt-l{font-family:'Press Start 2P',monospace;font-size:.36rem;color:var(--gray2);flex-shrink:0;margin-top:2px;width:22px;}
+.opt.ok{border-color:var(--green)!important;background:rgba(0,230,118,.12)!important;color:var(--green2)!important;}
+.opt.nok{border-color:var(--red)!important;background:rgba(255,82,82,.1)!important;color:var(--red2)!important;}
+.opt.reveal{border-color:rgba(0,230,118,.5)!important;background:rgba(0,230,118,.05)!important;}
+.opt.locked{cursor:default;}
+/* tip */
+.tip-link{font-size:.76rem;font-weight:800;color:var(--amber);margin-top:8px;display:inline-block;cursor:pointer;}
+.tip-link:hover{color:var(--gold);}
+.tip-box{background:rgba(255,179,0,.08);border:1px solid rgba(255,179,0,.22);border-radius:8px;padding:10px 13px;margin-top:8px;display:none;font-size:.84rem;font-weight:700;color:var(--amber2);line-height:1.65;}
+/* disc */
+.disc-ta{width:100%;background:rgba(0,0,0,.5);border:1.5px solid var(--border2);border-radius:8px;padding:12px 14px;font-family:'Nunito',sans-serif;font-size:.9rem;font-weight:700;color:var(--white);line-height:1.7;outline:none;resize:vertical;min-height:130px;caret-color:var(--amber);transition:border-color .2s;}
+.disc-ta:focus{border-color:var(--amber);box-shadow:0 0 10px rgba(255,179,0,.14);}
+.disc-ta.typed{border-color:rgba(0,230,118,.4);}
+.disc-char{font-family:'Press Start 2P',monospace;font-size:.32rem;color:var(--gray);margin-top:5px;text-align:right;}
+.disc-char.enough{color:var(--green);}
+.gab-btn{font-size:.78rem;font-weight:800;color:var(--green);background:rgba(0,230,118,.07);border:1px solid rgba(0,230,118,.25);border-radius:7px;padding:6px 13px;cursor:pointer;margin-top:10px;transition:all .2s;}
+.gab-btn:hover{background:rgba(0,230,118,.14);}
+.gab-box{background:rgba(0,230,118,.07);border:1.5px solid rgba(0,230,118,.28);border-radius:9px;padding:12px 14px;margin-top:10px;display:none;animation:pu .3s ease;}
+@keyframes pu{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+.gab-title{font-family:'Press Start 2P',monospace;font-size:.36rem;color:var(--green);margin-bottom:6px;}
+.gab-text{font-size:.85rem;font-weight:700;color:var(--green2);line-height:1.7;}
+/* fb */
+.q-fb{border-radius:9px;padding:10px 13px;font-size:.86rem;font-weight:800;line-height:1.6;display:none;margin-top:10px;animation:pu .3s ease;}
+.fb-ok{background:rgba(0,230,118,.1);border:1.5px solid rgba(0,230,118,.35);color:var(--green2);}
+.fb-nok{background:rgba(255,82,82,.08);border:1.5px solid rgba(255,82,82,.3);color:var(--red2);}
+/* nav */
+.q-nav{display:flex;justify-content:space-between;align-items:center;margin-top:14px;flex-wrap:wrap;gap:8px;}
+.btn{display:inline-flex;align-items:center;gap:7px;font-family:'Press Start 2P',monospace;font-size:.44rem;border:1px solid transparent;border-radius:8px;padding:11px 20px;cursor:pointer;transition:all .2s;color:white;}
+.btn-amber{background:linear-gradient(135deg,#3a2000,#806000);border-color:rgba(255,179,0,.4);color:var(--amber2);box-shadow:0 4px 12px rgba(255,179,0,.2);}
+.btn-amber:hover{transform:translateY(-1px);box-shadow:0 6px 18px rgba(255,179,0,.35);}
+.btn-gold{background:linear-gradient(135deg,#4a2c00,#9a6000);border-color:rgba(245,200,66,.4);color:#fef3c7;box-shadow:0 4px 12px rgba(245,200,66,.2);}
+.btn-gold:hover{transform:translateY(-1px);}
+.btn-ghost{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);font-size:.38rem;}
+.btn-ghost:hover{background:rgba(255,255,255,.1);}
+.btn:disabled{opacity:.3;cursor:not-allowed;transform:none;}
+/* result */
+.xp-ring{width:126px;height:126px;border-radius:50%;margin:0 auto 14px;display:flex;flex-direction:column;align-items:center;justify-content:center;border:4px solid var(--amber);background:radial-gradient(circle,rgba(255,179,0,.15),rgba(21,15,10,.9));box-shadow:0 0 28px rgba(255,179,0,.28);animation:rp 2.5s ease-in-out infinite;}
+@keyframes rp{0%,100%{box-shadow:0 0 18px rgba(255,179,0,.2)}50%{box-shadow:0 0 44px rgba(255,179,0,.45)}}
+.xp-n{font-family:'Press Start 2P',monospace;font-size:1.25rem;color:var(--amber);line-height:1;}
+.xp-l{font-family:'Press Start 2P',monospace;font-size:.38rem;color:var(--gray);margin-top:4px;}
+.r-badge{border-radius:12px;padding:13px 17px;text-align:center;font-size:.94rem;font-weight:800;line-height:1.5;border:2px solid;margin-bottom:13px;}
+.rb-amber{border-color:var(--amber);background:rgba(255,179,0,.1);color:var(--amber2);}
+.rb-green{border-color:var(--green);background:rgba(0,230,118,.1);color:var(--green2);}
+.rb-orange{border-color:var(--orange);background:rgba(255,152,0,.1);color:var(--orange2);}
+.rb-red{border-color:var(--red);background:rgba(255,82,82,.1);color:var(--red2);}
+.rgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:9px;margin:12px 0;}
+.rbox{border-radius:10px;padding:12px;text-align:center;border:1.5px solid;}
+.rbox .rv{font-family:'Press Start 2P',monospace;font-size:.88rem;line-height:1;margin-bottom:4px;}
+.rbox .rl{font-size:.64rem;font-weight:800;color:var(--gray);}
+.rbox.hi{border-color:var(--amber);background:rgba(255,179,0,.07);}.rbox.hi .rv{color:var(--amber);}
+.rbox.md{border-color:var(--orange);background:rgba(255,152,0,.07);}.rbox.md .rv{color:var(--orange);}
+.rbox.lo{border-color:var(--red);background:rgba(255,82,82,.07);}.rbox.lo .rv{color:var(--red);}
+.rbox.info{border-color:var(--blue);background:rgba(64,196,255,.07);}.rbox.info .rv{color:var(--blue);}
+.rev-item{border-radius:10px;border:1.5px solid;padding:12px 14px;margin-bottom:8px;}
+.rev-item.ok{border-color:rgba(0,230,118,.35);background:rgba(0,230,118,.05);}
+.rev-item.nok{border-color:rgba(255,82,82,.3);background:rgba(255,82,82,.05);}
+.rev-item.disc{border-color:rgba(255,152,0,.3);background:rgba(255,152,0,.05);}
+.ri-top{display:flex;align-items:center;gap:9px;margin-bottom:5px;}
+.ri-num{font-family:'Press Start 2P',monospace;font-size:.36rem;}
+.rev-item.ok .ri-num{color:var(--green);}
+.rev-item.nok .ri-num{color:var(--red);}
+.rev-item.disc .ri-num{color:var(--orange);}
+.ri-q{font-size:.82rem;font-weight:800;color:#c0b090;}
+.ri-ans{font-size:.76rem;font-weight:700;color:var(--gray);margin-top:3px;}
+/* teacher */
+.teacher-panel{background:rgba(255,152,0,.06);border:2px solid rgba(255,152,0,.28);border-radius:12px;padding:16px 18px;margin-top:14px;}
+.tp-title{font-family:'Press Start 2P',monospace;font-size:.42rem;color:var(--orange);margin-bottom:10px;display:flex;align-items:center;gap:7px;}
+.tp-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid rgba(255,152,0,.12);font-size:.84rem;font-weight:700;color:#c8b090;}
+.tp-row:last-child{border-bottom:none;}
+.tp-v{font-family:'Fira Code',monospace;font-size:.8rem;color:var(--amber2);}
+.disc-resp{background:rgba(0,0,0,.3);border-radius:7px;padding:9px 12px;margin:5px 0 10px;font-size:.82rem;font-weight:700;color:#c8c0a0;line-height:1.6;font-style:italic;border:1px solid rgba(255,152,0,.18);}
+.gab-resp{background:rgba(0,230,118,.06);border-radius:7px;padding:9px 12px;margin:4px 0 12px;font-size:.8rem;font-weight:700;color:var(--green2);line-height:1.6;border:1px solid rgba(0,230,118,.2);}
+/* conf/ov */
+.conf{position:fixed;inset:0;pointer-events:none;z-index:400;}
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:500;display:none;align-items:center;justify-content:center;flex-direction:column;}
+.ov.on{display:flex;}
+.ov-t{font-family:'Press Start 2P',monospace;font-size:clamp(.6rem,3vw,1.15rem);text-align:center;animation:bp .45s ease;}
+@keyframes bp{0%{transform:scale(.3);opacity:0}70%{transform:scale(1.1)}100%{transform:scale(1);opacity:1}}
+.ov-s{font-size:.88rem;font-weight:700;color:white;text-align:center;margin-top:10px;max-width:380px;line-height:1.7;padding:0 14px;}
+.ov-btns{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap;justify-content:center;}
+@media(max-width:540px){.panel{padding:16px 12px;}.btn{font-size:.38rem;padding:10px 14px;}}
+</style>
+</head>
+<body>
+<div class="conf" id="conf"></div>
+<div class="ov" id="ov">
+  <div class="ov-t" id="ov-t" style="color:var(--amber);">✅ CORRETO!</div>
+  <div class="ov-s" id="ov-s"></div>
+  <div class="ov-btns" id="ov-btns"></div>
+</div>
+
+<!-- ════ INTRO ════ -->
+<div class="scr on" id="s-intro">
+<div class="panel" style="max-width:760px;margin-top:16px;">
+  <div style="text-align:center;margin-bottom:14px;">
+    <div style="font-size:3rem;animation:fl 2.5s ease-in-out infinite;margin-bottom:8px;">🔱</div>
+    <p class="ptitle">MÓDULO 2</p>
+    <p class="ptitle" style="color:var(--amber2);font-size:clamp(.38rem,1.2vw,.56rem);">VERSÃO 2 · OS PERGAMINHOS REVISITADOS</p>
+    <p class="psub" style="margin-top:5px;">AVALIAÇÃO COM CONSULTA · GUILDA TECHSOLUTIONS</p>
+  </div>
+  <div class="ob-banner">
+    <span class="ob-icon">📚</span>
+    <div>
+      <p class="ob-title">⚡ GRIMÓRIO ABERTO — VERSÃO 2!</p>
+      <p class="ob-desc">Novos cenários sobre os mesmos Pergaminhos Sagrados (Aulas 4–8). Esta versão testa se você entende os <strong>conceitos em situações diferentes</strong>, não só as mesmas perguntas!</p>
+    </div>
+  </div>
+  <div class="npc">
+    <div class="nav">🔱</div>
+    <div><p class="nname">ORÁCULO DOS RELATÓRIOS</p>
+      <p class="ntxt">Herói! Esta é uma <strong>segunda missão</strong> sobre os Relatórios Mágicos. Os cenários mudaram — os conceitos são os mesmos das Aulas 4 a 8, mas aplicados em situações novas.<br><br>Grimório aberto — mas o raciocínio tem que ser <strong>seu</strong>!
+        <span class="ctip">5 questões · 45 min · Grimório aberto</span>
+      </p>
+    </div>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(148px,1fr));gap:9px;margin-bottom:14px;">
+    <div style="border:1.5px solid rgba(206,147,216,.35);border-radius:9px;padding:11px;background:rgba(206,147,216,.05);"><span style="font-family:'Press Start 2P',monospace;font-size:.3rem;color:var(--a4);display:block;margin-bottom:4px;">🗡️ AULA 4</span><span style="font-size:.82rem;font-weight:800;color:var(--white);">Partidas Dobradas</span><br><span style="font-size:.7rem;color:var(--gray);">Débito · Crédito</span></div>
+    <div style="border:1.5px solid rgba(64,196,255,.35);border-radius:9px;padding:11px;background:rgba(64,196,255,.05);"><span style="font-family:'Press Start 2P',monospace;font-size:.3rem;color:var(--a5);display:block;margin-bottom:4px;">📋 AULA 5</span><span style="font-size:.82rem;font-weight:800;color:var(--white);">Plano de Contas</span><br><span style="font-size:.7rem;color:var(--gray);">Ativo · Passivo · PL</span></div>
+    <div style="border:1.5px solid rgba(245,200,66,.35);border-radius:9px;padding:11px;background:rgba(245,200,66,.05);"><span style="font-family:'Press Start 2P',monospace;font-size:.3rem;color:var(--a6);display:block;margin-bottom:4px;">⚖️ AULA 6</span><span style="font-size:.82rem;font-weight:800;color:var(--white);">Balanço Patrimonial</span><br><span style="font-size:.7rem;color:var(--gray);">Equação patrimonial</span></div>
+    <div style="border:1.5px solid rgba(0,230,118,.35);border-radius:9px;padding:11px;background:rgba(0,230,118,.05);"><span style="font-family:'Press Start 2P',monospace;font-size:.3rem;color:var(--a7);display:block;margin-bottom:4px;">⚔️ AULA 7</span><span style="font-size:.82rem;font-weight:800;color:var(--white);">DRE</span><br><span style="font-size:.7rem;color:var(--gray);">Lucro · Prejuízo</span></div>
+    <div style="border:1.5px solid rgba(255,152,0,.35);border-radius:9px;padding:11px;background:rgba(255,152,0,.05);"><span style="font-family:'Press Start 2P',monospace;font-size:.3rem;color:var(--a8);display:block;margin-bottom:4px;">📖 AULA 8</span><span style="font-size:.82rem;font-weight:800;color:var(--white);">Fluxo de Caixa</span><br><span style="font-size:.7rem;color:var(--gray);">Liquidez · Gestão</span></div>
+  </div>
+  <div style="text-align:center;">
+    <button class="btn btn-amber" style="font-size:.5rem;" onclick="startExam()">🔱 ABRIR OS PERGAMINHOS V2 →</button>
+  </div>
+</div>
+</div>
+
+<!-- ════ PROVA ════ -->
+<div class="scr" id="s-exam">
+<div class="panel" style="max-width:860px;margin-top:14px;">
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px;">
+    <div><p class="ptitle" style="font-size:.46rem;text-align:left;color:var(--amber);">🔱 MÓDULO 2 · VERSÃO 2</p><p class="psub" style="text-align:left;margin-top:2px;">OS PERGAMINHOS REVISITADOS · AULAS 4–8</p></div>
+    <div style="display:flex;gap:6px;">
+      <div class="ob-banner" style="padding:7px 12px;margin:0;border-radius:8px;border-width:1.5px;">
+        <span style="font-size:1rem;">📚</span>
+        <span style="font-family:'Press Start 2P',monospace;font-size:.3rem;color:var(--amber);">GRIMÓRIO<br>ABERTO</span>
+      </div>
+      <button class="btn btn-ghost" onclick="confirmEnd()">🏁 FINALIZAR</button>
+    </div>
+  </div>
+  <div class="timer-bar">
+    <span style="font-size:1.3rem;">⏱️</span>
+    <div class="timer-track"><div class="timer-fill t-ok" id="timer-fill" style="width:100%;"></div></div>
+    <span class="timer-val" id="timer-val">45:00</span>
+  </div>
+  <div class="q-progress">
+    <div class="qp-dot current" id="qp0">1</div>
+    <div class="qp-dot" id="qp1">2</div>
+    <div class="qp-dot" id="qp2">3</div>
+    <div class="qp-dot" id="qp3">4</div>
+    <div class="qp-dot" id="qp4">5</div>
+  </div>
+  <div class="npc" style="margin-bottom:12px;"><div class="nav">🔱</div><div><p class="nname">ORÁCULO DOS RELATÓRIOS</p><p class="ntxt" id="npc-exam">Novos cenários, mesmos conceitos. Use o Grimório e seu raciocínio!</p></div></div>
+  <div id="question-area"></div>
+  <div class="q-nav">
+    <button class="btn btn-ghost" id="btn-prev" onclick="prevQ()" disabled>← ANTERIOR</button>
+    <div style="font-family:'Press Start 2P',monospace;font-size:.36rem;color:var(--gray);" id="q-counter">Q 1 / 5</div>
+    <button class="btn btn-amber" id="btn-next" onclick="nextQ()">PRÓXIMA →</button>
+  </div>
+</div>
+</div>
+
+<!-- ════ RESULTADO ════ -->
+<div class="scr" id="s-result">
+<div class="panel" style="max-width:780px;margin-top:14px;">
+  <div style="text-align:center;margin-bottom:14px;">
+    <div style="font-size:3rem;animation:fl 2.5s ease-in-out infinite;">🏆</div>
+    <p class="ptitle" style="color:var(--amber);">VERSÃO 2<br>DOMINADA!</p>
+    <p class="psub" style="margin-top:5px;">OS PERGAMINHOS SAGRADOS DO MÓDULO 2</p>
+  </div>
+  <div id="r-badge-wrap"></div>
+  <div class="xp-ring"><span class="xp-n" id="r-xp">—</span><span class="xp-l">XP</span></div>
+  <div class="rgrid" id="r-grid"></div>
+  <div style="border-top:1px solid var(--border);padding-top:13px;margin-top:4px;"><p style="font-family:'Press Start 2P',monospace;font-size:.38rem;color:var(--gray);margin-bottom:10px;">📋 REVISÃO</p><div id="r-review"></div></div>
+  <div class="teacher-panel"><p class="tp-title">👨‍🏫 PAINEL DO PROFESSOR</p><div id="teacher-data"></div></div>
+  <div class="npc" style="margin-top:14px;"><div class="nav">🔱</div><div><p class="nname">ORÁCULO DOS RELATÓRIOS</p><p class="ntxt" id="r-npc">—</p></div></div>
+  <div style="display:flex;gap:9px;flex-wrap:wrap;margin-top:12px;">
+    <button class="btn btn-gold" onclick="downloadCSV()">⬇ BAIXAR RELATÓRIO</button>
+    <button class="btn btn-ghost" onclick="fullReset()">↺ REFAZER</button>
+  </div>
+</div>
+</div>
+
+<script>
+const QQ=[
+  {
+    id:1,type:'mc',
+    secLabel:'🗡️ AULA 4 · Partidas Dobradas',secClass:'sb4',
+    icon:'⚖️',xpFull:15,xpPartial:7,
+    stem:'A guilda recebeu <strong>15.000 moedas de ouro</strong> por entregar um sistema de defesa para o Rei. Usando o método das <strong>Partidas Dobradas</strong>, quais são os DOIS baús que essa transação mexe simultaneamente?',
+    opts:[
+      'Apenas o Baú do Banco (Caixa) é atualizado — só uma coisa muda.',
+      'O Baú do Banco (Caixa) recebe as moedas (Débito) e o Baú de Receitas de Serviços registra de onde vieram (Crédito).',
+      'Apenas o Baú de Lucros é atualizado e os outros ficam como estão.',
+      'O Baú de Salários é debitado e o Baú de Caixa é creditado.'
+    ],
+    correct:1,
+    feedOk:'✅ Exato! Partida dobrada: Débito em Caixa (o baú que recebe o ouro) + Crédito em Receita de Serviços (o baú que gerou o ouro). Sempre dois lados!',
+    feedNok:'❌ Não é essa! Nas partidas dobradas, SEMPRE dois baús são afetados. O dinheiro que chega vai para o Caixa (Débito) e a origem é a Receita de Serviços (Crédito).',
+    tip:'💡 Partida dobrada: o que recebe = Débito, a origem = Crédito. Missão paga → Caixa recebe (Débito em Caixa) e Receita explica de onde veio (Crédito em Receita).'
+  },
+  {
+    id:2,type:'mc',
+    secLabel:'📋 AULA 5 · Plano de Contas',secClass:'sb5',
+    icon:'🗂️',xpFull:15,xpPartial:7,
+    stem:'O Tesoureiro da Guilda quer saber em qual <strong>categoria (conta) do Plano de Contas</strong> cada item abaixo se encaixa. Marque a opção que classifica <strong>corretamente</strong> os 3 itens:',
+    opts:[
+      '🖥️ Computadores = Despesa · 🧙 Salários = Ativo · 💰 Dinheiro em banco = Passivo',
+      '🖥️ Computadores = Ativo (bem tangível) · 🧙 Salários = Despesa · 💰 Dinheiro em banco = Ativo',
+      '🖥️ Computadores = Passivo · 🧙 Salários = Receita · 💰 Dinheiro em banco = Lucro',
+      '🖥️ Computadores = Receita · 🧙 Salários = Passivo · 💰 Dinheiro em banco = Despesa'
+    ],
+    correct:1,
+    feedOk:'✅ Correto! Computadores = Ativo (a guilda POSSUI). Salários = Despesa (ouro que SAI). Banco = Ativo (a guilda TEM esse dinheiro).',
+    feedNok:'❌ Não é essa! Lembre: ATIVO = o que a guilda tem/possui. DESPESA = o que a guilda gasta. Computadores e dinheiro no banco são ATIVOS — coisas que a guilda TEM!',
+    tip:'💡 Teste: "A guilda ainda TEM isso?" → ATIVO. "A guilda GASTOU isso?" → DESPESA. Computador: a guilda tem. Salário: foi gasto. Banco: a guilda tem.'
+  },
+  {
+    id:3,type:'mc',
+    secLabel:'⚖️ AULA 6 · Balanço Patrimonial',secClass:'sb6',
+    icon:'⚖️',xpFull:15,xpPartial:7,
+    stem:'O Balanço Patrimonial da Guilda mostra: <strong>Ativo total = 30.000 moedas</strong> e <strong>Passivo total = 12.000 moedas</strong>. Qual é o <strong>Patrimônio Líquido (PL)</strong> — o verdadeiro poder da guilda — e o que ele representa?',
+    opts:[
+      'PL = 42.000 moedas (Ativo + Passivo) — é a soma total.',
+      'PL = 12.000 moedas — é apenas o valor das dívidas.',
+      'PL = 18.000 moedas (Ativo − Passivo) — é a riqueza real da guilda após pagar todas as dívidas.',
+      'PL = 30.000 moedas — é o Ativo sem descontar nada.'
+    ],
+    correct:2,
+    feedOk:'✅ Perfeito! PL = 30.000 − 12.000 = 18.000 moedas. É o "power level" verdadeiro da guilda — o que sobra depois de quitar todas as dívidas!',
+    feedNok:'❌ Não é essa! PL = ATIVO − PASSIVO. A fórmula é: o que você TEM menos o que você DEVE = o que é realmente seu. 30.000 − 12.000 = ?',
+    tip:'💡 PL = ATIVO − PASSIVO = riqueza real. Se sua guilda tem 30.000 mas deve 12.000, na prática você é "dono" de apenas 18.000. Esse é o PL!'
+  },
+  {
+    id:4,type:'mc',
+    secLabel:'⚔️ AULA 7 · A Batalha do Lucro (DRE)',secClass:'sb7',
+    icon:'⚔️',xpFull:15,xpPartial:7,
+    stem:'A Guilda recebeu <strong>35.000 moedas</strong> de um cliente por desenvolver um sistema completo. O contador listou as despesas da batalha:\n\n<strong>Salários dos Magos:</strong> 18.000 moedas\n<strong>Energia mágica:</strong> 1.200 moedas\n<strong>Licença de Ferramentas:</strong> 800 moedas\n\nQual foi o <strong>Lucro ou Prejuízo</strong> na Tela de Resultados (DRE)?',
+    extra:'dre2',
+    opts:[
+      'Lucro de 35.000 moedas (não descontou as despesas).',
+      'Prejuízo de 20.000 moedas (cálculo errado).',
+      'Lucro de 15.000 moedas (35.000 − 18.000 − 1.200 − 800 = 15.000).',
+      'Lucro de 16.200 moedas (esqueceu a licença de ferramentas).'
+    ],
+    correct:2,
+    feedOk:'✅ Correto! DRE: 35.000 − 18.000 − 1.200 − 800 = 15.000 moedas de lucro. A batalha foi vencida com saldo positivo!',
+    feedNok:'❌ Tente de novo! Some TODAS as despesas: 18.000 + 1.200 + 800 = 20.000. Depois: Receita 35.000 − Total Despesas 20.000 = ?',
+    tip:'💡 Passo 1: some todas as despesas = 18.000 + 1.200 + 800 = 20.000. Passo 2: 35.000 (receita) − 20.000 (despesas) = ? Esse é o lucro!'
+  },
+  {
+    id:5,type:'disc',
+    secLabel:'📖 AULA 8 · O Diário de Ouro (Fluxo de Caixa)',secClass:'sb8',
+    icon:'📖',xp:20,
+    stem:'A Guilda tem <strong>Lucro de 15.000 moedas</strong> no papel (DRE mostrando positivo), mas o Tesoureiro está <strong>nervoso</strong>: a guilda mal tem ouro no baú para pagar os magos na sexta-feira!\n\nExplique como isso é possível — e como o <strong>Fluxo de Caixa (Aula 8)</strong> teria ajudado o Tesoureiro a evitar esse problema.',
+    placeholder:'Escreva sua resposta... (Pense: lucro no papel vs dinheiro no caixa. O que é diferente? Como o Fluxo de Caixa avisaria antes?)',
+    gabarito:'É possível porque lucro (DRE) e caixa (Fluxo de Caixa) são coisas diferentes! O DRE mostra os resultados no papel — a guilda ganhou 15.000 no mês. Mas se o cliente ainda não pagou (está a receber), ou se a guilda pagou antecipadamente por ferramentas e servidores, o caixa pode estar vazio mesmo com lucro. O Fluxo de Caixa registra quando o dinheiro REALMENTE entra e sai — não quando a missão foi fechada, mas quando o ouro foi recebido. Se o Tesoureiro tivesse feito o Fluxo de Caixa diário, teria visto que na semana do pagamento dos magos o caixa ficaria negativo e poderia ter antecipado o recebimento do cliente ou reduzido gastos. Ter lucro e quebrar por falta de caixa é chamado de insolvência técnica — o maior Game Over financeiro!'
+  }
+];
+
+let cur=0,answers={},discAns={},timerInterval=null,timeLeft=45*60;
+
+function startExam(){go('s-exam');startTimer();renderQ(0);}
+function startTimer(){updateTimer();timerInterval=setInterval(()=>{timeLeft--;updateTimer();if(timeLeft<=0){clearInterval(timerInterval);endExam();}},1000);}
+function updateTimer(){
+  const m=Math.floor(timeLeft/60),s=timeLeft%60;
+  document.getElementById('timer-val').textContent=`${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  const pct=timeLeft/(45*60)*100;
+  const f=document.getElementById('timer-fill');f.style.width=pct+'%';
+  f.className='timer-fill '+(pct>50?'t-ok':pct>20?'t-warn':'t-crit');
+}
+
+function renderQ(idx){
+  cur=idx;const q=QQ[idx];
+  for(let i=0;i<QQ.length;i++){
+    const d=document.getElementById('qp'+i);d.className='qp-dot';
+    if(i===idx)d.className+=' current';
+    else if(answers[i]!==undefined||discAns[i]!==undefined)d.className+=' answered';
+    else d.className+=' unans';
+  }
+  document.getElementById('q-counter').textContent=`Q ${idx+1} / ${QQ.length}`;
+  document.getElementById('btn-prev').disabled=idx===0;
+  document.getElementById('btn-next').textContent=idx===QQ.length-1?'🏁 FINALIZAR':'PRÓXIMA →';
+  const npcMsgs=[
+    'Questão 1 — <strong>Aula 4</strong>: A missão foi paga — quais dois baús se movimentam?',
+    'Questão 2 — <strong>Aula 5</strong>: Classifique os 3 itens nas contas certas do Plano de Contas!',
+    'Questão 3 — <strong>Aula 6</strong>: Calcule o PL com a equação patrimonial!',
+    'Questão 4 — <strong>Aula 7</strong>: Some todas as despesas e calcule o lucro da batalha!',
+    'Última questão! <strong>Aula 8</strong> — Como ter lucro e quebrar ao mesmo tempo? Explique!'
+  ];
+  document.getElementById('npc-exam').innerHTML=npcMsgs[idx];
+  const area=document.getElementById('question-area');
+  if(q.type==='mc'){
+    area.innerHTML=buildMC(q,idx);
+    if(answers[idx]?.locked)lockMC(idx,answers[idx].answer,answers[idx].correct);
+  } else {
+    area.innerHTML=buildDisc(q,idx);
+    const ta=document.getElementById('disc-ta-'+idx);
+    if(discAns[idx]){ta.value=discAns[idx];ta.classList.add('typed');updateCC(idx);}
+    ta.addEventListener('input',()=>{discAns[idx]=ta.value.trim();ta.classList.toggle('typed',ta.value.trim().length>20);updateCC(idx);document.getElementById('qp'+idx).className='qp-dot '+(ta.value.trim().length>20?'answered':'current');});
+  }
+}
+
+function buildMC(q,idx){
+  const L=['A','B','C','D'];
+  const opts=q.opts.map((o,i)=>`<button class="opt" id="opt${idx}_${i}" onclick="pickOpt(${idx},${i})"><span class="opt-l">${L[i]}</span><span>${o}</span></button>`).join('');
+  let extra='';
+  if(q.extra==='dre2'){extra=`<div class="dre-mini">
+    <span class="dre-rec">+ 35.000 💰  Receita de Serviços (sistema completo)</span><br>
+    <span class="dre-desp">− 18.000 💰  Salários dos Magos</span><br>
+    <span class="dre-desp">−  1.200 💰  Energia Mágica</span><br>
+    <span class="dre-desp">−    800 💰  Licença de Ferramentas</span>
+    <div class="dre-line"></div>
+    <span class="dre-res">= ??? 💰  RESULTADO DA BATALHA</span>
+  </div>`;}
+  return `<div class="q-card"><div class="sec-badge ${q.secClass}">${q.secLabel}</div><div class="q-num"><span class="qi">${q.icon}</span> QUESTÃO ${q.id} — ${q.xpFull} XP</div><p class="q-stem">${q.stem.replace(/\n/g,'<br>')}</p>${extra}<div class="opts" id="opts-${idx}">${opts}</div><a class="tip-link" onclick="toggleTip(${idx});return false;">💡 Ver dica</a><div class="tip-box" id="tip-${idx}">${q.tip}</div><div class="q-fb" id="qfb-${idx}"></div></div>`;
+}
+
+function buildDisc(q,idx){
+  return `<div class="q-card"><div class="sec-badge ${q.secClass}">${q.secLabel}</div><div class="q-num"><span class="qi">${q.icon}</span> QUESTÃO ${q.id} — ${q.xp} XP (professor avalia)</div><p class="q-stem">${q.stem.replace(/\n/g,'<br>')}</p><textarea class="disc-ta" id="disc-ta-${idx}" placeholder="${q.placeholder}"></textarea><div class="disc-char" id="disc-char-${idx}">0 caracteres</div><button class="gab-btn" onclick="toggleGab(${idx})">📋 Ver gabarito esperado</button><div class="gab-box" id="gab-${idx}"><p class="gab-title">📋 GABARITO</p><p class="gab-text">${q.gabarito.replace(/\n/g,'<br>')}</p></div></div>`;
+}
+
+function toggleTip(idx){const el=document.getElementById('tip-'+idx);if(el)el.style.display=el.style.display==='none'?'block':'none';}
+function toggleGab(idx){const el=document.getElementById('gab-'+idx);if(el)el.style.display=el.style.display==='none'?'block':'none';}
+function updateCC(idx){const ta=document.getElementById('disc-ta-'+idx);if(!ta)return;const l=ta.value.trim().length;const cc=document.getElementById('disc-char-'+idx);if(!cc)return;cc.textContent=l+' caractere'+(l!==1?'s':'');cc.className='disc-char'+(l>=80?' enough':'');}
+
+function pickOpt(qIdx,optIdx){
+  const q=QQ[qIdx];if(answers[qIdx]?.locked)return;
+  const attempts=answers[qIdx]?.attempts||0;const isOk=optIdx===q.correct;
+  if(!answers[qIdx])answers[qIdx]={attempts:0,score:q.xpFull};
+  answers[qIdx].attempts=attempts+1;
+  if(isOk){
+    const score=attempts===0?q.xpFull:q.xpPartial;
+    answers[qIdx]={answer:optIdx,correct:true,score,attempts:attempts+1,locked:true};
+    lockMC(qIdx,optIdx,true);showFb(qIdx,'ok',q.feedOk);
+    document.getElementById('qp'+qIdx).className='qp-dot answered';
+    showOv('✅ +'+score+' XP!',q.feedOk.replace('✅ ',''),[]);setTimeout(hideOv,1600);spawnConf();
+  } else {
+    document.querySelectorAll(`[id^="opt${qIdx}_"]`).forEach(b=>b.classList.remove('selected','nok'));
+    document.getElementById(`opt${qIdx}_${optIdx}`).classList.add('nok');
+    answers[qIdx]={...(answers[qIdx]||{}),attempts:attempts+1,score:q.xpPartial};
+    showFb(qIdx,'nok',q.feedNok);
+  }
+}
+function lockMC(qIdx,chosen,correct){
+  const q=QQ[qIdx];
+  document.querySelectorAll(`[id^="opt${qIdx}_"]`).forEach((btn,i)=>{
+    btn.classList.add('locked');
+    if(i===q.correct)btn.classList.add('ok');
+    else if(i===chosen&&!correct)btn.classList.add('nok');
+  });
+}
+function showFb(qIdx,type,msg){const fb=document.getElementById('qfb-'+qIdx);if(!fb)return;fb.style.display='block';fb.className='q-fb fb-'+type;fb.innerHTML=msg;}
+function nextQ(){if(cur===QQ.length-1){confirmEnd();return;}renderQ(cur+1);}
+function prevQ(){if(cur>0)renderQ(cur-1);}
+function confirmEnd(){
+  const u=QQ.filter((q,i)=>q.type==='mc'?answers[i]===undefined:!discAns[i]||discAns[i].length<20).length;
+  if(u>0){showOv('⚠️ ATENÇÃO!',`${u} questão(ões) sem resposta. Finalizar mesmo assim?`,[{label:'✅ FINALIZAR',fn:'endExam()'},{label:'← VOLTAR',fn:'hideOv()'}]);}
+  else endExam();
+}
+function endExam(){
+  clearInterval(timerInterval);
+  QQ.forEach((q,i)=>{if(q.type==='disc'){const ta=document.getElementById('disc-ta-'+i);if(ta&&ta.value.trim())discAns[i]=ta.value.trim();}});
+  buildResult();go('s-result');spawnConf();
+}
+function buildResult(){
+  let mc=0,mcT=0,dT=0;
+  QQ.forEach((q,i)=>{if(q.type==='mc'){mcT+=q.xpFull;if(answers[i]?.correct)mc+=answers[i].score;}else dT+=q.xp;});
+  const pct=Math.round(mc/mcT*100);
+  document.getElementById('r-xp').textContent=mc+'/'+(mcT+dT);
+  let badge,npc;
+  if(pct===100){badge=`<div class="r-badge rb-amber">🏆 PERFEITO! Os Pergaminhos V2 foram dominados!</div>`;npc='Incrível! 100% na Versão 2 — com cenários novos! Você realmente entende Balanço, DRE e Fluxo de Caixa!';}
+  else if(pct>=75){badge=`<div class="r-badge rb-green">⚔️ APROVADO! ${pct}% — Guardião dos Pergaminhos!</div>`;npc=`Ótimo! ${pct}% na versão mais desafiadora. Você está dominando os Relatórios Mágicos!`;}
+  else if(pct>=50){badge=`<div class="r-badge rb-orange">🛡️ PARCIAL — ${pct}%. Revise os itens vermelhos!</div>`;npc='Você está quase lá! Revise os conceitos das questões que erraste.';}
+  else{badge=`<div class="r-badge rb-red">💪 REFORÇO — ${pct}%. Releia as Aulas 4–8!</div>`;npc='Esta versão tem situações novas. Revise cada aula e tente de novo!';}
+  document.getElementById('r-badge-wrap').innerHTML=badge;document.getElementById('r-npc').innerHTML=npc;
+  const cls=pct>=75?'hi':pct>=50?'md':'lo';
+  document.getElementById('r-grid').innerHTML=`
+    <div class="rbox ${cls}"><div class="rv">${mc}/${mcT}</div><div class="rl">XP OBJETIVAS</div></div>
+    <div class="rbox ${cls}"><div class="rv">${pct}%</div><div class="rl">APROVEIT.</div></div>
+    <div class="rbox info"><div class="rv">${dT}</div><div class="rl">XP DISCURSIVA</div></div>
+    <div class="rbox ${cls}"><div class="rv">${Object.values(answers).filter(a=>a.correct).length}/4</div><div class="rl">CORRETAS</div></div>`;
+  let rev='';
+  QQ.forEach((q,i)=>{
+    if(q.type==='mc'){
+      const st=answers[i];const ok=st?.correct;const given=st?.answer!==undefined?q.opts[st.answer]:'(sem resposta)';
+      rev+=`<div class="rev-item ${ok?'ok':'nok'}"><div class="ri-top"><span style="font-size:1.1rem;">${ok?'✅':'❌'}</span><span class="ri-num">Q${i+1} · Aula ${[4,5,6,7][i]} — ${ok?'+'+st.score+' XP':'0 XP'}</span></div><div class="ri-q">${q.stem.replace(/<[^>]+>/g,'').substring(0,70)}...</div><div class="ri-ans">Sua resposta: <strong>${given.substring(0,55)}...</strong></div>${!ok?`<div class="ri-ans" style="color:var(--green);">✅ Correta: ${q.opts[q.correct].substring(0,60)}...</div>`:''}</div>`;
+    } else {
+      const txt=discAns[i]||'(sem resposta)';
+      rev+=`<div class="rev-item disc"><div class="ri-top"><span style="font-size:1.1rem;">📝</span><span class="ri-num">Q${i+1} · Aula 8 — ${q.xp} XP (professor)</span></div><div class="ri-q">${q.stem.replace(/<[^>]+>/g,'').substring(0,70)}...</div><div class="ri-ans">"${txt.substring(0,75)}${txt.length>75?'...':''}"</div></div>`;
+    }
+  });
+  document.getElementById('r-review').innerHTML=rev;
+  const ts=45*60-timeLeft;const tm=Math.floor(ts/60),tsec=ts%60;
+  const dq=QQ.find(q=>q.type==='disc');const di=QQ.indexOf(dq);const dtxt=discAns[di]||'(sem resposta)';
+  document.getElementById('teacher-data').innerHTML=`
+    <div class="tp-row"><span>Tempo utilizado</span><span class="tp-v">${String(tm).padStart(2,'0')}:${String(tsec).padStart(2,'0')}</span></div>
+    <div class="tp-row"><span>Objetivas corretas</span><span class="tp-v">${Object.values(answers).filter(a=>a.correct).length}/4</span></div>
+    <div class="tp-row"><span>XP objetivas</span><span class="tp-v">${mc}/60</span></div>
+    <div class="tp-row"><span>Q4 gabarito (DRE)</span><span class="tp-v" style="color:var(--green);">Lucro = 15.000 moedas</span></div>
+    <div class="tp-row"><span>Versão</span><span class="tp-v" style="color:var(--amber);">🔱 V2 — PERGAMINHOS REVISITADOS</span></div>
+    <hr style="border-color:rgba(255,152,0,.12);margin:8px 0;">
+    <p style="font-family:'Press Start 2P',monospace;font-size:.32rem;color:var(--orange);margin:8px 0;">🖊️ DISCURSIVA Q5 · AULA 8</p>
+    <div class="disc-resp">${dtxt}</div>
+    <p style="font-family:'Press Start 2P',monospace;font-size:.3rem;color:var(--green);margin:4px 0 6px;">📋 GABARITO:</p>
+    <div class="gab-resp">${dq.gabarito.replace(/\n/g,'<br>')}</div>`;
+}
+function downloadCSV(){
+  const now=new Date();const ts=45*60-timeLeft;const tm=Math.floor(ts/60),tsec=ts%60;
+  let mc=0;QQ.forEach((q,i)=>{if(q.type==='mc'&&answers[i]?.correct)mc+=answers[i].score;});
+  let csv='sep=;\nAVALIAÇÃO MÓDULO 2 — V2 PERGAMINHOS REVISITADOS · GRIMÓRIO ABERTO\n';
+  csv+=`Data;${now.toLocaleDateString('pt-BR')}\nHora;${now.toLocaleTimeString('pt-BR')}\nTempo;${String(tm).padStart(2,'0')}:${String(tsec).padStart(2,'0')}\n\n`;
+  csv+='OBJETIVAS\nQ;Aula;Resposta;Correta;XP\n';
+  QQ.filter(q=>q.type==='mc').forEach(q=>{const i=QQ.indexOf(q);const st=answers[i];const g=st?.answer!==undefined?['A','B','C','D'][st.answer]:'—';csv+=`Q${q.id};Aula ${[4,5,6,7][i]};${g};${st?.correct?'SIM':'NÃO'};${st?.correct?st.score:0}\n`;});
+  csv+=`TOTAL MC;${mc}/60\nGABAROTO Q4;35.000 - 18.000 - 1.200 - 800 = Lucro 15.000 moedas\n\nDISCURSIVA\n`;
+  const dq=QQ.find(q=>q.type==='disc');const di=QQ.indexOf(dq);
+  csv+=`Q5;"${(discAns[di]||'(sem resposta)').replace(/;/g,',')}"\nGABARITO;"${dq.gabarito.replace(/\n/g,' | ').replace(/;/g,',')}"\n`;
+  const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'});
+  const url=URL.createObjectURL(blob);const a=document.createElement('a');
+  a.href=url;a.download=`modulo2_v2_${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}.csv`;
+  document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);
+}
+function go(id){document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on'));document.getElementById(id).classList.add('on');window.scrollTo(0,0);}
+function showOv(t,s,btns=[]){document.getElementById('ov').classList.add('on');document.getElementById('ov-t').textContent=t;document.getElementById('ov-s').textContent=s;document.getElementById('ov-btns').innerHTML=btns.map(b=>`<button class="btn btn-${b.fn.includes('end')?'gold':'ghost'}" onclick="${b.fn}">${b.label}</button>`).join('');}
+function hideOv(){document.getElementById('ov').classList.remove('on');document.getElementById('ov-btns').innerHTML='';}
+function fullReset(){clearInterval(timerInterval);answers={};discAns={};cur=0;timeLeft=45*60;go('s-intro');}
+function spawnConf(){const c=document.getElementById('conf');const cols=['#ffb300','#f5c842','#00e676','#ce93d8','#40c4ff','#ff9800'];for(let i=0;i<70;i++){const el=document.createElement('div');const sz=4+Math.random()*9;el.style.cssText=`position:absolute;width:${sz}px;height:${sz}px;background:${cols[Math.floor(Math.random()*cols.length)]};left:${Math.random()*100}%;top:-10px;border-radius:${Math.random()>.5?'50%':'2px'};animation:cf ${1.5+Math.random()*2}s ease ${Math.random()*.5}s both;`;c.appendChild(el);}setTimeout(()=>c.innerHTML='',5500);}
+(()=>{const s=document.createElement('style');s.textContent='@keyframes cf{from{transform:translateY(0) rotate(0deg);opacity:1}to{transform:translateY(100vh) rotate(720deg);opacity:0}}';document.head.appendChild(s);})();
+</script>
+</body>
+</html>
