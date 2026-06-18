@@ -1,0 +1,682 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Simulados — CAI Módulo 3</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Merriweather:wght@700&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --primary:#1E3A5F;
+  --primary-light:#2557a7;
+  --primary-pale:#e8f0fb;
+  --accent:#0d6efd;
+  --green:#198754;
+  --green-pale:#d1e7dd;
+  --red:#dc3545;
+  --red-pale:#f8d7da;
+  --yellow:#ffc107;
+  --yellow-pale:#fff3cd;
+  --gray-100:#f8f9fa;
+  --gray-200:#e9ecef;
+  --gray-300:#dee2e6;
+  --gray-400:#ced4da;
+  --gray-500:#adb5bd;
+  --gray-600:#6c757d;
+  --gray-700:#495057;
+  --gray-800:#343a40;
+  --gray-900:#212529;
+  --white:#ffffff;
+  --shadow:0 2px 8px rgba(0,0,0,.1);
+  --radius:8px;
+  --radius-sm:5px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',sans-serif;background:var(--gray-100);color:var(--gray-900);font-size:15px;line-height:1.6;min-height:100vh}
+
+/* ── SCREENS ── */
+.screen{display:none;min-height:100vh;align-items:center;justify-content:center;padding:24px 16px}
+.screen.on{display:flex;flex-direction:column}
+
+/* ── CARD ── */
+.card{background:var(--white);border:1px solid var(--gray-300);border-radius:var(--radius);box-shadow:var(--shadow);padding:36px 40px;max-width:780px;width:100%}
+
+/* ── INST HEADER ── */
+.inst-header{display:flex;align-items:center;gap:16px;padding-bottom:18px;margin-bottom:18px;border-bottom:2px solid var(--primary)}
+.inst-logo{width:50px;height:50px;background:var(--primary);border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-size:20px;flex-shrink:0}
+.inst-info{flex:1}
+.inst-name{font-family:'Merriweather',serif;font-size:.95rem;font-weight:700;color:var(--primary);line-height:1.3}
+.inst-sub{font-size:.75rem;color:var(--gray-600);margin-top:2px}
+.inst-badge{background:var(--primary);color:white;font-size:.68rem;font-weight:700;letter-spacing:1px;padding:4px 10px;border-radius:20px;text-transform:uppercase;white-space:nowrap}
+
+/* ── TITLES ── */
+h1.page-title{font-family:'Merriweather',serif;font-size:1.4rem;color:var(--primary);margin-bottom:4px;text-align:center}
+h2.section-title{font-size:1rem;font-weight:700;color:var(--primary);margin-bottom:14px}
+
+/* ── DIVIDER ── */
+.divider{height:1px;background:var(--gray-200);margin:20px 0}
+
+/* ── BUTTONS ── */
+.btn{display:inline-flex;align-items:center;gap:6px;font-family:'Inter',sans-serif;font-size:.85rem;font-weight:700;border:none;border-radius:var(--radius-sm);padding:10px 22px;cursor:pointer;transition:all .18s;text-transform:uppercase;letter-spacing:.4px}
+.btn-primary{background:var(--primary);color:white}
+.btn-primary:hover{background:var(--primary-light)}
+.btn-primary:disabled{opacity:.4;cursor:not-allowed}
+.btn-outline{background:transparent;border:1.5px solid var(--primary);color:var(--primary)}
+.btn-outline:hover{background:var(--primary-pale)}
+.btn-sm{padding:7px 14px;font-size:.78rem}
+
+/* ── SIM SELECTOR ── */
+.sim-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px;margin:20px 0}
+.sim-card{border:2px solid var(--gray-300);border-radius:var(--radius);padding:20px 14px;cursor:pointer;transition:all .2s;text-align:center;background:var(--white)}
+.sim-card:hover{border-color:var(--accent);box-shadow:var(--shadow);transform:translateY(-2px)}
+.sim-card.selected{border-color:var(--primary);background:var(--primary-pale)}
+.sim-card .sc-icon{font-size:2rem;margin-bottom:6px}
+.sim-card .sc-title{font-size:.82rem;font-weight:700;color:var(--primary);margin-bottom:3px}
+.sim-card .sc-desc{font-size:.73rem;color:var(--gray-500)}
+
+/* ── PROGRESS ── */
+.prog-wrap{margin:12px 0 18px}
+.prog-info{display:flex;justify-content:space-between;font-size:.75rem;font-weight:700;color:var(--gray-600);margin-bottom:4px}
+.prog-track{height:7px;background:var(--gray-200);border-radius:4px;overflow:hidden}
+.prog-fill{height:100%;background:var(--primary);border-radius:4px;transition:width .4s ease}
+
+/* ── QUESTION BLOCK ── */
+.q-block{border:1px solid var(--gray-200);border-radius:var(--radius);margin-bottom:18px;overflow:hidden;animation:fadeIn .3s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+.q-header{display:flex;align-items:center;gap:10px;padding:11px 16px;background:var(--gray-100);border-bottom:1px solid var(--gray-200)}
+.q-badge{background:var(--primary);color:white;font-size:.68rem;font-weight:700;padding:3px 10px;border-radius:20px;white-space:nowrap}
+.q-badge.essay{background:var(--gray-700)}
+.q-type-tag{font-size:.7rem;color:var(--gray-500);font-weight:600;text-transform:uppercase;letter-spacing:.4px}
+.q-body{padding:16px 18px}
+.q-stem{font-size:.95rem;color:var(--gray-800);line-height:1.7;margin-bottom:14px;font-weight:500}
+.q-stem strong{color:var(--primary)}
+
+/* ── VISUAL AID ── */
+.q-visual{background:var(--primary-pale);border:1px solid #c0d4f5;border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:14px;display:flex;gap:10px;align-items:flex-start;flex-wrap:wrap}
+.qv-icon{font-size:1.8rem;flex-shrink:0;line-height:1;margin-top:2px}
+.qv-content{flex:1;min-width:160px}
+.qv-label{font-size:.68rem;font-weight:700;color:var(--primary);text-transform:uppercase;letter-spacing:1px;margin-bottom:5px}
+.qv-chips{display:flex;gap:7px;flex-wrap:wrap}
+.chip{display:inline-flex;flex-direction:column;align-items:center;background:white;border:1px solid;border-radius:5px;padding:6px 9px;min-width:64px;text-align:center}
+.chip .ci{font-size:1.1rem}
+.chip .cv{font-size:.74rem;font-weight:700;margin-top:2px}
+.chip .cl{font-size:.62rem;color:var(--gray-500)}
+.chip.blue{border-color:#90c4f8;background:#f0f7ff}
+.chip.green{border-color:#86d9a8;background:#f0faf4}
+.chip.gold{border-color:#f5c842;background:#fffbec}
+.chip.gray{border-color:var(--gray-300);background:var(--gray-100)}
+.chip.red{border-color:#f1adb5;background:#fef5f5}
+
+/* ── OPTIONS ── */
+.opts-list{display:flex;flex-direction:column;gap:7px}
+.opt-btn{display:flex;align-items:flex-start;gap:10px;background:white;border:1.5px solid var(--gray-300);border-radius:var(--radius-sm);padding:10px 13px;cursor:pointer;transition:all .18s;font-family:'Inter',sans-serif;font-size:.88rem;color:var(--gray-800);text-align:left;line-height:1.5;width:100%}
+.opt-btn:hover:not(.locked){border-color:var(--accent);background:var(--primary-pale)}
+.opt-letter{width:22px;height:22px;border-radius:50%;background:var(--gray-200);border:1.5px solid var(--gray-400);display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:800;color:var(--gray-700);flex-shrink:0;margin-top:1px}
+.opt-btn.selected .opt-letter{background:var(--accent);border-color:var(--accent);color:white}
+.opt-btn.correct{border-color:var(--green)!important;background:var(--green-pale)!important}
+.opt-btn.correct .opt-letter{background:var(--green);border-color:var(--green);color:white}
+.opt-btn.wrong{border-color:var(--red)!important;background:var(--red-pale)!important}
+.opt-btn.wrong .opt-letter{background:var(--red);border-color:var(--red);color:white}
+.opt-btn.locked{cursor:default}
+
+/* ── FEEDBACK ── */
+.q-feedback{display:none;margin-top:10px;padding:9px 13px;border-radius:var(--radius-sm);font-size:.83rem;font-weight:600;line-height:1.6;animation:fadeIn .25s ease}
+.q-feedback.ok{background:var(--green-pale);border:1px solid #a3cfbb;color:#0a3622}
+.q-feedback.nok{background:var(--red-pale);border:1px solid #f1adb5;color:#58151c}
+
+/* ── ESSAY ── */
+.essay-textarea{width:100%;min-height:110px;border:1.5px solid var(--gray-400);border-radius:var(--radius-sm);padding:11px 13px;font-family:'Inter',sans-serif;font-size:.9rem;color:var(--gray-800);resize:vertical;outline:none;transition:border-color .2s,box-shadow .2s;line-height:1.6}
+.essay-textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(13,110,253,.12)}
+.essay-hint{font-size:.73rem;color:var(--gray-500);margin-top:4px}
+.essay-rubric{background:var(--yellow-pale);border:1px solid #ffecb5;border-radius:var(--radius-sm);padding:9px 13px;font-size:.78rem;color:#664d03;margin-bottom:10px}
+.essay-rubric strong{color:#4a3700}
+
+/* ── RESULT ── */
+.status-banner{padding:12px 18px;border-radius:var(--radius-sm);font-weight:700;font-size:.9rem;text-align:center;margin-bottom:16px}
+.status-banner.approved{background:var(--green-pale);border:1px solid #a3cfbb;color:#0a3622}
+.status-banner.recovery{background:var(--yellow-pale);border:1px solid #ffecb5;color:#664d03}
+.status-banner.failed{background:var(--red-pale);border:1px solid #f1adb5;color:#58151c}
+.result-summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin:18px 0}
+.res-box{border:1px solid var(--gray-300);border-radius:var(--radius);padding:16px 12px;text-align:center;background:var(--white)}
+.res-box .rb-val{font-family:'Merriweather',serif;font-size:1.9rem;font-weight:700;line-height:1;margin-bottom:4px}
+.res-box .rb-lbl{font-size:.73rem;color:var(--gray-500);font-weight:600;text-transform:uppercase;letter-spacing:.4px}
+.res-box.hi{border-color:#86d9a8;background:var(--green-pale)}.res-box.hi .rb-val{color:var(--green)}
+.res-box.md{border-color:#f5c842;background:var(--yellow-pale)}.res-box.md .rb-val{color:#856404}
+.res-box.lo{border-color:#f1adb5;background:var(--red-pale)}.res-box.lo .rb-val{color:var(--red)}
+.res-box.neu .rb-val{color:var(--primary)}
+.sim-result-row{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border:1px solid var(--gray-200);border-radius:var(--radius-sm);margin:7px 0;background:var(--white)}
+.srr-left{display:flex;align-items:center;gap:9px}
+.srr-name{font-size:.84rem;font-weight:600;color:var(--gray-700)}
+.srr-sub{font-size:.72rem;color:var(--gray-500);margin-top:1px}
+.srr-grade{font-size:1rem;font-weight:800}
+.srr-grade.hi{color:var(--green)}.srr-grade.lo{color:var(--red)}
+.essay-review{background:var(--gray-100);border:1px solid var(--gray-200);border-radius:var(--radius-sm);padding:12px;margin-top:8px}
+.essay-review-q{font-size:.8rem;font-weight:700;color:var(--gray-700);margin-bottom:5px}
+.essay-review-a{font-size:.86rem;color:var(--gray-800);font-style:italic;line-height:1.6}
+.essay-review-a.empty{color:var(--gray-500)}
+
+/* ── WARN ── */
+.alert-warning{background:var(--yellow-pale);border:1px solid #ffecb5;color:#664d03;padding:9px 13px;border-radius:var(--radius-sm);font-size:.83rem;font-weight:600;margin-top:10px;display:none}
+
+@media(max-width:560px){
+  .card{padding:20px 14px}
+  .inst-header{flex-direction:column;text-align:center}
+  .result-summary{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- ═══ SELEÇÃO ═══ -->
+<div class="screen on" id="s-select">
+  <div class="card" style="max-width:680px">
+    <div class="inst-header">
+      <div class="inst-logo">🎓</div>
+      <div class="inst-info">
+        <div class="inst-name">Escola Técnica Estadual — Marechal Mascarenhas de Moraes</div>
+        <div class="inst-sub">CAI — Contabilidade Aplicada à Informática · Módulo 3</div>
+      </div>
+      <div class="inst-badge">2025</div>
+    </div>
+    <h1 class="page-title">Simulados — Módulo 3</h1>
+    <p style="text-align:center;font-size:.83rem;color:var(--gray-600);margin-bottom:4px">Ferramentas Tecnológicas Aplicadas à Gestão · Aulas 9 a 13</p>
+    <p style="text-align:center;font-size:.8rem;color:var(--gray-500);margin-bottom:20px">Cada simulado: 8 questões de múltipla escolha + 2 dissertativas</p>
+    <div class="sim-grid" id="sim-grid"></div>
+    <div class="alert-warning" id="sel-warn"></div>
+    <div style="margin-top:16px">
+      <button class="btn btn-primary" onclick="startSim()">Iniciar Simulado →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ PROVA ═══ -->
+<div class="screen" id="s-exam">
+  <div class="card" id="exam-card" style="max-width:760px;margin-bottom:20px"></div>
+</div>
+
+<!-- ═══ RESULTADO ═══ -->
+<div class="screen" id="s-result">
+  <div class="card" style="max-width:720px">
+    <div class="inst-header">
+      <div class="inst-logo">📊</div>
+      <div class="inst-info">
+        <div class="inst-name" id="r-simname">Resultado</div>
+        <div class="inst-sub">CAI — Módulo 3</div>
+      </div>
+    </div>
+    <div class="status-banner" id="r-banner"></div>
+    <div class="result-summary" id="r-summary"></div>
+    <div class="divider"></div>
+    <h2 class="section-title">Desempenho por Questão</h2>
+    <div id="r-breakdown"></div>
+    <div class="divider"></div>
+    <h2 class="section-title">Suas Respostas Dissertativas</h2>
+    <div id="r-essays"></div>
+    <div class="divider"></div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <button class="btn btn-outline" onclick="go('s-select')">← Voltar aos Simulados</button>
+    </div>
+    <p style="font-size:.73rem;color:var(--gray-500);margin-top:10px">⚠️ As questões dissertativas são registradas mas avaliadas pelo professor.</p>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════
+// DADOS DOS SIMULADOS
+// ══════════════════════════════════════════
+const SIMS = [
+
+// ─────────── SIMULADO 1 ───────────
+{
+  id:0, title:'Simulado 1', subtitle:'Planilhas e Gráficos Financeiros',
+  topics:'Aulas 9 e 10', icon:'📊',
+  questions:[
+    // MC 1
+    { type:'mc',
+      visual:{icon:'📈',label:'Planilha Financeira',chips:[
+        {icon:'➕',val:'SOMA()',cls:'green'},{icon:'📉',val:'Gráfico',cls:'blue'},{icon:'💰',val:'Caixa',cls:'gold'}
+      ],caption:'Ferramenta essencial para visualização de dados financeiros.'},
+      stem:'Na prática de planilhas financeiras, usamos fórmulas como <strong>=SOMA()</strong> para calcular saldos de caixa e transformamos esses dados em gráficos. Qual a principal vantagem de criar um <strong>gráfico financeiro</strong> a partir de uma planilha de controle de caixa?',
+      opts:['Recalcular automaticamente impostos e alíquotas de forma retroativa.','Representar visualmente os dados, facilitando a comparação imediata entre receitas e despesas para a tomada de decisão.','Ocultar os valores reais das despesas para que auditores vejam apenas os lucros.','Substituir completamente a necessidade de fórmulas matemáticas na planilha.'],
+      answer:1, exp:'Gráficos financeiros transformam números em imagens, tornando comparações e tendências imediatamente visíveis para quem toma decisões.'
+    },
+    // MC 2
+    { type:'mc',
+      visual:{icon:'🗂️',label:'Formatação de Células',chips:[
+        {icon:'R$',val:'Moeda',cls:'green'},{icon:'📋',val:'Contábil',cls:'blue'},{icon:'⚠️',val:'Padrão errado',cls:'red'}
+      ],caption:'O formato correto garante leitura contábil padronizada.'},
+      stem:'Para colunas que registram <strong>entradas de caixa e faturamento</strong> em uma planilha financeira, qual é a formatação de célula mais adequada no Excel para garantir a leitura padrão contábil?',
+      opts:['Geral ou Texto simples.','Moeda ou Contábil (R$).','Data/Hora por extenso.','Científico ou Porcentagem.'],
+      answer:1, exp:'O formato Moeda ou Contábil (R$) exibe os valores com símbolo de moeda, separadores de milhar e casas decimais, padrão obrigatório em registros financeiros.'
+    },
+    // MC 3
+    { type:'mc',
+      visual:{icon:'🔢',label:'Fórmulas Básicas',chips:[
+        {icon:'Σ',val:'SOMA',cls:'blue'},{icon:'📐',val:'Subtração',cls:'gold'},{icon:'📊',val:'Saldo',cls:'green'}
+      ],caption:'Fórmulas são a base do controle financeiro em planilhas.'},
+      stem:'Em uma planilha de controle de caixa, as <strong>Receitas Totais</strong> somam R$ 12.000,00 e as <strong>Despesas Totais</strong> somam R$ 9.500,00. Usando a estrutura correta de fórmula para calcular o <strong>saldo do período</strong>, qual seria o resultado?',
+      opts:['R$ 9.500,00 — pois as despesas definem o saldo.','R$ 21.500,00 — resultado da soma de receitas e despesas.','R$ 2.500,00 — resultado de Receitas menos Despesas (R$ 12.000 − R$ 9.500).','R$ 12.000,00 — pois as receitas representam o saldo final.'],
+      answer:2, exp:'Saldo = Receitas − Despesas = R$ 12.000 − R$ 9.500 = R$ 2.500,00. É a fórmula fundamental do controle de caixa por planilha.'
+    },
+    // MC 4
+    { type:'mc',
+      visual:{icon:'📑',label:'Tipos de Gráfico',chips:[
+        {icon:'📊',val:'Barras',cls:'blue'},{icon:'🥧',val:'Pizza',cls:'gold'},{icon:'📈',val:'Linha',cls:'green'}
+      ],caption:'Cada tipo de gráfico serve a um propósito diferente.'},
+      stem:'Uma empresa quer mostrar a <strong>evolução do faturamento mês a mês</strong> ao longo de um ano. Qual tipo de gráfico é mais indicado para essa análise de tendência temporal?',
+      opts:['Gráfico de Pizza — pois mostra a proporção de cada mês no total anual.','Gráfico de Barras Empilhadas — pois soma todos os meses em uma única barra.','Gráfico de Linha — pois conecta os pontos mês a mês, evidenciando a tendência e variação ao longo do tempo.','Gráfico de Dispersão — pois compara dois conjuntos de dados independentes.'],
+      answer:2, exp:'O gráfico de linha é ideal para séries temporais: conecta os pontos no tempo, tornando tendências de crescimento ou queda imediatamente visíveis.'
+    },
+    // MC 5
+    { type:'mc',
+      visual:{icon:'🔗',label:'Planilha vs Relatório Contábil',chips:[
+        {icon:'📋',val:'Planilha',cls:'blue'},{icon:'📄',val:'DRE',cls:'green'},{icon:'🔄',val:'Alimenta',cls:'gold'}
+      ],caption:'A planilha é a origem dos dados que compõem os relatórios.'},
+      stem:'A planilha de controle financeiro montada nas aulas é considerada uma ferramenta de apoio à <strong>Demonstração do Resultado do Exercício (DRE)</strong> porque:',
+      opts:['Substitui completamente a DRE, tornando-a desnecessária em empresas pequenas.','Organiza e calcula receitas e despesas do período, fornecendo os dados brutos que alimentam os relatórios contábeis formais.','Registra apenas o ponto eletrônico dos funcionários, sem relação com a DRE.','É usada somente para calcular impostos, não tendo relação com despesas operacionais.'],
+      answer:1, exp:'A planilha organiza os lançamentos de receitas e despesas — exatamente os dados que compõem a DRE. Ela é a base operacional dos relatórios contábeis.'
+    },
+    // MC 6
+    { type:'mc',
+      visual:{icon:'📂',label:'Organização da Planilha',chips:[
+        {icon:'📌',val:'Cabeçalho',cls:'blue'},{icon:'📅',val:'Por mês',cls:'gold'},{icon:'🗃️',val:'Categorias',cls:'green'}
+      ],caption:'Estrutura bem organizada facilita a leitura e auditoria.'},
+      stem:'Ao montar uma planilha de controle de caixa, a prática correta de organização recomenda separar as entradas em <strong>categorias de receita e despesa</strong>. Por que essa separação é importante?',
+      opts:['Porque o Excel só aceita valores separados por categoria, não reconhecendo células misturadas.','Para facilitar a aplicação de filtros, subtotais e análise de quais categorias mais pesam no resultado financeiro.','Para impedir que o contador acesse os dados de despesas ao auditar a planilha.','Porque o gráfico de pizza só funciona quando os dados estão separados por cor de célula.'],
+      answer:1, exp:'Categorizar receitas e despesas permite filtrar, subtotalizar e identificar quais tipos de gastos consomem mais recursos — base para qualquer análise financeira.'
+    },
+    // MC 7
+    { type:'mc',
+      visual:{icon:'⚠️',label:'Erro Comum em Planilhas',chips:[
+        {icon:'🔴',val:'#VALOR!',cls:'red'},{icon:'🔴',val:'#REF!',cls:'red'},{icon:'✅',val:'Validação',cls:'green'}
+      ],caption:'Erros de fórmula comprometem todo o relatório.'},
+      stem:'Um aluno criou uma planilha de caixa, mas ao digitar o valor <strong>"R$ 5.000"</strong> (com o símbolo R$ no texto) diretamente em uma célula formatada como Geral, a fórmula <strong>=SOMA()</strong> retornou zero. Qual é a causa mais provável?',
+      opts:['A fórmula =SOMA() não funciona para valores maiores que R$ 1.000.','O Excel interpretou a célula como texto (não como número) por causa do símbolo R$ digitado manualmente, ignorando-a no cálculo.','O Excel somou corretamente, mas exibe zero por falta de atualização da tela.','O problema é a formatação "Geral" — ela converte automaticamente qualquer número para zero.'],
+      answer:1, exp:'Ao digitar "R$ 5.000" com o símbolo, o Excel trata o conteúdo como texto. O correto é inserir só o número e aplicar o formato Moeda/Contábil via formatação de célula.'
+    },
+    // MC 8
+    { type:'mc',
+      visual:{icon:'📊',label:'Interpretação de Gráfico',chips:[
+        {icon:'📈',val:'Receita',cls:'green'},{icon:'📉',val:'Despesa',cls:'red'},{icon:'⚖️',val:'Equilíbrio',cls:'gold'}
+      ],caption:'Ler gráficos corretamente é essencial para decisões gerenciais.'},
+      stem:'Em um gráfico de barras de controle de caixa mensal, as barras de <strong>Despesas de outubro ultrapassam as barras de Receitas</strong>. Qual conclusão financeira correta pode ser extraída diretamente desse gráfico?',
+      opts:['A empresa teve lucro em outubro, pois despesas altas indicam crescimento.','O gráfico está com erro de escala e deve ser refeito antes de qualquer análise.','A empresa operou com prejuízo em outubro — as despesas foram maiores que as receitas naquele mês.','As despesas não têm relação com o resultado financeiro, portanto nenhuma conclusão pode ser tirada.'],
+      answer:2, exp:'Quando a barra de Despesas supera a de Receitas, o saldo do período é negativo — a empresa gastou mais do que arrecadou, configurando prejuízo operacional.'
+    },
+    // DISSERTATIVA 1
+    { type:'essay',
+      stem:'Explique com suas palavras a diferença entre formatar uma célula como "Geral" e como "Moeda (R$)" em uma planilha financeira. Por que usar o formato errado pode prejudicar os cálculos e a leitura dos relatórios?',
+      rubric:'Critérios: distinção entre formato Geral (texto/número sem padrão) e Moeda (R$, separadores, casas decimais). Impacto no cálculo e na leitura contábil. Valor: 1,0 ponto.'
+    },
+    // DISSERTATIVA 2
+    { type:'essay',
+      stem:'Descreva como você montaria uma planilha de controle de caixa mensal para uma pequena empresa de tecnologia. Cite pelo menos 3 categorias de receita ou despesa que você incluiria e explique por que a criação de um gráfico de linha ajudaria o gestor a tomar decisões.',
+      rubric:'Critérios: estrutura da planilha (colunas, categorias), coerência das categorias com o contexto de TI, e justificativa do gráfico de linha para análise de tendência. Valor: 1,0 ponto.'
+    }
+  ]
+},
+
+// ─────────── SIMULADO 2 ───────────
+{
+  id:1, title:'Simulado 2', subtitle:'ERP e Banco de Dados Financeiro',
+  topics:'Aulas 11 e 12', icon:'🗄️',
+  questions:[
+    // MC 1
+    { type:'mc',
+      visual:{icon:'🔄',label:'Integração ERP',chips:[
+        {icon:'🛒',val:'Vendas',cls:'blue'},{icon:'💰',val:'Financeiro',cls:'green'},{icon:'📦',val:'Estoque',cls:'gold'}
+      ],caption:'No ERP, uma venda impacta todos os módulos simultaneamente.'},
+      stem:'Ao registrar uma venda no módulo comercial de um <strong>sistema ERP</strong>, o que acontece automaticamente nos demais módulos do sistema?',
+      opts:['A informação fica isolada no setor de vendas até que o contador a digite manualmente no sistema financeiro.','A venda atualiza o módulo comercial, mas não estabelece qualquer relação com o caixa ou estoque.','A informação é integrada automaticamente, refletindo imediatamente no módulo financeiro e nos relatórios de contabilidade.','O ERP apenas emite um comando para imprimir a nota fiscal em papel para arquivamento.'],
+      answer:2, exp:'A integração é a essência do ERP: uma única entrada de dados (a venda) atualiza simultaneamente financeiro, estoque e contabilidade, eliminando retrabalho.'
+    },
+    // MC 2
+    { type:'mc',
+      visual:{icon:'🏛️',label:'Módulo Contábil do ERP',chips:[
+        {icon:'📥',val:'Vendas',cls:'blue'},{icon:'📥',val:'Compras',cls:'gold'},{icon:'📊',val:'Contabilidade',cls:'green'}
+      ],caption:'O módulo contábil centraliza todas as transações da empresa.'},
+      stem:'O módulo de <strong>Contabilidade dentro de um ERP</strong> funciona como:',
+      opts:['Um repositório isolado que serve apenas para armazenar cadastros inativos de fornecedores.','O ponto central onde as transações de todas as áreas (vendas, compras, finanças) se unificam, gerando os dados para tomada de decisões.','Um utilitário secundário para programar o design visual do e-commerce da empresa.','Uma planilha simples sem comunicação em tempo real com as demais filiais.'],
+      answer:1, exp:'O módulo contábil do ERP é o "hub" central: todas as movimentações financeiras de todos os setores convergem para ele, garantindo consistência nos relatórios.'
+    },
+    // MC 3
+    { type:'mc',
+      visual:{icon:'🗂️',label:'Banco de Dados Relacional',chips:[
+        {icon:'👤',val:'Cliente',cls:'blue'},{icon:'📋',val:'Serviço',cls:'gold'},{icon:'🧾',val:'Fatura',cls:'green'}
+      ],caption:'Tabelas relacionadas evitam repetição e garantem integridade.'},
+      stem:'Na construção de um <strong>banco de dados financeiro relacional</strong>, por que a tabela "Fatura" deve usar uma <strong>Chave Estrangeira (ID_Cliente)</strong> ao invés de digitar o nome completo do cliente em cada fatura?',
+      opts:['Porque bancos de dados relacionais não suportam texto, aceitando apenas números.','Para interligar as tabelas, evitar repetição de dados (redundância) e prevenir erros de digitação no faturamento.','Porque nomes de texto causam travamento instantâneo do banco de dados.','Para impedir que a contabilidade acesse a identidade de quem comprou o serviço.'],
+      answer:1, exp:'A Chave Estrangeira é o mecanismo de relacionamento entre tabelas: elimina redundância, garante consistência e permite consultas integradas sem duplicar dados.'
+    },
+    // MC 4
+    { type:'mc',
+      visual:{icon:'⚠️',label:'Falha no Banco de Dados',chips:[
+        {icon:'❌',val:'Modelagem',cls:'red'},{icon:'🔴',val:'ERP instável',cls:'red'},{icon:'📉',val:'Relatórios errados',cls:'red'}
+      ],caption:'A falha na base de dados contamina todo o sistema.'},
+      stem:'Como uma <strong>falha grave na modelagem das tabelas</strong> do banco de dados (Aula 12) impacta diretamente o funcionamento do ERP (Aula 11)?',
+      opts:['Não causa impactos, pois o ERP roda de forma totalmente independente do banco de dados.','Gera dados duplicados, relatórios financeiros inconsistentes e quebra a sincronização automática entre os módulos.','O ERP converte automaticamente os dados incorretos em arquivos de texto legíveis.','A única consequência é a alteração estética das cores nos gráficos gerados.'],
+      answer:1, exp:'O banco de dados é a fundação do ERP. Uma modelagem falha gera inconsistências em cascata: dados duplicados, relatórios errados e módulos dessincronizados.'
+    },
+    // MC 5
+    { type:'mc',
+      visual:{icon:'🔑',label:'Chave Primária',chips:[
+        {icon:'🆔',val:'ID único',cls:'blue'},{icon:'🔒',val:'Não repete',cls:'green'},{icon:'🔗',val:'Referência',cls:'gold'}
+      ],caption:'Toda tabela deve ter um identificador único para cada registro.'},
+      stem:'Em um banco de dados financeiro, o campo <strong>ID_Fatura</strong> é definido como <strong>Chave Primária</strong>. O que isso significa na prática?',
+      opts:['Que o campo pode ter valores repetidos para agrupar faturas do mesmo cliente.','Que o campo identifica unicamente cada fatura no sistema — não pode haver duas faturas com o mesmo ID.','Que o campo armazena o valor total da fatura em reais.','Que o campo é opcional e pode ficar em branco para faturas antigas.'],
+      answer:1, exp:'A Chave Primária garante unicidade: cada registro tem um identificador exclusivo, o que permite localizar, atualizar ou excluir qualquer fatura sem ambiguidade.'
+    },
+    // MC 6
+    { type:'mc',
+      visual:{icon:'🏢',label:'ERP vs Planilha',chips:[
+        {icon:'📋',val:'Planilha',cls:'gray'},{icon:'🔄',val:'ERP',cls:'blue'},{icon:'📈',val:'Escala',cls:'green'}
+      ],caption:'Cada ferramenta tem seu contexto de uso ideal.'},
+      stem:'Uma empresa pequena com 3 funcionários usa planilhas Excel para controle financeiro. Ao crescer para 50 funcionários e 5 filiais, qual é a principal limitação das planilhas que justifica a migração para um <strong>ERP</strong>?',
+      opts:['Planilhas não permitem a criação de gráficos com mais de 10 colunas de dados.','Planilhas não escalam bem para múltiplos usuários simultâneos, filiais e integrações entre setores — o ERP centraliza e automatiza esses fluxos.','O Excel não suporta valores acima de R$ 99.999,99 em suas células.','Planilhas só funcionam em Windows, enquanto o ERP opera em qualquer sistema operacional.'],
+      answer:1, exp:'Planilhas são ótimas para pequenas operações, mas com múltiplos usuários, setores e filiais surgem problemas de versão, integridade e integração que só o ERP resolve.'
+    },
+    // MC 7
+    { type:'mc',
+      visual:{icon:'📊',label:'Relatório do ERP',chips:[
+        {icon:'🗓️',val:'Período',cls:'blue'},{icon:'🏪',val:'Por filial',cls:'gold'},{icon:'📈',val:'Consolidado',cls:'green'}
+      ],caption:'O ERP permite extrair relatórios gerenciais consolidados.'},
+      stem:'Uma das vantagens do ERP sobre planilhas isoladas é a possibilidade de gerar relatórios consolidados. Em uma empresa com 3 filiais, o ERP permite ao gestor:',
+      opts:['Ver apenas os dados da filial sede, pois as outras filiais possuem sistemas independentes.','Consolidar automaticamente os resultados das 3 filiais em um único relatório financeiro, sem necessidade de copiar planilhas manualmente.','Enviar automaticamente os dados por e-mail para cada filial sem possibilidade de consulta centralizada.','Registrar apenas as despesas das filiais, pois as receitas são controladas pela matriz.'],
+      answer:1, exp:'A visão consolidada é um dos maiores benefícios do ERP: o gestor acessa dados de todas as filiais em tempo real, em um único painel, sem retrabalho.'
+    },
+    // MC 8
+    { type:'mc',
+      visual:{icon:'🧾',label:'Entidade e Atributo',chips:[
+        {icon:'📦',val:'Entidade',cls:'blue'},{icon:'🏷️',val:'Atributo',cls:'gold'},{icon:'🔗',val:'Relação',cls:'green'}
+      ],caption:'Entidades são tabelas; atributos são as colunas.'},
+      stem:'No modelo de banco de dados financeiro da TechSolutions, a entidade <strong>"Serviço"</strong> possui os atributos: ID_Serviço, Nome_Serviço, Valor_Hora. Qual atributo seria o mais adequado para servir de <strong>Chave Primária</strong> nessa tabela?',
+      opts:['Nome_Serviço — pois é o campo mais descritivo e fácil de lembrar.','Valor_Hora — pois o preço identifica exclusivamente cada tipo de serviço.','ID_Serviço — pois é um identificador numérico único, sem risco de repetição ou ambiguidade.','Todos os atributos juntos — pois a combinação garante mais segurança.'],
+      answer:2, exp:'A Chave Primária deve ser um campo estável, numérico e único. ID_Serviço cumpre esse papel: não muda, não repete e identifica cada registro sem ambiguidade.'
+    },
+    // DISSERTATIVA 1
+    { type:'essay',
+      stem:'Explique com suas palavras o que é um sistema ERP e por que ele é chamado de "sistema integrado". Cite dois módulos de um ERP e descreva como eles se comunicam quando uma venda é realizada.',
+      rubric:'Critérios: definição correta de ERP, justificativa da integração entre módulos, exemplo coerente de fluxo de dados entre dois módulos. Valor: 1,0 ponto.'
+    },
+    // DISSERTATIVA 2
+    { type:'essay',
+      stem:'Imagine que você está projetando o banco de dados financeiro da TechSolutions. Descreva pelo menos 3 tabelas (entidades) que você criaria, cite 2 atributos de cada uma e explique como elas se relacionam entre si usando Chaves Estrangeiras.',
+      rubric:'Critérios: identificação correta de entidades e atributos relevantes, uso adequado do conceito de Chave Estrangeira para relacionar as tabelas. Valor: 1,0 ponto.'
+    }
+  ]
+},
+
+// ─────────── SIMULADO 3 ───────────
+{
+  id:2, title:'Simulado 3', subtitle:'Custos de TI e Revisão Geral',
+  topics:'Aulas 9 a 13', icon:'💡',
+  questions:[
+    // MC 1
+    { type:'mc',
+      visual:{icon:'👨‍💻',label:'Custo de Recursos Humanos',chips:[
+        {icon:'⏱️',val:'Hora/TI',cls:'blue'},{icon:'💵',val:'R$/h',cls:'green'},{icon:'📦',val:'Projeto',cls:'gold'}
+      ],caption:'O custo com desenvolvedores é o maior componente de projetos de software.'},
+      stem:'A TechSolutions precisa calcular o custo de desenvolvimento de um sistema. O programador cobra <strong>R$ 50,00 por hora</strong> e o projeto demanda <strong>80 horas</strong> de trabalho. Qual é o custo total com recursos humanos?',
+      opts:['R$ 400,00','R$ 4.300,00','R$ 4.000,00','R$ 4.500,00'],
+      answer:2, exp:'Custo RH = Valor/hora × Horas = R$ 50,00 × 80 = R$ 4.000,00. É o cálculo básico de orçamento de projetos de software com base em hora trabalhada.'
+    },
+    // MC 2
+    { type:'mc',
+      visual:{icon:'☁️',label:'Custos de Infraestrutura',chips:[
+        {icon:'🖥️',val:'Servidor',cls:'blue'},{icon:'☁️',val:'Nuvem',cls:'gold'},{icon:'🗄️',val:'Banco de Dados',cls:'green'}
+      ],caption:'Além do desenvolvimento, há custos de hospedagem e operação.'},
+      stem:'Além do custo com desenvolvedores, qual outro componente de custo o gestor deve mapear no orçamento de um <strong>projeto de software moderno</strong>?',
+      opts:['O custo de envio de relatórios impressos via correio convencional.','Custos de infraestrutura de tecnologia, como hospedagem de servidores ou serviços de banco de dados em nuvem (AWS/Azure).','A despesa com o registro da ata de aniversário de fundação da empresa.','O valor gasto com licenças de navegadores de uso gratuito.'],
+      answer:1, exp:'Projetos modernos têm dois grandes blocos de custo: RH (horas de desenvolvimento) e infraestrutura (servidores, banco de dados em nuvem, domínio, certificados SSL).'
+    },
+    // MC 3
+    { type:'mc',
+      visual:{icon:'📊',label:'Orçamento de Projeto',chips:[
+        {icon:'👨‍💻',val:'RH',cls:'blue'},{icon:'☁️',val:'Infra',cls:'gold'},{icon:'📋',val:'Total',cls:'green'}
+      ],caption:'O orçamento completo soma todos os componentes de custo.'},
+      stem:'A TechSolutions vai desenvolver um aplicativo com os seguintes custos: <strong>R$ 4.000,00</strong> com o programador (80h × R$ 50/h) e <strong>R$ 1.200,00</strong> com hospedagem em nuvem por 12 meses. Qual é o <strong>custo total do projeto</strong>?',
+      opts:['R$ 4.000,00 — apenas o custo com RH conta no orçamento de software.','R$ 1.200,00 — apenas a infraestrutura é considerada custo real do projeto.','R$ 5.200,00 — soma de RH (R$ 4.000) + Infraestrutura (R$ 1.200).','R$ 2.800,00 — diferença entre RH e infraestrutura.'],
+      answer:2, exp:'Orçamento total = RH + Infraestrutura = R$ 4.000 + R$ 1.200 = R$ 5.200,00. Todo custo relacionado ao projeto deve compor o orçamento.'
+    },
+    // MC 4
+    { type:'mc',
+      visual:{icon:'🔄',label:'Revisão — ERP e BD',chips:[
+        {icon:'🗄️',val:'BD',cls:'blue'},{icon:'🏢',val:'ERP',cls:'gold'},{icon:'⚙️',val:'Integração',cls:'green'}
+      ],caption:'O BD é a fundação tecnológica que sustenta o ERP.'},
+      stem:'Qual é a relação correta entre o <strong>Banco de Dados (Aula 12)</strong> e o <strong>ERP (Aula 11)</strong> em uma empresa?',
+      opts:['O ERP e o Banco de Dados são sistemas completamente independentes, sem nenhuma relação técnica.','O Banco de Dados é a estrutura que armazena e organiza os dados; o ERP é o software que lê, processa e apresenta esses dados de forma integrada para os usuários.','O ERP substitui completamente o banco de dados, tornando-o desnecessário em empresas modernas.','O Banco de Dados só é usado para planilhas; o ERP usa arquivos de texto para armazenar as informações.'],
+      answer:1, exp:'O BD é a fundação; o ERP é a aplicação. O ERP lê e grava no banco de dados a cada operação — sem um BD bem modelado, o ERP não funciona corretamente.'
+    },
+    // MC 5
+    { type:'mc',
+      visual:{icon:'📈',label:'Revisão — Planilha e DRE',chips:[
+        {icon:'📋',val:'Planilha',cls:'blue'},{icon:'📄',val:'DRE',cls:'green'},{icon:'🔗',val:'Conexão',cls:'gold'}
+      ],caption:'A planilha alimenta os relatórios contábeis formais.'},
+      stem:'Considerando o conteúdo das Aulas 9 e 10, a planilha de controle de caixa construída em laboratório se relaciona diretamente com a <strong>Demonstração do Resultado do Exercício (DRE)</strong> porque:',
+      opts:['A planilha substitui a DRE em empresas que usam Excel, tornando o relatório formal dispensável.','Os dados de receitas e despesas organizados na planilha são exatamente os insumos que compõem a DRE — a planilha é a operação diária; a DRE é o relatório formal do resultado.','A planilha e a DRE registram informações completamente diferentes e não têm relação entre si.','A DRE só usa dados do ERP, jamais de planilhas manuais.'],
+      answer:1, exp:'A planilha captura o dia a dia financeiro; a DRE consolida esse esforço em um relatório formal do período. São complementares — a planilha alimenta a DRE.'
+    },
+    // MC 6
+    { type:'mc',
+      visual:{icon:'💰',label:'Margem de Lucro',chips:[
+        {icon:'📈',val:'Receita',cls:'green'},{icon:'📉',val:'Custo',cls:'red'},{icon:'💹',val:'Margem',cls:'gold'}
+      ],caption:'Margem = o quanto da receita sobra após cobrir os custos.'},
+      stem:'A TechSolutions faturou <strong>R$ 8.000,00</strong> em um projeto. O custo total foi de <strong>R$ 5.200,00</strong> (RH + infraestrutura). Qual foi a <strong>margem de lucro</strong> do projeto?',
+      opts:['R$ 5.200,00 — pois o custo determina o lucro.','R$ 8.000,00 — pois a receita total é o lucro bruto.','R$ 2.800,00 — resultado de Receita (R$ 8.000) menos Custo Total (R$ 5.200).','R$ 13.200,00 — soma da receita com o custo.'],
+      answer:2, exp:'Margem de Lucro = Receita − Custo Total = R$ 8.000 − R$ 5.200 = R$ 2.800,00. É o valor que sobra após cobrir todos os custos do projeto.'
+    },
+    // MC 7
+    { type:'mc',
+      visual:{icon:'🔍',label:'Revisão — Formatação Contábil',chips:[
+        {icon:'R$',val:'Moeda',cls:'green'},{icon:'%',val:'Porcentagem',cls:'blue'},{icon:'📅',val:'Data',cls:'gray'}
+      ],caption:'Formato correto = leitura correta dos dados financeiros.'},
+      stem:'Um colega entregou uma planilha financeira onde os valores de faturamento estão formatados como <strong>Porcentagem (%)</strong>. Qual é o problema imediato causado por essa formatação incorreta?',
+      opts:['Nenhum problema — o Excel converte automaticamente porcentagem para reais nos cálculos.','Os valores serão multiplicados por 100 visualmente (ex: R$ 5.000 aparece como 500000%), distorcendo completamente a leitura dos dados financeiros.','A formatação % é equivalente à Moeda para valores acima de R$ 1.000.','O problema é apenas estético e não afeta os cálculos da planilha.'],
+      answer:1, exp:'Formatar como % aplica multiplicação ×100 na exibição. Um valor de 5000 vira 500000%. A formatação correta para valores financeiros é sempre Moeda (R$) ou Contábil.'
+    },
+    // MC 8
+    { type:'mc',
+      visual:{icon:'🏆',label:'Visão Integrada do Módulo 3',chips:[
+        {icon:'📊',val:'Planilha',cls:'blue'},{icon:'🗄️',val:'BD',cls:'gold'},{icon:'🔄',val:'ERP',cls:'green'},{icon:'💰',val:'Custos',cls:'red'}
+      ],caption:'As 4 ferramentas do módulo formam um ecossistema tecnológico contábil.'},
+      stem:'Relacionando todos os conteúdos do Módulo 3, qual é a sequência tecnológica correta que descreve a evolução do controle financeiro de uma startup de TI?',
+      opts:['ERP → Banco de Dados → Planilha → Análise de Custos (do mais complexo ao mais simples).','Planilha (controle inicial) → Banco de Dados (estruturação dos dados) → ERP (integração dos módulos) → Análise de Custos (orçamento de projetos).','Análise de Custos → ERP → Planilha → Banco de Dados (sem ordem definida).','Todas as ferramentas são implantadas simultaneamente no primeiro dia da empresa.'],
+      answer:1, exp:'A evolução natural: começa com planilhas simples, estrutura os dados em BD, integra com ERP e, por fim, aplica análise de custos para orçar e precificar projetos.'
+    },
+    // DISSERTATIVA 1
+    { type:'essay',
+      stem:'Uma startup de desenvolvimento de software está elaborando o orçamento de um novo projeto. Liste e explique pelo menos 3 tipos de custo que devem ser considerados, além das horas de programação. Justifique por que ignorar esses custos pode comprometer a viabilidade financeira do projeto.',
+      rubric:'Critérios: identificação de custos de infraestrutura (nuvem, BD, domínio), licenças, suporte e outros além de RH; justificativa coerente do impacto financeiro. Valor: 1,0 ponto.'
+    },
+    // DISSERTATIVA 2
+    { type:'essay',
+      stem:'Faça uma comparação entre as quatro ferramentas estudadas no Módulo 3 (Planilha, Banco de Dados, ERP e Análise de Custos): qual é a função de cada uma? Em que momento uma empresa de tecnologia precisaria de cada uma delas? Você pode usar exemplos da TechSolutions.',
+      rubric:'Critérios: descrição correta da função de cada ferramenta, contexto de uso adequado para cada uma, e coerência com o cenário de uma empresa de TI. Valor: 1,0 ponto.'
+    }
+  ]
+}
+
+]; // fim SIMS
+
+// ══════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════
+let STATE = { simIdx:null, qIdx:0, answers:[], scores:{mc:0}, answered:false, done:false };
+
+// ══════════════════════════════════════════
+// SELECTOR
+// ══════════════════════════════════════════
+let _sel = null;
+function buildSelector(){
+  const g = document.getElementById('sim-grid');
+  g.innerHTML = '';
+  SIMS.forEach((s,i)=>{
+    const d = document.createElement('div');
+    d.className = 'sim-card';
+    d.id = 'sc-'+i;
+    d.innerHTML = `<div class="sc-icon">${s.icon}</div><div class="sc-title">${s.title}</div><div class="sc-desc">${s.subtitle}</div><div style="font-size:.7rem;color:var(--gray-400);margin-top:3px">${s.topics}</div>`;
+    d.onclick = ()=>selSim(i);
+    g.appendChild(d);
+  });
+  selSim(0);
+}
+function selSim(i){
+  _sel = i;
+  document.querySelectorAll('.sim-card').forEach((c,j)=>c.classList.toggle('selected',j===i));
+  document.getElementById('sel-warn').style.display='none';
+}
+function startSim(){
+  if(_sel===null){showWarn('Selecione um simulado.');return;}
+  STATE = {simIdx:_sel,qIdx:0,answers:[],scores:{mc:0},answered:false,done:false};
+  go('s-exam');
+  renderQ();
+}
+function showWarn(m){const w=document.getElementById('sel-warn');w.textContent=m;w.style.display='block';}
+
+// ══════════════════════════════════════════
+// RENDER QUESTION
+// ══════════════════════════════════════════
+function buildVisual(v){
+  if(!v) return '';
+  const chips=(v.chips||[]).map(c=>`<div class="chip ${c.cls}"><span class="ci">${c.icon}</span><span class="cv">${c.val}</span></div>`).join('');
+  return `<div class="q-visual"><div class="qv-icon">${v.icon}</div><div class="qv-content"><div class="qv-label">${v.label}</div><div class="qv-chips">${chips}</div>${v.caption?`<p style="font-size:.76rem;color:var(--gray-600);margin-top:6px;font-style:italic">${v.caption}</p>`:''}</div></div>`;
+}
+
+function renderQ(){
+  const sim = SIMS[STATE.simIdx];
+  const q = sim.questions[STATE.qIdx];
+  const total = sim.questions.length;
+  const pct = Math.round((STATE.qIdx/total)*100);
+  const isMC = q.type==='mc';
+  const isLast = STATE.qIdx===total-1;
+  STATE.answered = false;
+
+  const mcNum = isMC ? STATE.answers.filter(a=>a.type==='mc').length+1 : null;
+  const essNum = !isMC ? STATE.answers.filter(a=>a.type==='essay').length+1 : null;
+  const qLabel = isMC ? `Questão ${mcNum} de 8 — Múltipla Escolha` : `Questão Dissertativa ${essNum} de 2`;
+
+  let bodyHtml='';
+  if(isMC){
+    const letters=['A','B','C','D'];
+    const optsHtml=q.opts.map((o,i)=>`<button class="opt-btn" id="ob${i}" onclick="pickMC(${i})"><span class="opt-letter">${letters[i]}</span><span>${o}</span></button>`).join('');
+    bodyHtml=`${buildVisual(q.visual)}<p class="q-stem">${q.stem}</p><div class="opts-list">${optsHtml}</div><div class="q-feedback" id="qfb"></div><div style="display:flex;justify-content:flex-end;margin-top:14px"><button class="btn btn-primary" id="btn-next" onclick="nextQ()" disabled>${isLast?'🏁 Finalizar':'Próxima →'}</button></div>`;
+  } else {
+    bodyHtml=`<div class="essay-rubric"><strong>Critérios:</strong> ${q.rubric}</div><p class="q-stem">${q.stem}</p><textarea class="essay-textarea" id="essay-inp" placeholder="Escreva sua resposta aqui..."></textarea><p class="essay-hint">Mínimo recomendado: 3 a 5 linhas.</p><div style="display:flex;justify-content:flex-end;margin-top:12px"><button class="btn btn-primary" id="btn-next" onclick="nextQ()">${isLast?'🏁 Finalizar':'Próxima →'}</button></div>`;
+  }
+
+  document.getElementById('exam-card').innerHTML=`
+    <div class="inst-header" style="padding-bottom:12px;margin-bottom:12px">
+      <div class="inst-logo" style="width:38px;height:38px;font-size:15px">${sim.icon}</div>
+      <div class="inst-info">
+        <div class="inst-name" style="font-size:.87rem">${sim.title} — ${sim.subtitle}</div>
+        <div class="inst-sub">CAI Módulo 3 · ${sim.topics}</div>
+      </div>
+    </div>
+    <div class="prog-wrap">
+      <div class="prog-info"><span>Progresso</span><span>${STATE.qIdx}/${total}</span></div>
+      <div class="prog-track"><div class="prog-fill" style="width:${pct}%"></div></div>
+    </div>
+    <div class="q-block">
+      <div class="q-header">
+        <span class="q-badge${isMC?'':' essay'}">Q${STATE.qIdx+1}</span>
+        <span class="q-type-tag">${qLabel}</span>
+      </div>
+      <div class="q-body">${bodyHtml}</div>
+    </div>`;
+}
+
+// ══════════════════════════════════════════
+// ANSWER HANDLERS
+// ══════════════════════════════════════════
+function pickMC(idx){
+  if(STATE.answered) return;
+  STATE.answered=true;
+  const q=SIMS[STATE.simIdx].questions[STATE.qIdx];
+  const correct=idx===q.answer;
+  if(correct) STATE.scores.mc++;
+  STATE.answers.push({type:'mc',qIdx:STATE.qIdx,chosen:idx,correct});
+  for(let i=0;i<4;i++){
+    const b=document.getElementById('ob'+i);
+    if(!b) continue;
+    b.classList.add('locked');
+    if(i===q.answer) b.classList.add('correct');
+    else if(i===idx&&!correct) b.classList.add('wrong');
+  }
+  const fb=document.getElementById('qfb');
+  fb.style.display='block';
+  fb.className='q-feedback '+(correct?'ok':'nok');
+  const letters=['A','B','C','D'];
+  fb.innerHTML=(correct?'✔ Resposta correta! ':`✘ Incorreta. A correta é <strong>${letters[q.answer]}</strong>. `)+q.exp;
+  document.getElementById('btn-next').disabled=false;
+}
+
+function nextQ(){
+  const q=SIMS[STATE.simIdx].questions[STATE.qIdx];
+  if(q.type==='essay'){
+    const val=(document.getElementById('essay-inp')?.value||'').trim();
+    STATE.answers.push({type:'essay',qIdx:STATE.qIdx,essay:val});
+  }
+  STATE.qIdx++;
+  if(STATE.qIdx>=SIMS[STATE.simIdx].questions.length){ finishExam(); }
+  else { renderQ(); window.scrollTo(0,0); }
+}
+
+// ══════════════════════════════════════════
+// FINISH
+// ══════════════════════════════════════════
+function finishExam(){
+  if(STATE.done) return;
+  STATE.done=true;
+  buildResult();
+  go('s-result');
+  window.scrollTo(0,0);
+}
+
+function buildResult(){
+  const sim=SIMS[STATE.simIdx];
+  const mc=STATE.scores.mc;
+  const pct=mc/8;
+  document.getElementById('r-simname').textContent=`${sim.title} — ${sim.subtitle}`;
+  let bCls,bTxt;
+  if(pct>=.7){bCls='approved';bTxt='✔ Desempenho Satisfatório nas Questões Objetivas';}
+  else if(pct>=.5){bCls='recovery';bTxt='⚠ Desempenho Intermediário — Revise o conteúdo';}
+  else{bCls='failed';bTxt='✘ Desempenho Abaixo do Esperado — Atenção ao conteúdo';}
+  const b=document.getElementById('r-banner');
+  b.className='status-banner '+bCls;
+  b.textContent=bTxt;
+
+  document.getElementById('r-summary').innerHTML=`
+    <div class="res-box ${pct>=.7?'hi':pct>=.5?'md':'lo'}"><div class="rb-val">${mc}/8</div><div class="rb-lbl">Acertos Objetivas</div></div>
+    <div class="res-box ${pct>=.7?'hi':pct>=.5?'md':'lo'}"><div class="rb-val">${(pct*100).toFixed(0)}%</div><div class="rb-lbl">Aproveitamento</div></div>
+    <div class="res-box neu"><div class="rb-val">2</div><div class="rb-lbl">Dissertativas (prof.)</div></div>`;
+
+  let bd='';
+  const letters=['A','B','C','D'];
+  STATE.answers.filter(a=>a.type==='mc').forEach((a,i)=>{
+    const q=sim.questions[a.qIdx];
+    bd+=`<div class="sim-result-row"><div class="srr-left"><span style="font-size:1.1rem">${a.correct?'✅':'❌'}</span><div><div class="srr-name">Q${i+1} — ${q.stem.replace(/<[^>]+>/g,'').substring(0,58)}...</div><div class="srr-sub">Sua resposta: <strong>${letters[a.chosen]}</strong> · Correta: <strong>${letters[q.answer]}</strong></div></div></div><span class="srr-grade ${a.correct?'hi':'lo'}">${a.correct?'1,0':'0,0'}</span></div>`;
+  });
+  document.getElementById('r-breakdown').innerHTML=bd;
+
+  let ess='';
+  STATE.answers.filter(a=>a.type==='essay').forEach((a,i)=>{
+    const q=sim.questions[a.qIdx];
+    ess+=`<div class="q-block" style="margin-bottom:12px"><div class="q-header"><span class="q-badge essay">Dissertativa ${i+1}</span><span class="q-type-tag">Aguardando correção do professor</span></div><div class="q-body"><p class="q-stem" style="margin-bottom:8px">${q.stem}</p><div class="essay-review"><div class="essay-review-q">Sua resposta:</div><div class="essay-review-a ${!a.essay?'empty':''}">${a.essay||'(Não respondida)'}</div></div></div></div>`;
+  });
+  document.getElementById('r-essays').innerHTML=ess;
+}
+
+// ══════════════════════════════════════════
+// UTILS
+// ══════════════════════════════════════════
+function go(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));
+  document.getElementById(id).classList.add('on');
+  window.scrollTo(0,0);
+}
+
+buildSelector();
+</script>
+</body>
+</html>
