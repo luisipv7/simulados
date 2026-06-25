@@ -1,0 +1,984 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>O Pergaminho Mágico — Planilha da Guilda</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Nunito:wght@700;800;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:       #080912;
+  --bg2:      #0c0e20;
+  --panel:    #101328;
+  --border:   #1e2250;
+  --gold:     #f5c842;
+  --gold2:    #ffe082;
+  --green:    #00e676;
+  --green2:   #b9f6ca;
+  --red:      #ff5252;
+  --red2:     #ffd0d0;
+  --blue:     #40c4ff;
+  --blue2:    #b3e5fc;
+  --purple:   #ce93d8;
+  --orange:   #ffab40;
+  --white:    #eef2ff;
+  --gray:     #7986cb;
+  --darkgray: #252850;
+
+  /* spreadsheet */
+  --cell-bg:       #13163a;
+  --cell-border:   #252850;
+  --cell-hover:    rgba(64,196,255,.08);
+  --cell-selected: rgba(64,196,255,.18);
+  --header-bg:     #0c0e20;
+  --formula-bar:   #0a0c1e;
+
+  /* column colors */
+  --col-a: rgba(0,230,118,.12);
+  --col-b: rgba(255,82,82,.10);
+  --col-c: rgba(64,196,255,.10);
+  --col-d: rgba(245,200,66,.10);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--white);min-height:100vh;overflow-x:hidden;}
+
+/* stars */
+body::before{content:'';position:fixed;inset:0;background-image:radial-gradient(1px 1px at 12% 20%,rgba(255,255,255,.7) 0%,transparent 100%),radial-gradient(1px 1px at 85% 14%,rgba(255,255,255,.5) 0%,transparent 100%),radial-gradient(1px 1px at 50% 85%,rgba(255,255,255,.6) 0%,transparent 100%),radial-gradient(1px 1px at 25% 55%,rgba(255,255,255,.4) 0%,transparent 100%),radial-gradient(1px 1px at 70% 40%,rgba(255,255,255,.5) 0%,transparent 100%),radial-gradient(1px 1px at 92% 70%,rgba(255,255,255,.3) 0%,transparent 100%);pointer-events:none;z-index:0;}
+
+.scr{display:none;position:relative;z-index:1;min-height:100vh;flex-direction:column;align-items:center;padding:18px 14px 50px;}
+.scr.on{display:flex;}
+
+.panel{background:var(--panel);border:2px solid var(--border);border-radius:14px;padding:24px 28px;max-width:980px;width:100%;box-shadow:0 0 50px rgba(64,196,255,.06),0 12px 50px rgba(0,0,0,.8);}
+
+/* pixel */
+.ptitle{font-family:'Press Start 2P',monospace;font-size:clamp(.52rem,1.7vw,.82rem);color:var(--gold);text-shadow:2px 2px 0 #7a4a00,0 0 20px rgba(245,200,66,.4);line-height:2;text-align:center;}
+.psub{font-family:'Press Start 2P',monospace;font-size:.38rem;color:var(--gray);letter-spacing:1px;text-align:center;}
+
+/* NPC */
+.npc-wrap{display:flex;gap:12px;align-items:flex-start;background:rgba(16,19,40,.9);border:1.5px solid rgba(64,196,255,.2);border-radius:12px;padding:14px 15px;margin-bottom:16px;}
+.npc-av{width:50px;height:50px;border-radius:50%;border:2px solid var(--gold);background:linear-gradient(135deg,#2a1a0a,#4a2c17);display:flex;align-items:center;justify-content:center;font-size:23px;flex-shrink:0;animation:fl 3s ease-in-out infinite;}
+@keyframes fl{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+.npc-name{font-family:'Press Start 2P',monospace;font-size:.42rem;color:var(--gold);margin-bottom:5px;}
+.npc-txt{font-size:.87rem;font-weight:700;color:#cdd9f0;line-height:1.7;}
+.npc-txt strong{color:var(--gold2);}
+.code-tip{font-family:'Press Start 2P',monospace;font-size:.4rem;color:var(--green);background:rgba(0,230,118,.1);border:1px solid rgba(0,230,118,.3);border-radius:6px;padding:4px 8px;display:inline-block;margin-top:5px;line-height:1.7;}
+
+/* QUEST STEPS NAV */
+.quest-steps{display:flex;gap:6px;justify-content:center;margin-bottom:14px;flex-wrap:wrap;}
+.qs-dot{font-family:'Press Start 2P',monospace;font-size:.36rem;padding:5px 9px;border-radius:20px;border:1.5px solid;transition:all .3s;}
+.qs-dot.done{border-color:var(--green);background:rgba(0,230,118,.1);color:var(--green);}
+.qs-dot.active{border-color:var(--blue);background:rgba(64,196,255,.1);color:var(--blue);}
+.qs-dot.locked{border-color:var(--border);color:rgba(255,255,255,.18);}
+
+/* ══ SPREADSHEET ══ */
+.sheet-container{
+  width:100%;overflow-x:auto;
+  border:2px solid var(--border);border-radius:10px;
+  margin:14px 0;
+  background:var(--cell-bg);
+}
+
+/* formula bar */
+.formula-bar{
+  display:flex;align-items:center;gap:10px;
+  background:var(--formula-bar);
+  border-bottom:1px solid var(--border);
+  padding:7px 12px;
+}
+.fb-cell-ref{
+  font-family:'Press Start 2P',monospace;font-size:.5rem;
+  color:var(--blue);background:rgba(64,196,255,.1);
+  border:1px solid rgba(64,196,255,.3);border-radius:5px;
+  padding:4px 8px;min-width:52px;text-align:center;
+  white-space:nowrap;
+}
+.fb-eq-sign{color:var(--gray);font-family:'Press Start 2P',monospace;font-size:.5rem;}
+.fb-content{
+  flex:1;font-family:'Share Tech Mono',monospace;font-size:.85rem;
+  color:var(--green);background:transparent;border:none;outline:none;
+  caret-color:var(--green);
+}
+
+/* grid */
+.sheet-grid{
+  width:100%;
+  border-collapse:collapse;
+}
+/* col/row headers */
+.sh-col-header,.sh-row-header{
+  background:var(--header-bg);
+  padding:6px 10px;
+  font-family:'Press Start 2P',monospace;font-size:.42rem;
+  border:1px solid var(--border);
+  text-align:center;white-space:nowrap;
+  user-select:none;
+}
+.sh-col-header{
+  position:sticky;top:0;z-index:5;
+  color:var(--gray);
+}
+.sh-col-header.active-col{color:var(--blue);background:rgba(64,196,255,.1);}
+.sh-row-header{color:var(--gray);min-width:36px;}
+.sh-row-header.active-row{color:var(--blue);background:rgba(64,196,255,.1);}
+
+/* cells */
+.cell{
+  border:1px solid var(--cell-border);
+  padding:0;min-width:110px;max-width:170px;
+  position:relative;vertical-align:middle;
+}
+.cell input{
+  width:100%;height:32px;
+  background:transparent;border:none;outline:none;
+  font-family:'Share Tech Mono',monospace;font-size:.82rem;
+  color:var(--white);padding:0 8px;text-align:right;
+  cursor:pointer;
+}
+.cell input.text-left{text-align:left;}
+.cell input.formula{color:var(--green);}
+.cell input:focus{background:var(--cell-selected);color:var(--white);}
+.cell.col-a input{background:rgba(0,230,118,.04);}
+.cell.col-b input{background:rgba(255,82,82,.04);}
+.cell.col-c input{background:rgba(64,196,255,.04);}
+.cell.col-d input{background:rgba(245,200,66,.04);}
+.cell.col-a:has(input:focus){background:rgba(0,230,118,.12);}
+.cell.col-b:has(input:focus){background:rgba(255,82,82,.10);}
+.cell.col-c:has(input:focus){background:rgba(64,196,255,.12);}
+.cell.col-d:has(input:focus){background:rgba(245,200,66,.10);}
+
+/* special cells */
+.cell.header-cell input{
+  font-family:'Press Start 2P',monospace;font-size:.42rem;font-weight:700;
+  text-align:center;color:var(--gold);cursor:default;
+  background:rgba(245,200,66,.07)!important;
+}
+.cell.total-cell input{
+  font-family:'Press Start 2P',monospace;font-size:.5rem;font-weight:900;
+}
+.cell.total-cell.col-a input{color:var(--green);}
+.cell.total-cell.col-b input{color:var(--red);}
+.cell.total-cell.col-c input{color:var(--blue);}
+.cell.saldo-cell input{
+  font-family:'Press Start 2P',monospace;font-size:.6rem;font-weight:900;
+  color:var(--gold);background:rgba(245,200,66,.1)!important;
+}
+.cell.locked input{cursor:not-allowed;opacity:.4;}
+
+/* glow when formula applied */
+.cell.magic-glow{animation:magicG .8s ease;}
+@keyframes magicG{0%{box-shadow:0 0 0 rgba(0,230,118,0)}50%{box-shadow:inset 0 0 20px rgba(0,230,118,.4),0 0 12px rgba(0,230,118,.3)}100%{box-shadow:0 0 0 rgba(0,230,118,0)}}
+
+/* column legend */
+.col-legend{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
+  gap:8px;margin-bottom:14px;
+}
+.cl-item{
+  border-radius:8px;padding:10px 12px;
+  border:1.5px solid;display:flex;gap:8px;align-items:flex-start;
+}
+.cl-item.col-a{border-color:rgba(0,230,118,.35);background:rgba(0,230,118,.07);}
+.cl-item.col-b{border-color:rgba(255,82,82,.3);background:rgba(255,82,82,.06);}
+.cl-item.col-c{border-color:rgba(64,196,255,.3);background:rgba(64,196,255,.07);}
+.cl-item.col-d{border-color:rgba(245,200,66,.3);background:rgba(245,200,66,.07);}
+.cl-icon{font-size:1.3rem;flex-shrink:0;}
+.cl-body{}
+.cl-name{font-family:'Press Start 2P',monospace;font-size:.44rem;margin-bottom:3px;}
+.cl-item.col-a .cl-name{color:var(--green);}
+.cl-item.col-b .cl-name{color:var(--red);}
+.cl-item.col-c .cl-name{color:var(--blue);}
+.cl-item.col-d .cl-name{color:var(--gold);}
+.cl-desc{font-size:.75rem;font-weight:700;color:var(--gray);line-height:1.4;}
+
+/* SPELL CARDS */
+.spell-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin:12px 0;}
+.spell-card{
+  background:rgba(206,147,216,.07);
+  border:1.5px solid rgba(206,147,216,.3);
+  border-radius:10px;padding:13px;
+  cursor:pointer;transition:all .22s;
+}
+.spell-card:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(206,147,216,.2);}
+.spell-card.used{opacity:.45;cursor:default;transform:none;}
+.sc-header{display:flex;align-items:center;gap:8px;margin-bottom:7px;}
+.sc-icon{font-size:1.5rem;}
+.sc-name{font-family:'Press Start 2P',monospace;font-size:.46rem;color:var(--purple);}
+.sc-formula{font-family:'Share Tech Mono',monospace;font-size:.82rem;color:var(--green);background:rgba(0,230,118,.08);border:1px solid rgba(0,230,118,.2);border-radius:5px;padding:4px 8px;margin:5px 0;display:block;}
+.sc-desc{font-size:.76rem;font-weight:700;color:#cdd9f0;line-height:1.5;}
+.sc-where{font-size:.7rem;color:var(--gray);margin-top:4px;font-family:'Press Start 2P',monospace;font-size:.38rem;}
+
+/* STEP AREA */
+.step-wrap{background:rgba(16,19,40,.85);border:2px solid var(--border);border-radius:12px;padding:18px;margin:12px 0;}
+.step-title{font-family:'Press Start 2P',monospace;font-size:.5rem;color:var(--blue);margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+
+/* BTN */
+.btn{display:inline-flex;align-items:center;gap:7px;font-family:'Press Start 2P',monospace;font-size:.48rem;border:none;border-radius:9px;padding:11px 20px;cursor:pointer;transition:all .2s;color:white;letter-spacing:.4px;}
+.btn-blue{background:linear-gradient(135deg,#0d47a1,#40c4ff);box-shadow:0 4px 14px rgba(64,196,255,.3);}
+.btn-blue:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(64,196,255,.5);}
+.btn-green{background:linear-gradient(135deg,#1b5e20,#00e676);box-shadow:0 4px 14px rgba(0,230,118,.3);}
+.btn-green:hover{transform:translateY(-2px);}
+.btn-purple{background:linear-gradient(135deg,#4a148c,#ce93d8);box-shadow:0 4px 14px rgba(206,147,216,.3);}
+.btn-purple:hover{transform:translateY(-2px);}
+.btn-gold{background:linear-gradient(135deg,#7a4a00,#f5c842);color:#1a0e00;box-shadow:0 4px 14px rgba(245,200,66,.3);}
+.btn-gold:hover{transform:translateY(-2px);}
+.btn-ghost{background:rgba(255,255,255,.07);border:1.5px solid rgba(255,255,255,.18);font-size:.4rem;}
+.btn-ghost:hover{background:rgba(255,255,255,.14);}
+.btn:disabled{opacity:.35;cursor:not-allowed;transform:none;}
+
+/* FLASH */
+.flash{border-radius:9px;padding:11px 14px;font-size:.86rem;font-weight:800;line-height:1.6;display:none;animation:popUp .3s ease;margin-top:10px;}
+@keyframes popUp{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+.flash.ok{background:rgba(0,230,118,.12);border:1.5px solid rgba(0,230,118,.35);color:var(--green2);}
+.flash.nok{background:rgba(255,82,82,.1);border:1.5px solid rgba(255,82,82,.3);color:var(--red2);}
+.flash.info{background:rgba(64,196,255,.1);border:1.5px solid rgba(64,196,255,.3);color:var(--blue2);}
+
+/* RESULT */
+.result-frame{background:linear-gradient(135deg,rgba(245,200,66,.07),rgba(0,230,118,.05));border:3px solid var(--gold);border-radius:14px;padding:24px;margin:14px 0;box-shadow:0 0 40px rgba(245,200,66,.18);animation:gf 2.5s ease-in-out infinite;}
+@keyframes gf{0%,100%{box-shadow:0 0 28px rgba(245,200,66,.15)}50%{box-shadow:0 0 50px rgba(245,200,66,.32)}}
+
+.conf{position:fixed;inset:0;pointer-events:none;z-index:400;}
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:500;display:none;align-items:center;justify-content:center;flex-direction:column;}
+.ov.on{display:flex;}
+.ov-t{font-family:'Press Start 2P',monospace;font-size:clamp(.75rem,3vw,1.4rem);text-align:center;animation:bigP .5s ease;}
+@keyframes bigP{0%{transform:scale(.3);opacity:0}70%{transform:scale(1.1)}100%{transform:scale(1);opacity:1}}
+.ov-s{font-size:.9rem;font-weight:800;color:var(--white);text-align:center;margin-top:10px;max-width:360px;line-height:1.7;padding:0 16px;}
+
+/* magic particles */
+.magic-particle{position:fixed;pointer-events:none;z-index:350;font-size:1.2rem;animation:floatUp 1.2s ease forwards;}
+@keyframes floatUp{from{opacity:1;transform:translateY(0) scale(1)}to{opacity:0;transform:translateY(-80px) scale(1.5)}}
+
+@media(max-width:600px){.panel{padding:16px 10px;}.spell-cards{grid-template-columns:1fr;}.col-legend{grid-template-columns:1fr 1fr;}}
+</style>
+</head>
+<body>
+
+<div class="conf" id="conf"></div>
+
+<!-- ════ INTRO ════ -->
+<div class="scr on" id="s-intro">
+  <div class="panel" style="max-width:680px;margin-top:16px;">
+    <div style="text-align:center;margin-bottom:14px;">
+      <div style="font-size:3rem;animation:fl 2.5s ease-in-out infinite;margin-bottom:6px;">📜</div>
+      <p class="ptitle">O PERGAMINHO<br>MÁGICO</p>
+      <p class="ptitle" style="color:var(--blue);font-size:clamp(.38rem,1.3vw,.56rem);">PLANILHA ELETRÔNICA DA GUILDA</p>
+      <p class="psub" style="margin-top:5px;">FLUXO DE CAIXA · AUTOMAÇÃO MÁGICA</p>
+    </div>
+
+    <div class="npc-wrap">
+      <div class="npc-av">🧙</div>
+      <div>
+        <p class="npc-name">MESTRE CONTADOR</p>
+        <p class="npc-txt">
+          Herói! A guilda cresceu tanto que o escriba não consegue mais calcular o Fluxo de Caixa na ponta do lápis!<br><br>
+          A partir de hoje vamos usar o <strong>Pergaminho Mágico Digital</strong> (a Planilha). Ele tem <strong>Slots inteligentes</strong> que fazem a matemática sozinhos com os feitiços certos!
+          <span class="code-tip">✨ Fórmula = Feitiço que automatiza o cálculo</span>
+        </p>
+      </div>
+    </div>
+
+    <!-- MAP EXPLANATION -->
+    <div style="background:rgba(16,19,40,.85);border:1.5px solid var(--border);border-radius:12px;padding:18px;margin-bottom:16px;">
+      <p style="font-family:'Press Start 2P',monospace;font-size:.48rem;color:var(--gold);margin-bottom:12px;">🗺️ ENTENDENDO O MAPA DO PERGAMINHO</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
+        <div style="border:1.5px solid rgba(64,196,255,.3);border-radius:9px;padding:11px;background:rgba(64,196,255,.06);text-align:center;">
+          <div style="font-size:1.8rem;margin-bottom:6px;">🔤</div>
+          <p style="font-family:'Press Start 2P',monospace;font-size:.44rem;color:var(--blue);margin-bottom:5px;">COLUNAS</p>
+          <p style="font-size:.78rem;font-weight:700;color:#cdd9f0;line-height:1.5;">Letras A, B, C...<br><span style="color:var(--gray);">Corredores do baú</span></p>
+        </div>
+        <div style="border:1.5px solid rgba(0,230,118,.3);border-radius:9px;padding:11px;background:rgba(0,230,118,.06);text-align:center;">
+          <div style="font-size:1.8rem;margin-bottom:6px;">🔢</div>
+          <p style="font-family:'Press Start 2P',monospace;font-size:.44rem;color:var(--green);margin-bottom:5px;">LINHAS</p>
+          <p style="font-size:.78rem;font-weight:700;color:#cdd9f0;line-height:1.5;">Números 1, 2, 3...<br><span style="color:var(--gray);">Prateleiras do baú</span></p>
+        </div>
+        <div style="border:1.5px solid rgba(245,200,66,.3);border-radius:9px;padding:11px;background:rgba(245,200,66,.06);text-align:center;">
+          <div style="font-size:1.8rem;margin-bottom:6px;">🎯</div>
+          <p style="font-family:'Press Start 2P',monospace;font-size:.44rem;color:var(--gold);margin-bottom:5px;">CÉLULA / SLOT</p>
+          <p style="font-size:.78rem;font-weight:700;color:#cdd9f0;line-height:1.5;">B2 = Corredor B<br>Prateleira 2</p>
+        </div>
+      </div>
+      <div style="margin-top:12px;background:rgba(245,200,66,.07);border:1.5px solid rgba(245,200,66,.25);border-radius:8px;padding:11px;text-align:center;">
+        <p style="font-family:'Press Start 2P',monospace;font-size:.46rem;color:var(--gold);margin-bottom:5px;">💡 EXEMPLO DE SLOT</p>
+        <p style="font-size:.88rem;font-weight:800;color:#cdd9f0;line-height:1.6;">
+          <strong style="color:var(--blue);">B2</strong> = Corredor <strong style="color:var(--blue);">B</strong>, Prateleira <strong style="color:var(--blue);">2</strong><br>
+          <strong style="color:var(--green);">A5</strong> = Corredor <strong style="color:var(--green);">A</strong>, Prateleira <strong style="color:var(--green);">5</strong>
+        </p>
+      </div>
+    </div>
+
+    <div style="background:rgba(206,147,216,.07);border:1.5px solid rgba(206,147,216,.3);border-radius:12px;padding:14px;margin-bottom:18px;">
+      <p style="font-family:'Press Start 2P',monospace;font-size:.46rem;color:var(--purple);margin-bottom:9px;">✨ OS FEITIÇOS DO PERGAMINHO</p>
+      <div style="display:flex;flex-direction:column;gap:7px;">
+        <div style="display:flex;gap:10px;align-items:center;font-size:.84rem;font-weight:700;color:#cdd9f0;"><span style="font-family:'Share Tech Mono',monospace;font-size:.9rem;color:var(--green);background:rgba(0,230,118,.1);border-radius:4px;padding:2px 7px;flex-shrink:0;">=SOMA(A2:A5)</span><span>Soma todos os valores do Slot A2 até o Slot A5</span></div>
+        <div style="display:flex;gap:10px;align-items:center;font-size:.84rem;font-weight:700;color:#cdd9f0;"><span style="font-family:'Share Tech Mono',monospace;font-size:.9rem;color:var(--green);background:rgba(0,230,118,.1);border-radius:4px;padding:2px 7px;flex-shrink:0;">=A6-B6</span><span>Subtrai o valor do Slot B6 do Slot A6</span></div>
+        <div style="display:flex;gap:10px;align-items:center;font-size:.84rem;font-weight:700;color:#cdd9f0;"><span style="font-size:.9rem;flex-shrink:0;">⚡</span><span>Todo feitiço começa com <strong style="color:var(--green);">=</strong> (igual). Sem o igual, o pergaminho não entende!</span></div>
+      </div>
+    </div>
+
+    <div style="text-align:center;">
+      <button class="btn btn-blue" style="font-size:.52rem;" onclick="go('s-game')">📜 ABRIR O PERGAMINHO</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════ JOGO ════ -->
+<div class="scr" id="s-game">
+  <div class="panel" style="max-width:980px;margin-top:14px;">
+
+    <!-- header -->
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px;">
+      <div>
+        <p class="ptitle" style="font-size:.5rem;text-align:left;">📜 PERGAMINHO DA GUILDA TECHSOLUTIONS</p>
+        <p class="psub" style="text-align:left;margin-top:2px;">FLUXO DE CAIXA — MISSÃO DO MÊS</p>
+      </div>
+      <button class="btn btn-ghost" onclick="resetGame()">↺ RESETAR</button>
+    </div>
+
+    <!-- quest steps -->
+    <div class="quest-steps" id="quest-steps">
+      <div class="qs-dot active" id="qs0">📝 PASSO 1</div>
+      <div class="qs-dot locked" id="qs1">📝 PASSO 2</div>
+      <div class="qs-dot locked" id="qs2">✨ FEITIÇO 1</div>
+      <div class="qs-dot locked" id="qs3">✨ FEITIÇO 2</div>
+      <div class="qs-dot locked" id="qs4">⚡ SALDO</div>
+    </div>
+
+    <!-- NPC -->
+    <div class="npc-wrap">
+      <div class="npc-av">🧙</div>
+      <div>
+        <p class="npc-name">MESTRE CONTADOR</p>
+        <p class="npc-txt" id="npc-hint">Herói! Vamos organizar o ouro do mês passado. <strong>Passo 1:</strong> Digite as Receitas no Corredor A. Clique nas células amarelas e preencha!</p>
+      </div>
+    </div>
+
+    <!-- COLUMN LEGEND -->
+    <div class="col-legend">
+      <div class="cl-item col-a"><span class="cl-icon">📈</span><div class="cl-body"><div class="cl-name">CORREDOR A</div><div class="cl-desc">Receitas<br>Ouro que entrou</div></div></div>
+      <div class="cl-item col-b"><span class="cl-icon">📉</span><div class="cl-body"><div class="cl-name">CORREDOR B</div><div class="cl-desc">Despesas<br>Ouro que saiu</div></div></div>
+      <div class="cl-item col-c"><span class="cl-icon">⚡</span><div class="cl-body"><div class="cl-name">CORREDOR C</div><div class="cl-desc">Totais<br>Feitiços de soma</div></div></div>
+      <div class="cl-item col-d"><span class="cl-icon">🛡️</span><div class="cl-body"><div class="cl-name">CORREDOR D</div><div class="cl-desc">Saldo Final<br>Resultado</div></div></div>
+    </div>
+
+    <!-- ══ SPREADSHEET ══ -->
+    <div class="sheet-container">
+      <!-- formula bar -->
+      <div class="formula-bar">
+        <span class="fb-cell-ref" id="fb-ref">—</span>
+        <span class="fb-eq-sign">fx</span>
+        <input type="text" class="fb-content" id="fb-content" readonly placeholder="Selecione um slot para ver o conteúdo...">
+      </div>
+
+      <!-- grid -->
+      <table class="sheet-grid" id="sheet">
+        <thead>
+          <tr>
+            <th class="sh-col-header" style="width:36px;"></th>
+            <th class="sh-col-header" id="ch-A">🟢 A<br><span style="font-size:.35rem;color:var(--green);">RECEITAS</span></th>
+            <th class="sh-col-header" id="ch-B">🔴 B<br><span style="font-size:.35rem;color:var(--red);">DESPESAS</span></th>
+            <th class="sh-col-header" id="ch-C">🔵 C<br><span style="font-size:.35rem;color:var(--blue);">TOTAIS</span></th>
+            <th class="sh-col-header" id="ch-D">🟡 D<br><span style="font-size:.35rem;color:var(--gold);">SALDO</span></th>
+          </tr>
+        </thead>
+        <tbody id="sheet-body">
+          <!-- built by JS -->
+        </tbody>
+      </table>
+    </div>
+
+    <!-- SPELL CARDS -->
+    <div id="spell-section" style="display:none;">
+      <p style="font-family:'Press Start 2P',monospace;font-size:.48rem;color:var(--purple);margin-bottom:10px;">✨ FEITIÇOS DISPONÍVEIS — clique para lançar</p>
+      <div class="spell-cards" id="spell-cards"></div>
+    </div>
+
+    <!-- STEP INSTRUCTION -->
+    <div class="step-wrap" id="step-instruction">
+      <p class="step-title" id="step-title">📝 PASSO 1 — CORREDOR A (RECEITAS)</p>
+      <p class="npc-txt" id="step-desc" style="margin-bottom:12px;">
+        Digite os valores de <strong style="color:var(--green);">Receita</strong> nas células do Corredor A:<br>
+        • A2 = Missão de Software (Sistema do Rei): <strong style="color:var(--gold);">20.000</strong><br>
+        • A3 = Missão de Consultoria: <strong style="color:var(--gold);">5.000</strong><br>
+        • A4 = Missão de Suporte Técnico: <strong style="color:var(--gold);">3.000</strong>
+      </p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button class="btn btn-green" id="btn-step" onclick="checkCurrentStep()">✅ VERIFICAR</button>
+        <button class="btn btn-ghost" onclick="autoFillStep()" id="btn-autofill">⚡ PREENCHER AUTOMATICAMENTE</button>
+      </div>
+      <div class="flash" id="step-flash"></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ════ RESULTADO ════ -->
+<div class="scr" id="s-result">
+  <div class="panel" style="max-width:740px;margin-top:16px;">
+    <div style="text-align:center;margin-bottom:12px;">
+      <div style="font-size:3rem;animation:fl 2.5s ease-in-out infinite;">🏆</div>
+      <p class="ptitle">PERGAMINHO<br>ATIVADO!</p>
+      <p class="psub" style="margin-top:4px;margin-bottom:14px;">AUTOMAÇÃO COMPLETA!</p>
+    </div>
+
+    <div class="result-frame">
+      <p style="font-family:'Press Start 2P',monospace;font-size:.56rem;color:var(--gold);text-align:center;margin-bottom:16px;">📊 FLUXO DE CAIXA — GUILDA TECHSOLUTIONS</p>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px;">
+        <div style="border:1.5px solid var(--green);border-radius:9px;padding:12px;text-align:center;background:rgba(0,230,118,.08);">
+          <div style="font-family:'Press Start 2P',monospace;font-size:.95rem;color:var(--green);">28.000</div>
+          <div style="font-size:.7rem;font-weight:700;color:var(--gray);margin-top:3px;">TOTAL RECEITAS</div>
+        </div>
+        <div style="border:1.5px solid var(--red);border-radius:9px;padding:12px;text-align:center;background:rgba(255,82,82,.07);">
+          <div style="font-family:'Press Start 2P',monospace;font-size:.95rem;color:var(--red);">11.300</div>
+          <div style="font-size:.7rem;font-weight:700;color:var(--gray);margin-top:3px;">TOTAL DESPESAS</div>
+        </div>
+        <div style="border:2px solid var(--gold);border-radius:9px;padding:12px;text-align:center;background:rgba(245,200,66,.1);box-shadow:0 0 14px rgba(245,200,66,.2);">
+          <div style="font-family:'Press Start 2P',monospace;font-size:.95rem;color:var(--gold);">16.700</div>
+          <div style="font-size:.7rem;font-weight:800;color:var(--gold2);margin-top:3px;">SALDO FINAL ✨</div>
+        </div>
+      </div>
+      <div style="text-align:center;background:rgba(245,200,66,.07);border:1px solid rgba(245,200,66,.2);border-radius:8px;padding:10px;">
+        <p style="font-family:'Share Tech Mono',monospace;font-size:.85rem;color:var(--green);line-height:1.8;">
+          =SOMA(A2:A4) → 28.000 ✓<br>
+          =SOMA(B2:B4) → 11.300 ✓<br>
+          =C2-C3 → 16.700 ✓
+        </p>
+      </div>
+    </div>
+
+    <div class="npc-wrap">
+      <div class="npc-av">🧙</div>
+      <div>
+        <p class="npc-name">MESTRE CONTADOR</p>
+        <p class="npc-txt">
+          <strong>PARABÉNS! O Pergaminho Mágico está funcionando!</strong><br><br>
+          O melhor de tudo: se amanhã o Rei aumentar a recompensa de 20.000 para 25.000, você só muda o valor no Slot A2 e o pergaminho <strong>atualiza o Saldo sozinho</strong> — sem recalcular nada na mão!
+          <span class="code-tip">⚡ É isso que é AUTOMAÇÃO!</span>
+        </p>
+      </div>
+    </div>
+
+    <!-- learned concepts -->
+    <div style="background:rgba(206,147,216,.07);border:1.5px solid rgba(206,147,216,.25);border-radius:10px;padding:14px;margin:12px 0;">
+      <p style="font-family:'Press Start 2P',monospace;font-size:.46rem;color:var(--purple);margin-bottom:10px;">📚 O QUE VOCÊ APRENDEU HOJE</p>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <div style="display:flex;gap:10px;align-items:flex-start;font-size:.85rem;font-weight:700;color:#cdd9f0;line-height:1.5;"><span>🎯</span><span><strong style="color:var(--gold);">Célula/Slot</strong> = endereço exato no mapa (ex: B2)</span></div>
+        <div style="display:flex;gap:10px;align-items:flex-start;font-size:.85rem;font-weight:700;color:#cdd9f0;line-height:1.5;"><span>✨</span><span><strong style="color:var(--green);">Fórmula</strong> começa sempre com = (igual)</span></div>
+        <div style="display:flex;gap:10px;align-items:flex-start;font-size:.85rem;font-weight:700;color:#cdd9f0;line-height:1.5;"><span>⚡</span><span><strong style="color:var(--blue);">=SOMA(A2:A4)</strong> soma um intervalo de cells</span></div>
+        <div style="display:flex;gap:10px;align-items:flex-start;font-size:.85rem;font-weight:700;color:#cdd9f0;line-height:1.5;"><span>🛡️</span><span><strong style="color:var(--gold);">=C2-C3</strong> subtrai para calcular o saldo</span></div>
+        <div style="display:flex;gap:10px;align-items:flex-start;font-size:.85rem;font-weight:700;color:#cdd9f0;line-height:1.5;"><span>🔄</span><span>Se mudar um valor, <strong style="color:var(--purple);">todos os feitiços atualizam automaticamente</strong></span></div>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;">
+      <button class="btn btn-gold" onclick="downloadCSV()">⬇ BAIXAR PERGAMINHO (CSV)</button>
+      <button class="btn btn-ghost" onclick="fullReset()">↺ PRATICAR NOVAMENTE</button>
+    </div>
+  </div>
+</div>
+
+<!-- OV -->
+<div class="ov" id="ov-ok">
+  <div class="conf" id="conf2"></div>
+  <div class="ov-t" style="color:var(--green);" id="ov-ok-t">✅ CORRETO!</div>
+  <div class="ov-s" id="ov-ok-msg"></div>
+</div>
+<div class="ov" id="ov-spell">
+  <div class="conf" id="conf3"></div>
+  <div class="ov-t" style="color:var(--purple);">✨ FEITIÇO LANÇADO!</div>
+  <div class="ov-s" id="ov-spell-msg"></div>
+</div>
+
+<script>
+// ══════════════════════════════════
+// DATA
+// ══════════════════════════════════
+const RECEIPTS = [
+  { label:'Missão de Software (Sistema do Rei)', val:20000 },
+  { label:'Missão de Consultoria', val:5000 },
+  { label:'Missão de Suporte Técnico', val:3000 },
+];
+const EXPENSES = [
+  { label:'Salários dos Magos (Desenvolvedores)', val:10000 },
+  { label:'Cristais de Energia (Energia Elétrica)', val:800 },
+  { label:'Poção de Conexão (Internet)', val:500 },
+];
+
+const TOTAL_REC  = 28000;
+const TOTAL_EXP  = 11300;
+const SALDO_FINAL= 16700;
+
+// STEPS: 0=fill receitas, 1=fill despesas, 2=formula soma A, 3=formula soma B, 4=formula saldo
+let currentStep = 0;
+let stepsCompleted = [false,false,false,false,false];
+
+// sheet data model: rows 1-6, cols A-D
+// row1 = headers, rows 2-4 = receitas, rows 2-4 = despesas, row5=total, row6=saldo
+const ROWS = 6;
+const COLS = ['A','B','C','D'];
+
+// ══════════════════════════════════
+// BUILD SHEET
+// ══════════════════════════════════
+function buildSheet(){
+  const tbody = document.getElementById('sheet-body');
+  tbody.innerHTML = '';
+
+  for(let r=1;r<=ROWS;r++){
+    const tr = document.createElement('tr');
+
+    // row header
+    const th = document.createElement('th');
+    th.className='sh-row-header';
+    th.id='rh-'+r;
+    th.textContent=r;
+    tr.appendChild(th);
+
+    COLS.forEach(col=>{
+      const td=document.createElement('td');
+      td.className='cell col-'+col.toLowerCase();
+      td.id='td-'+col+r;
+
+      const inp=document.createElement('input');
+      inp.type='text';
+      inp.id='cell-'+col+r;
+      inp.setAttribute('data-col',col);
+      inp.setAttribute('data-row',r);
+      inp.readOnly=true; // start locked
+
+      // special classes
+      if(r===1){ td.classList.add('header-cell'); }
+      if(r===ROWS-1){ td.classList.add('total-cell'); }
+      if(r===ROWS && col==='D'){ td.classList.add('saldo-cell'); }
+
+      inp.addEventListener('focus',()=>updateFormulaBar(col,r));
+      td.appendChild(inp);
+      tr.appendChild(td);
+    });
+    tbody.appendChild(tr);
+  }
+
+  // fill static headers
+  setCell('A',1,'📈 RECEITAS');
+  setCell('B',1,'📉 DESPESAS');
+  setCell('C',1,'⚡ TOTAIS');
+  setCell('D',1,'🛡️ SALDO');
+
+  // labels in col A/B
+  RECEIPTS.forEach((r,i)=>{
+    // we'll show names as placeholder-style
+  });
+
+  // lock all initially
+  lockAllCells();
+
+  // unlock receitas for step 1
+  unlockColRows('A',[2,3,4]);
+}
+
+function setCell(col,row,val){
+  const inp=document.getElementById('cell-'+col+row);
+  if(inp){
+    inp.value=val;
+    if(typeof val==='string'&&val.startsWith('=')){
+      inp.classList.add('formula');
+    }
+  }
+}
+function getCell(col,row){
+  const inp=document.getElementById('cell-'+col+row);
+  return inp?inp.value:'';
+}
+function getCellNum(col,row){
+  const v=getCell(col,row);
+  return isNaN(parseFloat(v))?0:parseFloat(v);
+}
+
+function lockAllCells(){
+  for(let r=1;r<=ROWS;r++){
+    COLS.forEach(col=>{
+      const inp=document.getElementById('cell-'+col+r);
+      if(inp){ inp.readOnly=true; inp.style.opacity=(r===1)?'1':'0.35'; inp.style.cursor='not-allowed'; }
+    });
+  }
+}
+function unlockColRows(col,rows){
+  rows.forEach(r=>{
+    const inp=document.getElementById('cell-'+col+r);
+    if(inp){
+      inp.readOnly=false;
+      inp.style.opacity='1';
+      inp.style.cursor='text';
+      inp.placeholder='Digite aqui...';
+      inp.classList.add('text-left');
+    }
+  });
+}
+function highlightCell(col,row,on){
+  const td=document.getElementById('td-'+col+row);
+  if(td) td.style.boxShadow=on?'inset 0 0 0 2px var(--gold)':'';
+}
+
+function updateFormulaBar(col,row){
+  document.getElementById('fb-ref').textContent=col+row;
+  const val=getCell(col,row);
+  document.getElementById('fb-content').value=val;
+
+  // highlight column header
+  document.querySelectorAll('.sh-col-header').forEach(h=>h.classList.remove('active-col'));
+  const ch=document.getElementById('ch-'+col);
+  if(ch) ch.classList.add('active-col');
+}
+
+// ══════════════════════════════════
+// STEPS
+// ══════════════════════════════════
+const STEP_CONFIG = [
+  {
+    title:'📝 PASSO 1 — CORREDOR A (RECEITAS)',
+    desc:`Digite os valores de Receita nas células do <strong style="color:var(--green)">Corredor A</strong>:<br>
+• <strong>A2</strong> = Missão de Software (Sistema do Rei): <strong style="color:var(--gold)">20000</strong><br>
+• <strong>A3</strong> = Missão de Consultoria: <strong style="color:var(--gold)">5000</strong><br>
+• <strong>A4</strong> = Missão de Suporte Técnico: <strong style="color:var(--gold)">3000</strong>`,
+    check:()=>{
+      return getCellNum('A',2)===20000 && getCellNum('A',3)===5000 && getCellNum('A',4)===3000;
+    },
+    autoFill:()=>{ setCell('A',2,20000); setCell('A',3,5000); setCell('A',4,3000); },
+    onPass:()=>{
+      unlockColRows('B',[2,3,4]);
+      showNpc('Incrível! As receitas estão no corredor A! Agora <strong>Passo 2</strong>: coloque as despesas no Corredor B!');
+      markStepDone(0); markStepActive(1);
+      // highlight receipt cells
+      [2,3,4].forEach(r=>flashCell('A',r,'green'));
+    }
+  },
+  {
+    title:'📝 PASSO 2 — CORREDOR B (DESPESAS)',
+    desc:`Digite os valores de Despesa nas células do <strong style="color:var(--red)">Corredor B</strong>:<br>
+• <strong>B2</strong> = Salários dos Magos: <strong style="color:var(--gold)">10000</strong><br>
+• <strong>B3</strong> = Cristais de Energia: <strong style="color:var(--gold)">800</strong><br>
+• <strong>B4</strong> = Poção de Conexão: <strong style="color:var(--gold)">500</strong>`,
+    check:()=>{
+      return getCellNum('B',2)===10000 && getCellNum('B',3)===800 && getCellNum('B',4)===500;
+    },
+    autoFill:()=>{ setCell('B',2,10000); setCell('B',3,800); setCell('B',4,500); },
+    onPass:()=>{
+      // show spell cards
+      document.getElementById('spell-section').style.display='block';
+      buildSpellCards();
+      showNpc('Perfeito! Os corredores A e B estão cheios de dados! Agora o momento mágico: <strong>lance o feitiço =SOMA()</strong> para somar automaticamente!');
+      markStepDone(1); markStepActive(2);
+      [2,3,4].forEach(r=>flashCell('B',r,'red'));
+    }
+  },
+  {
+    title:'✨ PASSO 3 — FEITIÇO DE SOMA DAS RECEITAS',
+    desc:`Clique no card do feitiço <strong style="color:var(--green);">=SOMA(A2:A4)</strong> abaixo para lançá-lo na célula <strong>C2</strong>.<br><br>
+Este feitiço vai somar todos os valores do Corredor A (Prateleiras 2 a 4) automaticamente!`,
+    check:()=>stepsCompleted[2],
+    autoFill:()=>{
+      applySpell(0,true);
+    },
+    onPass:()=>{}
+  },
+  {
+    title:'✨ PASSO 4 — FEITIÇO DE SOMA DAS DESPESAS',
+    desc:`Agora clique no feitiço <strong style="color:var(--red);">=SOMA(B2:B4)</strong> para somar as despesas na célula <strong>C3</strong>!`,
+    check:()=>stepsCompleted[3],
+    autoFill:()=>{ applySpell(1,true); },
+    onPass:()=>{}
+  },
+  {
+    title:'⚡ PASSO 5 — O FEITIÇO DO SALDO FINAL',
+    desc:`Último feitiço! Clique em <strong style="color:var(--gold);">=C2-C3</strong> para calcular o <strong>Saldo Final</strong> na célula D6.<br><br>
+Este feitiço subtrai as Despesas das Receitas e mostra o resultado automaticamente!`,
+    check:()=>stepsCompleted[4],
+    autoFill:()=>{ applySpell(2,true); },
+    onPass:()=>{}
+  }
+];
+
+function checkCurrentStep(){
+  const cfg=STEP_CONFIG[currentStep];
+  const flash=document.getElementById('step-flash');
+
+  if(cfg.check()){
+    flash.style.display='block'; flash.className='flash ok';
+    flash.innerHTML='✅ Correto! Perfeito, Herói!';
+    cfg.onPass();
+    stepsCompleted[currentStep]=true;
+    currentStep++;
+    if(currentStep<STEP_CONFIG.length){
+      setTimeout(()=>{ updateStepUI(); flash.style.display='none'; },1200);
+    } else {
+      setTimeout(()=>{ flash.style.display='none'; go('s-result'); spawnConf('conf'); },1800);
+    }
+    showOv('ov-ok','Muito bem!','Passo concluído com sucesso!');
+    setTimeout(()=>hideOv('ov-ok'),1500);
+  } else {
+    flash.style.display='block'; flash.className='flash nok';
+    flash.innerHTML='❌ Ainda não está certo. Verifique os valores nas células destacadas!';
+    // highlight target cells
+    if(currentStep===0)[2,3,4].forEach(r=>pulseCell('A',r));
+    if(currentStep===1)[2,3,4].forEach(r=>pulseCell('B',r));
+  }
+}
+
+function autoFillStep(){
+  STEP_CONFIG[currentStep].autoFill();
+  setTimeout(()=>checkCurrentStep(),400);
+}
+
+function updateStepUI(){
+  if(currentStep>=STEP_CONFIG.length) return;
+  const cfg=STEP_CONFIG[currentStep];
+  document.getElementById('step-title').textContent=cfg.title.replace(/<[^>]+>/g,'');
+  document.getElementById('step-title').innerHTML='<span>'+cfg.title+'</span>';
+  document.getElementById('step-desc').innerHTML=cfg.desc;
+  // show/hide autofill for formula steps
+  document.getElementById('btn-autofill').style.display=(currentStep>=2)?'inline-flex':'inline-flex';
+}
+
+// ══════════════════════════════════
+// SPELL CARDS
+// ══════════════════════════════════
+const SPELLS = [
+  {
+    icon:'🟢', name:'FEITIÇO DE SOMA A',
+    formula:'=SOMA(A2:A4)',
+    desc:'Soma todas as Receitas do Corredor A, prateleiras 2 a 4.',
+    where:'Vai para a célula C2',
+    target:{col:'C',row:2},
+    result:TOTAL_REC,
+    stepIdx:2,
+    color:'green'
+  },
+  {
+    icon:'🔴', name:'FEITIÇO DE SOMA B',
+    formula:'=SOMA(B2:B4)',
+    desc:'Soma todas as Despesas do Corredor B, prateleiras 2 a 4.',
+    where:'Vai para a célula C3',
+    target:{col:'C',row:3},
+    result:TOTAL_EXP,
+    stepIdx:3,
+    color:'red'
+  },
+  {
+    icon:'⚡', name:'FEITIÇO DO SALDO',
+    formula:'=C2-C3',
+    desc:'Subtrai as Despesas das Receitas. Resultado = Saldo Final.',
+    where:'Vai para a célula D6',
+    target:{col:'D',row:6},
+    result:SALDO_FINAL,
+    stepIdx:4,
+    color:'gold'
+  }
+];
+
+function buildSpellCards(){
+  const container=document.getElementById('spell-cards');
+  container.innerHTML='';
+  SPELLS.forEach((sp,i)=>{
+    const div=document.createElement('div');
+    div.className='spell-card';
+    div.id='sc-'+i;
+    const isAvail = (i===0 && currentStep===2)||(i===1 && currentStep===3)||(i===2 && currentStep===4);
+    div.innerHTML=`
+      <div class="sc-header"><span class="sc-icon">${sp.icon}</span><span class="sc-name">${sp.name}</span></div>
+      <code class="sc-formula">${sp.formula}</code>
+      <p class="sc-desc">${sp.desc}</p>
+      <p class="sc-where">📍 ${sp.where}</p>`;
+    if(!stepsCompleted[sp.stepIdx]) div.onclick=()=>applySpell(i,false);
+    else div.classList.add('used');
+    container.appendChild(div);
+  });
+}
+
+function applySpell(spellIdx, silent){
+  const sp=SPELLS[spellIdx];
+  if(stepsCompleted[sp.stepIdx] && !silent) return;
+
+  // unlock target cell
+  const inp=document.getElementById('cell-'+sp.target.col+sp.target.row);
+  if(inp){
+    inp.readOnly=false; inp.style.opacity='1';
+    inp.value=sp.formula;
+    inp.classList.add('formula');
+    setTimeout(()=>{
+      // evaluate
+      inp.value=sp.result;
+      inp.classList.remove('formula');
+      if(sp.target.col==='D') inp.classList.add('formula'); // keep gold color
+      flashCell(sp.target.col,sp.target.row,'magic');
+      spawnMagicParticles(inp);
+    },600);
+  }
+
+  stepsCompleted[sp.stepIdx]=true;
+  currentStep=sp.stepIdx+1;
+
+  // mark card used
+  const card=document.getElementById('sc-'+spellIdx);
+  if(card) card.classList.add('used');
+
+  if(!silent){
+    if(sp.stepIdx===2){
+      showOv('ov-spell',`=SOMA(A2:A4) = ${sp.result.toLocaleString('pt-BR')} G!`,'O pergaminho somou as Receitas automaticamente!');
+      setTimeout(()=>hideOv('ov-spell'),1800);
+      showNpc(`Feitiço funcionou! O slot C2 agora mostra <strong>${sp.result.toLocaleString('pt-BR')} G</strong> — a soma das receitas! Agora lance o próximo feitiço!`);
+      markStepDone(2); markStepActive(3);
+    } else if(sp.stepIdx===3){
+      showOv('ov-spell',`=SOMA(B2:B4) = ${sp.result.toLocaleString('pt-BR')} G!`,'O pergaminho somou as Despesas automaticamente!');
+      setTimeout(()=>hideOv('ov-spell'),1800);
+      showNpc(`Perfeito! O slot C3 mostra <strong>${sp.result.toLocaleString('pt-BR')} G</strong> de despesas! Agora o feitiço final — o Saldo!`);
+      markStepDone(3); markStepActive(4);
+      // unlock D6 for last step
+    } else if(sp.stepIdx===4){
+      spawnConf('conf3');
+      showOv('ov-ok','✨ SALDO CALCULADO!',`O Pergaminho calculou: ${sp.result.toLocaleString('pt-BR')} G de SALDO FINAL!`);
+      setTimeout(()=>{ hideOv('ov-ok'); go('s-result'); spawnConf('conf'); },2500);
+      markStepDone(4);
+    }
+    // refresh cards
+    buildSpellCards();
+    updateStepUI();
+    document.getElementById('step-flash').style.display='none';
+  }
+}
+
+// ══════════════════════════════════
+// VISUAL HELPERS
+// ══════════════════════════════════
+function flashCell(col,row,type){
+  const td=document.getElementById('td-'+col+row);
+  if(!td) return;
+  const colors={green:'rgba(0,230,118,.4)',red:'rgba(255,82,82,.3)',magic:'rgba(206,147,216,.4)',gold:'rgba(245,200,66,.3)'};
+  td.style.boxShadow=`inset 0 0 16px ${colors[type]||colors.gold}`;
+  td.classList.add('magic-glow');
+  setTimeout(()=>{ td.style.boxShadow=''; td.classList.remove('magic-glow'); },1500);
+}
+
+function pulseCell(col,row){
+  const td=document.getElementById('td-'+col+row);
+  if(!td) return;
+  td.style.boxShadow='inset 0 0 0 2px var(--gold)';
+  setTimeout(()=>td.style.boxShadow='',1200);
+}
+
+function spawnMagicParticles(el){
+  if(!el) return;
+  const rect=el.getBoundingClientRect();
+  const emojis=['✨','⚡','🌟','💫','🔮'];
+  for(let i=0;i<6;i++){
+    const p=document.createElement('div');
+    p.className='magic-particle';
+    p.textContent=emojis[Math.floor(Math.random()*emojis.length)];
+    p.style.left=(rect.left+rect.width/2+( Math.random()-0.5)*60)+'px';
+    p.style.top=(rect.top+window.scrollY)+'px';
+    p.style.animationDelay=(Math.random()*.4)+'s';
+    document.body.appendChild(p);
+    setTimeout(()=>p.remove(),1400);
+  }
+}
+
+function showNpc(html){
+  document.getElementById('npc-hint').innerHTML=html;
+}
+
+function markStepDone(i){
+  const d=document.getElementById('qs'+i);
+  if(d){ d.className='qs-dot done'; }
+}
+function markStepActive(i){
+  const d=document.getElementById('qs'+i);
+  if(d) d.className='qs-dot active';
+}
+
+// ══════════════════════════════════
+// RESET / INIT
+// ══════════════════════════════════
+function resetGame(){
+  currentStep=0;
+  stepsCompleted=[false,false,false,false,false];
+  document.getElementById('spell-section').style.display='none';
+  document.getElementById('step-flash').style.display='none';
+  for(let i=0;i<5;i++){
+    const d=document.getElementById('qs'+i);
+    if(d){ d.className=i===0?'qs-dot active':'qs-dot locked'; }
+  }
+  buildSheet();
+  updateStepUI();
+  showNpc('Herói! Vamos organizar o ouro do mês passado. <strong>Passo 1:</strong> Digite as Receitas no Corredor A. Clique nas células e preencha!');
+}
+
+function fullReset(){
+  resetGame();
+  go('s-game');
+}
+
+// ══════════════════════════════════
+// CSV
+// ══════════════════════════════════
+function downloadCSV(){
+  const now=new Date();
+  let csv='sep=;\nPERGAMINHO MÁGICO — FLUXO DE CAIXA\nGUILDA TECHSOLUTIONS\n\n';
+  csv+=`Data;${now.toLocaleDateString('pt-BR')}\nHora;${now.toLocaleTimeString('pt-BR')}\n\n`;
+  csv+='CORREDOR A (RECEITAS);VALOR\n';
+  RECEIPTS.forEach(r=>csv+=`${r.label};${r.val}\n`);
+  csv+=`TOTAL RECEITAS (=SOMA(A2:A4));${TOTAL_REC}\n\n`;
+  csv+='CORREDOR B (DESPESAS);VALOR\n';
+  EXPENSES.forEach(e=>csv+=`${e.label};${e.val}\n`);
+  csv+=`TOTAL DESPESAS (=SOMA(B2:B4));${TOTAL_EXP}\n\n`;
+  csv+=`SALDO FINAL (=C2-C3);${SALDO_FINAL}\n\n`;
+  csv+='FEITIÇOS UTILIZADOS\n';
+  csv+='=SOMA(A2:A4);Soma as Receitas automaticamente\n';
+  csv+='=SOMA(B2:B4);Soma as Despesas automaticamente\n';
+  csv+='=C2-C3;Calcula o Saldo Final (Receitas - Despesas)\n';
+  const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url; a.download=`pergaminho_magico_${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}.csv`;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+}
+
+// ══════════════════════════════════
+// UTILS
+// ══════════════════════════════════
+function go(id){ document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on')); document.getElementById(id).classList.add('on'); window.scrollTo(0,0); }
+function showOv(id,title,msg){
+  document.getElementById(id).classList.add('on');
+  const t=document.getElementById(id==='ov-ok'?'ov-ok-t':null);
+  if(t && title) t.textContent=title;
+  const m=document.getElementById(id==='ov-ok'?'ov-ok-msg':'ov-spell-msg');
+  if(m && msg) m.textContent=msg;
+}
+function hideOv(id){ document.getElementById(id).classList.remove('on'); }
+
+function spawnConf(cid){
+  const c=document.getElementById(cid);
+  const cols=['#f5c842','#ffe082','#00e676','#40c4ff','#ff5252','#ce93d8','#ffab40','#ffffff'];
+  for(let i=0;i<90;i++){
+    const el=document.createElement('div');
+    const sz=4+Math.random()*9;
+    el.style.cssText=`position:absolute;width:${sz}px;height:${sz}px;background:${cols[Math.floor(Math.random()*cols.length)]};left:${Math.random()*100}%;top:-10px;border-radius:${Math.random()>.5?'50%':'2px'};animation:cf ${1.5+Math.random()*2}s ease ${Math.random()*.5}s both;`;
+    c.appendChild(el);
+  }
+  setTimeout(()=>c.innerHTML='',5500);
+}
+(()=>{ const s=document.createElement('style'); s.textContent='@keyframes cf{from{transform:translateY(0) rotate(0deg);opacity:1}to{transform:translateY(100vh) rotate(720deg);opacity:0}}'; document.head.appendChild(s); })();
+
+// handle enter key on cells
+document.addEventListener('keydown',e=>{
+  if(e.key==='Enter'){
+    const active=document.activeElement;
+    if(active && active.id && active.id.startsWith('cell-')){
+      checkCurrentStep();
+    }
+  }
+});
+
+// init
+buildSheet();
+updateStepUI();
+</script>
+</body>
+</html>
