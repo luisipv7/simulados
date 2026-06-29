@@ -1,0 +1,407 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Simulados de Revisão — Backend e Integração Frontend (INF8)</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Merriweather:wght@700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --primary:#1E3A5F;--primary-light:#2557a7;--primary-pale:#e8f0fb;--accent:#0d6efd;
+  --green:#198754;--green-pale:#d1e7dd;--red:#dc3545;--red-pale:#f8d7da;
+  --yellow:#ffc107;--yellow-pale:#fff3cd;
+  --gray-100:#f8f9fa;--gray-200:#e9ecef;--gray-300:#dee2e6;--gray-400:#ced4da;
+  --gray-500:#adb5bd;--gray-600:#6c757d;--gray-700:#495057;--gray-800:#343a40;--gray-900:#212529;
+  --white:#fff;--shadow:0 2px 8px rgba(0,0,0,.1);--radius:8px;--radius-sm:5px;
+  --mono:'JetBrains Mono',monospace;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',sans-serif;background:var(--gray-100);color:var(--gray-900);font-size:15px;line-height:1.6;min-height:100vh}
+.screen{display:none;min-height:100vh;align-items:center;justify-content:center;padding:24px 16px}
+.screen.on{display:flex;flex-direction:column}
+.card{background:var(--white);border:1px solid var(--gray-300);border-radius:var(--radius);box-shadow:var(--shadow);padding:36px 40px;max-width:780px;width:100%}
+.inst-header{display:flex;align-items:center;gap:16px;padding-bottom:18px;margin-bottom:18px;border-bottom:2px solid var(--primary)}
+.inst-logo{width:50px;height:50px;background:var(--primary);border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-size:20px;flex-shrink:0}
+.inst-info{flex:1}
+.inst-name{font-family:'Merriweather',serif;font-size:.95rem;font-weight:700;color:var(--primary);line-height:1.3}
+.inst-sub{font-size:.75rem;color:var(--gray-600);margin-top:2px}
+.inst-badge{background:var(--primary);color:white;font-size:.68rem;font-weight:700;letter-spacing:1px;padding:4px 10px;border-radius:20px;text-transform:uppercase;white-space:nowrap}
+h1.page-title{font-family:'Merriweather',serif;font-size:1.4rem;color:var(--primary);margin-bottom:4px;text-align:center}
+h2.section-title{font-size:1rem;font-weight:700;color:var(--primary);margin-bottom:14px}
+.divider{height:1px;background:var(--gray-200);margin:20px 0}
+.btn{display:inline-flex;align-items:center;gap:6px;font-family:'Inter',sans-serif;font-size:.85rem;font-weight:700;border:none;border-radius:var(--radius-sm);padding:10px 22px;cursor:pointer;transition:all .18s;text-transform:uppercase;letter-spacing:.4px}
+.btn-primary{background:var(--primary);color:white}.btn-primary:hover{background:var(--primary-light)}
+.btn-primary:disabled{opacity:.4;cursor:not-allowed}
+.btn-outline{background:transparent;border:1.5px solid var(--primary);color:var(--primary)}.btn-outline:hover{background:var(--primary-pale)}
+.btn-sm{padding:7px 14px;font-size:.78rem}
+.sim-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin:20px 0}
+.sim-card{border:2px solid var(--gray-300);border-radius:var(--radius);padding:22px 16px;cursor:pointer;transition:all .2s;text-align:center;background:var(--white)}
+.sim-card:hover{border-color:var(--accent);box-shadow:var(--shadow);transform:translateY(-2px)}
+.sim-card.selected{border-color:var(--primary);background:var(--primary-pale)}
+.sim-card .sc-icon{font-size:2.2rem;margin-bottom:8px}
+.sim-card .sc-title{font-size:.9rem;font-weight:700;color:var(--primary);margin-bottom:4px}
+.sim-card .sc-desc{font-size:.74rem;color:var(--gray-500)}
+.mode-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px}
+.mode-btn{flex:1;min-width:150px;border:1.5px solid var(--gray-300);border-radius:var(--radius-sm);padding:12px 14px;cursor:pointer;background:white;transition:all .18s;text-align:left}
+.mode-btn:hover{border-color:var(--accent);background:var(--primary-pale)}
+.mode-btn.selected{border-color:var(--primary);background:var(--primary-pale)}
+.mode-btn .mb-title{font-size:.85rem;font-weight:700;color:var(--primary);margin-bottom:2px}
+.mode-btn .mb-desc{font-size:.72rem;color:var(--gray-600)}
+.prog-wrap{margin:12px 0 18px}
+.prog-info{display:flex;justify-content:space-between;font-size:.75rem;font-weight:700;color:var(--gray-600);margin-bottom:4px}
+.prog-track{height:7px;background:var(--gray-200);border-radius:4px;overflow:hidden}
+.prog-fill{height:100%;background:var(--primary);border-radius:4px;transition:width .4s ease}
+.q-block{border:1px solid var(--gray-200);border-radius:var(--radius);margin-bottom:18px;overflow:hidden;animation:fadeIn .3s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+.q-header{display:flex;align-items:center;gap:10px;padding:11px 16px;background:var(--gray-100);border-bottom:1px solid var(--gray-200)}
+.q-badge{background:var(--primary);color:white;font-size:.68rem;font-weight:700;padding:3px 10px;border-radius:20px;white-space:nowrap}
+.q-topic-tag{font-size:.7rem;color:var(--gray-500);font-weight:600;text-transform:uppercase;letter-spacing:.4px}
+.q-body{padding:16px 18px}
+.q-stem{font-size:.95rem;color:var(--gray-800);line-height:1.7;margin-bottom:14px;font-weight:500}
+.q-stem strong{color:var(--primary)}
+.q-stem code,.opt-btn code,.q-feedback code{font-family:var(--mono);font-size:.85em;background:var(--gray-100);border:1px solid var(--gray-300);padding:1px 5px;border-radius:3px;color:var(--primary)}
+.opts-list{display:flex;flex-direction:column;gap:7px}
+.opt-btn{display:flex;align-items:flex-start;gap:10px;background:white;border:1.5px solid var(--gray-300);border-radius:var(--radius-sm);padding:10px 13px;cursor:pointer;transition:all .18s;font-family:'Inter',sans-serif;font-size:.88rem;color:var(--gray-800);text-align:left;line-height:1.5;width:100%}
+.opt-btn:hover:not(.locked){border-color:var(--accent);background:var(--primary-pale)}
+.opt-letter{width:22px;height:22px;border-radius:50%;background:var(--gray-200);border:1.5px solid var(--gray-400);display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:800;color:var(--gray-700);flex-shrink:0;margin-top:1px}
+.opt-btn.selected .opt-letter{background:var(--accent);border-color:var(--accent);color:white}
+.opt-btn.correct{border-color:var(--green)!important;background:var(--green-pale)!important}
+.opt-btn.correct .opt-letter{background:var(--green);border-color:var(--green);color:white}
+.opt-btn.wrong{border-color:var(--red)!important;background:var(--red-pale)!important}
+.opt-btn.wrong .opt-letter{background:var(--red);border-color:var(--red);color:white}
+.opt-btn.locked{cursor:default}
+.q-feedback{display:none;margin-top:10px;padding:9px 13px;border-radius:var(--radius-sm);font-size:.83rem;font-weight:600;line-height:1.6;animation:fadeIn .25s ease}
+.q-feedback.ok{background:var(--green-pale);border:1px solid #a3cfbb;color:#0a3622}
+.q-feedback.nok{background:var(--red-pale);border:1px solid #f1adb5;color:#58151c}
+.status-banner{padding:12px 18px;border-radius:var(--radius-sm);font-weight:700;font-size:.9rem;text-align:center;margin-bottom:16px}
+.status-banner.approved{background:var(--green-pale);border:1px solid #a3cfbb;color:#0a3622}
+.status-banner.recovery{background:var(--yellow-pale);border:1px solid #ffecb5;color:#664d03}
+.status-banner.failed{background:var(--red-pale);border:1px solid #f1adb5;color:#58151c}
+.result-summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin:18px 0}
+.res-box{border:1px solid var(--gray-300);border-radius:var(--radius);padding:16px 12px;text-align:center;background:var(--white)}
+.res-box .rb-val{font-family:'Merriweather',serif;font-size:1.9rem;font-weight:700;line-height:1;margin-bottom:4px}
+.res-box .rb-lbl{font-size:.73rem;color:var(--gray-500);font-weight:600;text-transform:uppercase;letter-spacing:.4px}
+.res-box.hi{border-color:#86d9a8;background:var(--green-pale)}.res-box.hi .rb-val{color:var(--green)}
+.res-box.md{border-color:#f5c842;background:var(--yellow-pale)}.res-box.md .rb-val{color:#856404}
+.res-box.lo{border-color:#f1adb5;background:var(--red-pale)}.res-box.lo .rb-val{color:var(--red)}
+.res-box.neu .rb-val{color:var(--primary)}
+.sim-result-row{display:flex;justify-content:space-between;align-items:center;padding:9px 14px;border:1px solid var(--gray-200);border-radius:var(--radius-sm);margin:6px 0;background:var(--white)}
+.srr-left{display:flex;align-items:flex-start;gap:9px}
+.srr-name{font-size:.82rem;font-weight:600;color:var(--gray-700)}
+.srr-sub{font-size:.72rem;color:var(--gray-500);margin-top:1px}
+.srr-grade{font-size:1rem;font-weight:800;flex-shrink:0}
+.srr-grade.hi{color:var(--green)}.srr-grade.lo{color:var(--red)}
+.alert-warning{background:var(--yellow-pale);border:1px solid #ffecb5;color:#664d03;padding:9px 13px;border-radius:var(--radius-sm);font-size:.83rem;font-weight:600;margin-top:10px;display:none}
+.bottom-bar{position:fixed;bottom:0;left:0;right:0;background:white;border-top:1px solid var(--gray-300);padding:10px 20px;display:none;align-items:center;justify-content:space-between;gap:12px;z-index:100;box-shadow:0 -2px 8px rgba(0,0,0,.06);flex-wrap:wrap}
+.bottom-bar.on{display:flex}
+.bb-label{font-size:.78rem;font-weight:700;color:var(--gray-600)}
+.bb-score{font-size:.78rem;font-weight:700;color:var(--primary)}
+@media(max-width:560px){.card{padding:20px 14px}.inst-header{flex-direction:column;text-align:center}.result-summary{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+
+<!-- ═══ SELEÇÃO ═══ -->
+<div class="screen on" id="s-select">
+  <div class="card" style="max-width:680px">
+    <div class="inst-header">
+      <div class="inst-logo">🎓</div>
+      <div class="inst-info">
+        <div class="inst-name">Escola Técnica Estadual — Marechal Mascarenhas de Moraes</div>
+        <div class="inst-sub">INF8 — Backend e Integração Frontend · APIs · Git · Python · FastAPI · SQL</div>
+      </div>
+      <div class="inst-badge">2025</div>
+    </div>
+    <h1 class="page-title">Simulados de Revisão</h1>
+    <p style="text-align:center;font-size:.83rem;color:var(--gray-600);margin-bottom:4px">Arquitetura Web · HTTP · JSON/XML · Git · Banco de Dados · Python · APIs</p>
+    <p style="text-align:center;font-size:.8rem;color:var(--gray-500);margin-bottom:18px">Cada simulado contém <strong>30 questões objetivas</strong> com gabarito comentado</p>
+
+    <h2 class="section-title">1. Escolha o simulado</h2>
+    <div class="sim-grid" id="sim-grid"></div>
+
+    <h2 class="section-title">2. Escolha o modo</h2>
+    <div class="mode-row" id="mode-row">
+      <div class="mode-btn selected" id="mode-study" onclick="selMode('study')">
+        <div class="mb-title">📖 Modo Estudo</div>
+        <div class="mb-desc">Feedback na hora, a cada questão respondida</div>
+      </div>
+      <div class="mode-btn" id="mode-exam" onclick="selMode('exam')">
+        <div class="mb-title">📝 Modo Prova</div>
+        <div class="mb-desc">Sem feedback; correção só no final</div>
+      </div>
+    </div>
+
+    <div class="alert-warning" id="sel-warn"></div>
+    <div style="margin-top:18px">
+      <button class="btn btn-primary" onclick="startSim()">Iniciar Revisão →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ PROVA ═══ -->
+<div class="screen" id="s-exam">
+  <div class="card" id="exam-card" style="max-width:760px;margin-bottom:70px"></div>
+</div>
+
+<!-- ═══ RESULTADO ═══ -->
+<div class="screen" id="s-result">
+  <div class="card" style="max-width:720px">
+    <div class="inst-header">
+      <div class="inst-logo">📊</div>
+      <div class="inst-info">
+        <div class="inst-name" id="r-simname">Resultado</div>
+        <div class="inst-sub">INF8 — Backend e Integração Frontend</div>
+      </div>
+    </div>
+    <div class="status-banner" id="r-banner"></div>
+    <div class="result-summary" id="r-summary"></div>
+    <div class="divider"></div>
+    <h2 class="section-title">Gabarito Comentado</h2>
+    <div id="r-breakdown"></div>
+    <div class="divider"></div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <button class="btn btn-outline" onclick="go('s-select')">← Voltar ao Início</button>
+      <button class="btn btn-primary" onclick="restartSame()">↻ Refazer este Simulado</button>
+    </div>
+  </div>
+</div>
+
+<!-- BOTTOM BAR -->
+<div class="bottom-bar" id="bbar">
+  <div class="bb-label" id="bb-label"></div>
+  <div class="bb-score" id="bb-score"></div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════
+// BANCO — SIMULADO 1 e SIMULADO 2 (30 questões cada)
+// answer = índice (0=A,1=B,2=C,3=D)
+// ══════════════════════════════════════════════
+const SIMS = [
+{
+  id:0, title:'Simulado 1', subtitle:'Arquitetura, HTTP, JSON/XML, Git Base e API', icon:'🌐', desc:'30 questões',
+  questions:[
+    {topic:'API',stem:'O que significa a sigla <strong>API</strong>?',opts:['Application Programming Interface','Advanced Programming Integration','Automated Process Interface','Application Process Integration'],answer:0,exp:'API = Application Programming Interface — interface de programação que permite a comunicação entre sistemas.'},
+    {topic:'HTTP',stem:'Qual método HTTP é utilizado principalmente para <strong>RECUPERAR</strong> dados de um servidor?',opts:['POST','GET','PUT','DELETE'],answer:1,exp:'GET é o método usado para buscar/recuperar dados (Read no CRUD).'},
+    {topic:'HTTP',stem:'Qual método HTTP é usado para <strong>ENVIAR novos dados</strong> ao servidor (ex: criar um cadastro)?',opts:['GET','POST','DELETE','PATCH'],answer:1,exp:'POST envia novos dados ao servidor para criar recursos (Create no CRUD).'},
+    {topic:'HTTP',stem:'Na arquitetura REST, qual código de status HTTP indica que a requisição foi <strong>bem-sucedida</strong>?',opts:['404','500','200','401'],answer:2,exp:'200 OK indica sucesso na requisição.'},
+    {topic:'HTTP',stem:'Qual código de status é retornado quando um recurso <strong>NÃO foi encontrado</strong>?',opts:['200','400','500','404'],answer:3,exp:'404 Not Found = o recurso solicitado não existe no servidor.'},
+    {topic:'HTTP',stem:'O código de status HTTP <strong>500</strong> indica:',opts:['Sucesso na requisição.','Recurso não encontrado.','Erro interno do servidor.','Não autorizado.'],answer:2,exp:'500 Internal Server Error = falha interna no servidor ao processar a requisição.'},
+    {topic:'JSON/XML',stem:'Qual formato de intercâmbio de dados é mais leve, nativo do JavaScript e usa pares <strong>chave/valor</strong>?',opts:['XML','HTML','JSON','CSV'],answer:2,exp:'JSON é leve, legível e nativo do JavaScript, baseado em pares chave/valor.'},
+    {topic:'JSON/XML',stem:'O formato <strong>XML</strong> utiliza qual estrutura visual para organizar seus dados?',opts:['Chaves e colchetes.','Tags (etiquetas) semelhantes ao HTML.','Linhas e colunas.','Indentação obrigatória.'],answer:1,exp:'XML organiza dados com tags de abertura e fechamento, como o HTML.'},
+    {topic:'HTTP',stem:'No HTTP, o que define o <strong>tipo de conteúdo</strong> trafegado no corpo da requisição ou resposta?',opts:['Content-Type','Authorization','User-Agent','Accept'],answer:0,exp:'O cabeçalho Content-Type define o formato do corpo (ex: application/json).'},
+    {topic:'Git',stem:'Para <strong>iniciar um novo repositório</strong> Git em um diretório local, qual comando usar?',opts:['git clone','git init','git start','git commit'],answer:1,exp:'git init cria um novo repositório Git no diretório atual.'},
+    {topic:'Git',stem:'Qual comando Git <strong>envia os commits locais</strong> para um repositório remoto (ex: GitHub)?',opts:['git pull','git fetch','git push','git commit'],answer:2,exp:'git push envia os commits locais para o repositório remoto.'},
+    {topic:'Git',stem:'No Git, o comando <code>git clone</code> é usado para:',opts:['Copiar um repositório remoto para a máquina local.','Criar um novo commit.','Enviar código para a nuvem.','Desfazer uma alteração.'],answer:0,exp:'git clone copia um repositório remoto inteiro para a máquina local.'},
+    {topic:'Git',stem:'O que o comando <code>git status</code> faz?',opts:['Deleta arquivos não rastreados.','Mostra o estado atual da árvore de trabalho e dos arquivos.','Atualiza o repositório remoto.','Salva as alterações permanentemente.'],answer:1,exp:'git status mostra o estado atual: arquivos modificados, em stage e não rastreados.'},
+    {topic:'Python',stem:'Em Python, qual framework web moderno e de alta performance é frequentemente usado para construir <strong>APIs</strong>?',opts:['Django','Flask','FastAPI','React'],answer:2,exp:'FastAPI é um framework Python moderno e de alta performance para APIs.'},
+    {topic:'FastAPI',stem:'O FastAPI usa nativamente um recurso do Python para <strong>validação automática</strong> de dados. Qual?',opts:['Decorators','Type Hints (dicas de tipagem)','Generators','Try/Except blocks'],answer:1,exp:'O FastAPI usa Type Hints do Python (via Pydantic) para validar dados automaticamente.'},
+    {topic:'SQL',stem:'Em um banco relacional, qual comando SQL é usado para <strong>buscar dados</strong> de uma tabela?',opts:['SELECT','UPDATE','INSERT','FETCH'],answer:0,exp:'SELECT é o comando usado para consultar/buscar dados de uma tabela.'},
+    {topic:'SQL',stem:'Para <strong>adicionar uma nova linha</strong> de dados em uma tabela SQL, usamos:',opts:['ADD ROW','INSERT INTO','UPDATE','CREATE LINE'],answer:1,exp:'INSERT INTO adiciona novos registros (linhas) a uma tabela.'},
+    {topic:'SQL',stem:'A cláusula <code>WHERE</code> no SQL serve para:',opts:['Ordenar os resultados.','Filtrar os registros com base em uma condição.','Agrupar dados duplicados.','Deletar a tabela inteira.'],answer:1,exp:'WHERE filtra registros que atendem a uma condição específica.'},
+    {topic:'SQL',stem:'O que é uma <strong>Primary Key</strong> (Chave Primária) em um banco relacional?',opts:['Uma chave estrangeira.','Um identificador único e não nulo para cada registro da tabela.','Uma senha de acesso ao banco.','Um comando de exclusão.'],answer:1,exp:'A Chave Primária identifica unicamente cada registro — única e não nula.'},
+    {topic:'HTTP',stem:'O protocolo <strong>HTTPS</strong> difere do HTTP padrão principalmente por adicionar:',opts:['Maior velocidade.','Camada de criptografia e segurança (SSL/TLS).','Suporte nativo ao formato JSON.','Integração automática com o Git.'],answer:1,exp:'HTTPS adiciona criptografia via SSL/TLS, protegendo os dados em trânsito.'},
+    {topic:'API',stem:'No ecossistema de APIs, o que é um <strong>Endpoint</strong>?',opts:['O servidor físico.','O erro retornado pelo servidor.','Um endereço (URL) específico onde uma API pode ser acessada por um cliente.','Um formato de arquivo compactado.'],answer:2,exp:'Endpoint é a URL específica onde um recurso da API pode ser acessado.'},
+    {topic:'HTTP',stem:'Para atualizar <strong>PARCIALMENTE</strong> um recurso em uma API REST, qual método é mais adequado?',opts:['GET','PUT','PATCH','POST'],answer:2,exp:'PATCH atualiza parcialmente um recurso. PUT substitui o recurso inteiro.'},
+    {topic:'Git',stem:'O que faz o comando <code>git add .</code>?',opts:['Adiciona um novo repositório.','Prepara (faz o stage) de todas as modificações atuais para o próximo commit.','Deleta todos os arquivos temporários.','Faz um merge com a branch principal.'],answer:1,exp:'git add . coloca todas as alterações na Staging Area para o próximo commit.'},
+    {topic:'JSON/XML',stem:'O que caracteriza o formato <strong>JSON</strong> perante o XML?',opts:['JSON é mais verboso e pesado.','JSON é mais simples de ler e amplamente usado em APIs modernas.','JSON só funciona em Python.','JSON exige o uso de tags de abertura e fechamento.'],answer:1,exp:'JSON é mais simples e leve que o XML, sendo o padrão das APIs modernas.'},
+    {topic:'FastAPI',stem:'Para rodar uma aplicação FastAPI localmente (servidor ASGI), utilizamos comumente o:',opts:['Uvicorn','Apache','Nginx','Tomcat'],answer:0,exp:'Uvicorn é o servidor ASGI usado para executar aplicações FastAPI.'},
+    {topic:'Frontend',stem:'O que significa <strong>CORS</strong> no contexto do desenvolvimento Web/Frontend?',opts:['Cross-Origin Resource Sharing','Central Object Root Server','Code Optimization & Refactoring System','Cascading Object Relational Standard'],answer:0,exp:'CORS = Cross-Origin Resource Sharing — política de compartilhamento entre origens diferentes.'},
+    {topic:'Frontend',stem:'Quando o Frontend faz uma requisição HTTP, a estrutura nativa moderna do JavaScript usada é a:',opts:['XMLHttpRequest','Fetch API','DOM Parser','Local Storage'],answer:1,exp:'A Fetch API é a forma moderna e nativa do JavaScript de fazer requisições HTTP.'},
+    {topic:'Python',stem:'No Python, uma <strong>lista</strong> é declarada com:',opts:['()','{}','[]','<>'],answer:2,exp:'Listas em Python usam colchetes []. () é tupla e {} é dicionário/conjunto.'},
+    {topic:'Python',stem:'Qual arquivo no Python (geralmente) lista as <strong>dependências</strong> do projeto?',opts:['package.json','requirements.txt','pom.xml','dependencies.py'],answer:1,exp:'requirements.txt lista as bibliotecas/dependências de um projeto Python.'},
+    {topic:'API',stem:'Uma API REST é descrita como <strong>stateless</strong> (sem estado). O que isso significa?',opts:['Ela não usa banco de dados.','Cada requisição contém toda a informação necessária; o servidor não guarda sessão do cliente.','Ela só funciona em uma única máquina.','Ela não retorna códigos HTTP.'],answer:1,exp:'Stateless: cada requisição é independente e carrega toda a informação; o servidor não mantém sessão.'}
+  ]
+},
+{
+  id:1, title:'Simulado 2', subtitle:'JWT, Integração Frontend, Git Avançado e Banco de Dados', icon:'🔐', desc:'30 questões',
+  questions:[
+    {topic:'JWT',stem:'O que é <strong>JWT</strong>?',opts:['Java Web Token','JSON Web Token','JavaScript Web Tool','JSON Web Tool'],answer:1,exp:'JWT = JSON Web Token — padrão para tokens de autenticação compactos e seguros.'},
+    {topic:'JWT',stem:'Um token JWT padrão é composto por <strong>três partes</strong> separadas por pontos. Quais são?',opts:['Header, Body, Footer','Header, Payload, Signature','Title, Data, Hash','Algoritmo, Tipo, Dados'],answer:1,exp:'JWT = Header.Payload.Signature — cabeçalho, dados e assinatura.'},
+    {topic:'JWT',stem:'Em APIs seguras, onde o JWT geralmente é enviado em uma requisição HTTP?',opts:['No rodapé da página.','Na URL como parâmetro de busca.','No cabeçalho <code>Authorization</code> com o prefixo <code>Bearer</code>.','Dentro de um arquivo XML.'],answer:2,exp:'O JWT vai no header Authorization, no formato "Bearer &lt;token&gt;".'},
+    {topic:'Git',stem:'Para <strong>trocar o ramo de trabalho (branch)</strong> atual no Git, qual comando utilizamos?',opts:['git branch','git merge','git checkout (ou git switch)','git change'],answer:2,exp:'git checkout (ou git switch) muda a branch ativa de trabalho.'},
+    {topic:'Git',stem:'O que o comando <code>git merge</code> executa?',opts:['Une o histórico de diferentes branches.','Deleta permanentemente o repositório.','Cancela o último commit.','Cria uma nova branch vazia.'],answer:0,exp:'git merge une o histórico de diferentes branches em uma só.'},
+    {topic:'Git',stem:'O que é um <strong>conflito de merge</strong> no Git?',opts:['Quando a internet cai durante o push.','Quando duas branches alteram a mesma parte de um arquivo e o Git não sabe qual manter.','Quando a senha do usuário está errada.','Quando o repositório excede o limite de tamanho.'],answer:1,exp:'Conflito de merge: duas branches mexeram na mesma linha e o Git pede decisão manual.'},
+    {topic:'Frontend',stem:'No JavaScript, funções que retornam uma <strong>Promise</strong> e permitem o uso de <code>await</code> são declaradas como:',opts:['static','async','void','public'],answer:1,exp:'Funções async retornam Promises e permitem o uso de await internamente.'},
+    {topic:'FastAPI',stem:'O que a biblioteca <strong>Pydantic</strong> faz no ecossistema do FastAPI?',opts:['Cria bancos de dados automaticamente.','Gera o layout frontend HTML.','Faz validação e serialização de dados através de tipagem do Python.','Roda o servidor HTTP.'],answer:2,exp:'Pydantic valida e serializa dados usando as type hints do Python.'},
+    {topic:'SQL',stem:'Qual instrução SQL <strong>modifica valores de registros que já existem</strong> em uma tabela?',opts:['INSERT INTO','ALTER TABLE','UPDATE','MODIFY'],answer:2,exp:'UPDATE altera valores de registros existentes. ALTER TABLE muda a estrutura, não os dados.'},
+    {topic:'SQL',stem:'Para <strong>deletar registros</strong> de uma tabela SQL, usamos:',opts:['DROP TABLE','REMOVE','DELETE FROM','CLEAR'],answer:2,exp:'DELETE FROM remove registros (linhas) de uma tabela.'},
+    {topic:'SQL',stem:'O comando <code>DROP TABLE</code> em SQL resulta em:',opts:['Apagar todos os dados, mantendo a estrutura da tabela.','Remover a estrutura da tabela inteira do banco de dados.','Ocultar a tabela de consultas.','Fazer backup da tabela.'],answer:1,exp:'DROP TABLE elimina a tabela inteira (estrutura + dados). Para só apagar dados, use DELETE ou TRUNCATE.'},
+    {topic:'SQL',stem:'Uma <strong>Foreign Key</strong> (Chave Estrangeira) serve para:',opts:['Criptografar dados.','Criar um relacionamento lógico entre duas tabelas distintas.','Acelerar a busca na mesma tabela.','Impedir o acesso ao banco.'],answer:1,exp:'A Chave Estrangeira relaciona duas tabelas, referenciando a chave primária de outra.'},
+    {topic:'HTTP',stem:'O código HTTP <strong>401 Unauthorized</strong> indica:',opts:['Página não encontrada.','O cliente não tem credenciais de autenticação válidas para o recurso.','Servidor offline.','Formato de arquivo incompatível.'],answer:1,exp:'401 = falta de autenticação válida (não está logado / token inválido).'},
+    {topic:'HTTP',stem:'O código HTTP <strong>403 Forbidden</strong> significa que:',opts:['O cliente está autenticado, mas não tem PERMISSÃO para acessar o recurso.','O usuário errou a senha.','A página mudou de endereço.','O servidor crashou.'],answer:0,exp:'403 = autenticado, mas sem permissão. Diferente de 401 (não autenticado).'},
+    {topic:'Python',stem:'Um <strong>decorador</strong> em Python (como <code>@app.get</code>) é usado fundamentalmente para:',opts:['Modificar ou estender o comportamento de uma função sem alterar seu código.','Criar um loop infinito.','Mudar a cor do terminal.','Acessar o banco de dados diretamente.'],answer:0,exp:'Decoradores estendem o comportamento de funções sem modificar o código interno delas.'},
+    {topic:'Auth',stem:'O que o protocolo <strong>OAuth2</strong> define?',opts:['Um padrão de compressão de imagens.','Um protocolo de autorização e delegação de acesso seguro.','Um tipo de cabo de rede.','Uma linguagem de programação concorrente.'],answer:1,exp:'OAuth2 é um protocolo de autorização e delegação de acesso seguro entre sistemas.'},
+    {topic:'Python',stem:'Qual pacote Python é largamente usado para construir consultas SQL via <strong>ORM</strong> (Mapeamento Objeto-Relacional)?',opts:['SQLAlchemy','Requests','Pandas','Numpy'],answer:0,exp:'SQLAlchemy é o ORM mais usado em Python para mapear objetos a tabelas SQL.'},
+    {topic:'Node',stem:'Para inicializar um projeto Node.js e criar um <code>package.json</code>, usamos o comando:',opts:['npm install','npm start','npm init','node create'],answer:2,exp:'npm init cria o package.json e inicializa um projeto Node.js.'},
+    {topic:'HTTP',stem:'Em REST, usar o método <strong>DELETE</strong> para excluir um recurso é:',opts:['Inseguro e deve ser evitado.','Uma prática padrão e idiomática recomendada.','Permitido apenas no navegador.','Apenas para administradores do servidor HTTP.'],answer:1,exp:'DELETE é o método REST padrão e idiomático para excluir recursos.'},
+    {topic:'API',stem:'Ao criar uma API, devolver resposta em <strong>JSON</strong> significa configurar o <code>Content-Type</code> para:',opts:['text/plain','application/xml','application/json','text/html'],answer:2,exp:'application/json é o Content-Type correto para respostas em JSON.'},
+    {topic:'Git',stem:'Qual arquivo Git é criado para que arquivos/diretórios específicos <strong>não sejam rastreados</strong> (ex: node_modules/)?',opts:['.gitconfig','.gitignore','.gitmodules','.gitkeep'],answer:1,exp:'.gitignore lista arquivos e pastas que o Git deve ignorar.'},
+    {topic:'Python',stem:'No Python, qual é o tipo de dado usado para representar <strong>Verdadeiro/Falso</strong>?',opts:['Boolean','String','Int','Float'],answer:0,exp:'Boolean (bool) representa os valores True e False em Python.'},
+    {topic:'SQL',stem:'Qual cláusula SQL <strong>combina linhas de duas ou mais tabelas</strong> baseadas em uma coluna comum?',opts:['GROUP BY','ORDER BY','JOIN','HAVING'],answer:2,exp:'JOIN combina linhas de tabelas diferentes com base em uma coluna em comum.'},
+    {topic:'HTTP',stem:'Ao lidar com requisições HTTP, o <strong>Payload</strong> se refere:',opts:['Ao tamanho máximo do pacote.','Aos dados reais sendo transportados na requisição ou resposta.','Ao tempo de conexão.','À criptografia TLS.'],answer:1,exp:'Payload são os dados reais transportados no corpo da requisição/resposta.'},
+    {topic:'JWT',stem:'No ciclo de vida de um JWT, o que faz a parte <strong>Signature</strong> (assinatura)?',opts:['Garante a integridade do token, evitando que os dados sejam alterados.','Criptografa o token inteiro para ninguém ler.','Dita a cor de exibição no frontend.','Armazena a foto do usuário.'],answer:0,exp:'A Signature garante a integridade: se alguém alterar o payload, a assinatura não bate.'},
+    {topic:'Ferramentas',stem:'A principal finalidade do <strong>Postman</strong> ou <strong>Insomnia</strong> no desenvolvimento backend é:',opts:['Escrever código Python.','Modelar o banco de dados.','Testar e simular requisições para APIs.','Criar protótipos de interfaces gráficas.'],answer:2,exp:'Postman e Insomnia servem para testar e simular requisições a APIs.'},
+    {topic:'Python',stem:'Qual sintaxe o Python utiliza para definir <strong>blocos lógicos</strong> (ex: dentro de um IF ou função)?',opts:['Chaves {}','Indentação (espaços/tabs)','Colchetes []','Parênteses ()'],answer:1,exp:'Python usa indentação (espaços/tabs) para delimitar blocos de código.'},
+    {topic:'Git',stem:'Para <strong>baixar as alterações</strong> que outros programadores subiram no repositório remoto, o comando recomendado é:',opts:['git pull','git push','git init','git branch'],answer:0,exp:'git pull baixa e integra as alterações do repositório remoto à cópia local.'},
+    {topic:'Frontend',stem:'Ao usar <code>fetch()</code> no Frontend, é necessário lidar com <strong>CORS</strong> caso:',opts:['O backend e o frontend rodem em domínios ou portas diferentes.','O usuário acesse via celular.','O banco de dados esteja cheio.','Não haja internet.'],answer:0,exp:'CORS entra em ação quando frontend e backend estão em origens (domínios/portas) diferentes.'},
+    {topic:'API',stem:'Uma URL que possui <code>?id=10&status=active</code> está utilizando:',opts:['Path Parameters','Query Parameters','Body Data','Header Data'],answer:1,exp:'Query Parameters: pares chave=valor após "?", separados por "&".'}
+  ]
+}
+];
+
+// ══════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════
+let STATE = { simIdx:null, mode:'study', qIdx:0, answers:[], score:0, answered:false, done:false };
+let _sel = 0, _mode = 'study';
+
+function buildSelector(){
+  const g = document.getElementById('sim-grid');
+  g.innerHTML = '';
+  SIMS.forEach((s,i)=>{
+    const d = document.createElement('div');
+    d.className = 'sim-card'+(i===_sel?' selected':'');
+    d.id = 'sc-'+i;
+    d.innerHTML = `<div class="sc-icon">${s.icon}</div><div class="sc-title">${s.title}</div><div class="sc-desc">${s.subtitle}<br>${s.desc}</div>`;
+    d.onclick = ()=>selSim(i);
+    g.appendChild(d);
+  });
+}
+function selSim(i){ _sel=i; document.querySelectorAll('.sim-card').forEach((c,j)=>c.classList.toggle('selected',j===i)); }
+function selMode(m){ _mode=m; document.getElementById('mode-study').classList.toggle('selected',m==='study'); document.getElementById('mode-exam').classList.toggle('selected',m==='exam'); }
+
+function startSim(){
+  STATE = { simIdx:_sel, mode:_mode, qIdx:0, answers:[], score:0, answered:false, done:false };
+  go('s-exam');
+  document.getElementById('bbar').classList.add('on');
+  renderQ();
+}
+function restartSame(){ STATE={simIdx:STATE.simIdx,mode:STATE.mode,qIdx:0,answers:[],score:0,answered:false,done:false}; go('s-exam'); document.getElementById('bbar').classList.add('on'); renderQ(); }
+
+function renderQ(){
+  const sim = SIMS[STATE.simIdx];
+  const q = sim.questions[STATE.qIdx];
+  const total = sim.questions.length;
+  const pct = Math.round((STATE.qIdx/total)*100);
+  const isLast = STATE.qIdx===total-1;
+  STATE.answered=false;
+  const L=['A','B','C','D'];
+  const optsHtml=q.opts.map((o,i)=>`<button class="opt-btn" id="ob${i}" onclick="pick(${i})"><span class="opt-letter">${L[i]}</span><span>${o}</span></button>`).join('');
+
+  document.getElementById('exam-card').innerHTML=`
+    <div class="inst-header" style="padding-bottom:12px;margin-bottom:12px">
+      <div class="inst-logo" style="width:38px;height:38px;font-size:15px">${sim.icon}</div>
+      <div class="inst-info">
+        <div class="inst-name" style="font-size:.85rem">${sim.title} — ${sim.subtitle}</div>
+        <div class="inst-sub">${STATE.mode==='study'?'📖 Modo Estudo':'📝 Modo Prova'} · INF8</div>
+      </div>
+    </div>
+    <div class="prog-wrap">
+      <div class="prog-info"><span>Progresso</span><span>${STATE.qIdx}/${total}</span></div>
+      <div class="prog-track"><div class="prog-fill" style="width:${pct}%"></div></div>
+    </div>
+    <div class="q-block">
+      <div class="q-header">
+        <span class="q-badge">Q${STATE.qIdx+1}</span>
+        <span class="q-topic-tag">${q.topic}</span>
+      </div>
+      <div class="q-body">
+        <p class="q-stem">${q.stem}</p>
+        <div class="opts-list">${optsHtml}</div>
+        <div class="q-feedback" id="qfb"></div>
+        <div style="display:flex;justify-content:flex-end;margin-top:14px">
+          <button class="btn btn-primary" id="btn-next" onclick="nextQ()" disabled>${isLast?'🏁 Finalizar':'Próxima →'}</button>
+        </div>
+      </div>
+    </div>`;
+
+  document.getElementById('bb-label').textContent=`Questão ${STATE.qIdx+1} de ${total}`;
+  document.getElementById('bb-score').textContent=STATE.mode==='study'?`Acertos: ${STATE.score}`:'';
+}
+
+function pick(idx){
+  if(STATE.answered) return;
+  STATE.answered=true;
+  const q=SIMS[STATE.simIdx].questions[STATE.qIdx];
+  const correct=idx===q.answer;
+  if(correct) STATE.score++;
+  STATE.answers.push({qIdx:STATE.qIdx,chosen:idx,correct});
+  const L=['A','B','C','D'];
+
+  if(STATE.mode==='study'){
+    for(let i=0;i<4;i++){
+      const b=document.getElementById('ob'+i);
+      if(!b) continue;
+      b.classList.add('locked');
+      if(i===q.answer) b.classList.add('correct');
+      else if(i===idx&&!correct) b.classList.add('wrong');
+    }
+    const fb=document.getElementById('qfb');
+    fb.style.display='block';
+    fb.className='q-feedback '+(correct?'ok':'nok');
+    fb.innerHTML=(correct?'✔ Resposta correta! ':`✘ Incorreta. A correta é <strong>${L[q.answer]}</strong>. `)+q.exp;
+  } else {
+    for(let i=0;i<4;i++){ const b=document.getElementById('ob'+i); if(b) b.classList.add('locked'); }
+    document.getElementById('ob'+idx).classList.add('selected');
+  }
+  document.getElementById('bb-score').textContent=STATE.mode==='study'?`Acertos: ${STATE.score}`:'';
+  document.getElementById('btn-next').disabled=false;
+}
+
+function nextQ(){
+  STATE.qIdx++;
+  if(STATE.qIdx>=SIMS[STATE.simIdx].questions.length){ finishExam(); }
+  else{ renderQ(); window.scrollTo(0,0); }
+}
+
+function finishExam(){
+  if(STATE.done) return;
+  STATE.done=true;
+  document.getElementById('bbar').classList.remove('on');
+  buildResult();
+  go('s-result');
+  window.scrollTo(0,0);
+}
+
+function buildResult(){
+  const sim=SIMS[STATE.simIdx];
+  const total=sim.questions.length;
+  const acertos=STATE.score;
+  const pct=acertos/total;
+  document.getElementById('r-simname').textContent=`${sim.title} — ${sim.subtitle}`;
+  let bCls,bTxt;
+  if(pct>=.7){bCls='approved';bTxt='✔ Ótimo desempenho! Você domina o conteúdo.';}
+  else if(pct>=.5){bCls='recovery';bTxt='⚠ Desempenho intermediário — revise os tópicos com erro.';}
+  else{bCls='failed';bTxt='✘ Atenção: revise o conteúdo com cuidado.';}
+  const b=document.getElementById('r-banner');
+  b.className='status-banner '+bCls; b.textContent=bTxt;
+
+  const nota=(acertos/total*10).toFixed(1);
+  document.getElementById('r-summary').innerHTML=`
+    <div class="res-box ${pct>=.7?'hi':pct>=.5?'md':'lo'}"><div class="rb-val">${acertos}/${total}</div><div class="rb-lbl">Acertos</div></div>
+    <div class="res-box ${pct>=.7?'hi':pct>=.5?'md':'lo'}"><div class="rb-val">${(pct*100).toFixed(0)}%</div><div class="rb-lbl">Aproveitamento</div></div>
+    <div class="res-box neu"><div class="rb-val">${nota}</div><div class="rb-lbl">Nota (0-10)</div></div>`;
+
+  const L=['A','B','C','D'];
+  let bd='';
+  STATE.answers.forEach((a,i)=>{
+    const q=sim.questions[a.qIdx];
+    const stemTxt=q.stem.replace(/<[^>]+>/g,'');
+    bd+=`<div class="sim-result-row"><div class="srr-left"><span style="font-size:1.1rem">${a.correct?'✅':'❌'}</span><div><div class="srr-name">Q${i+1} (${q.topic}) — ${stemTxt.substring(0,60)}${stemTxt.length>60?'...':''}</div><div class="srr-sub">Sua resposta: <strong>${L[a.chosen]}</strong> · Correta: <strong>${L[q.answer]}</strong> — ${q.exp}</div></div></div><span class="srr-grade ${a.correct?'hi':'lo'}">${a.correct?'✓':'✗'}</span></div>`;
+  });
+  document.getElementById('r-breakdown').innerHTML=bd;
+}
+
+function go(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));
+  document.getElementById(id).classList.add('on');
+  window.scrollTo(0,0);
+}
+
+buildSelector();
+selMode('study');
+</script>
+</body>
+</html>
