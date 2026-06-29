@@ -1,0 +1,407 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Listas de Revisão Intensiva — Engenharia de Software (INF7)</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Merriweather:wght@700&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --primary:#1E3A5F;--primary-light:#2557a7;--primary-pale:#e8f0fb;--accent:#0d6efd;
+  --green:#198754;--green-pale:#d1e7dd;--red:#dc3545;--red-pale:#f8d7da;
+  --yellow:#ffc107;--yellow-pale:#fff3cd;
+  --gray-100:#f8f9fa;--gray-200:#e9ecef;--gray-300:#dee2e6;--gray-400:#ced4da;
+  --gray-500:#adb5bd;--gray-600:#6c757d;--gray-700:#495057;--gray-800:#343a40;--gray-900:#212529;
+  --white:#fff;--shadow:0 2px 8px rgba(0,0,0,.1);--radius:8px;--radius-sm:5px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',sans-serif;background:var(--gray-100);color:var(--gray-900);font-size:15px;line-height:1.6;min-height:100vh}
+.screen{display:none;min-height:100vh;align-items:center;justify-content:center;padding:24px 16px}
+.screen.on{display:flex;flex-direction:column}
+.card{background:var(--white);border:1px solid var(--gray-300);border-radius:var(--radius);box-shadow:var(--shadow);padding:36px 40px;max-width:780px;width:100%}
+.inst-header{display:flex;align-items:center;gap:16px;padding-bottom:18px;margin-bottom:18px;border-bottom:2px solid var(--primary)}
+.inst-logo{width:50px;height:50px;background:var(--primary);border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-size:20px;flex-shrink:0}
+.inst-info{flex:1}
+.inst-name{font-family:'Merriweather',serif;font-size:.95rem;font-weight:700;color:var(--primary);line-height:1.3}
+.inst-sub{font-size:.75rem;color:var(--gray-600);margin-top:2px}
+.inst-badge{background:var(--primary);color:white;font-size:.68rem;font-weight:700;letter-spacing:1px;padding:4px 10px;border-radius:20px;text-transform:uppercase;white-space:nowrap}
+h1.page-title{font-family:'Merriweather',serif;font-size:1.4rem;color:var(--primary);margin-bottom:4px;text-align:center}
+h2.section-title{font-size:1rem;font-weight:700;color:var(--primary);margin-bottom:14px}
+.divider{height:1px;background:var(--gray-200);margin:20px 0}
+.btn{display:inline-flex;align-items:center;gap:6px;font-family:'Inter',sans-serif;font-size:.85rem;font-weight:700;border:none;border-radius:var(--radius-sm);padding:10px 22px;cursor:pointer;transition:all .18s;text-transform:uppercase;letter-spacing:.4px}
+.btn-primary{background:var(--primary);color:white}.btn-primary:hover{background:var(--primary-light)}
+.btn-primary:disabled{opacity:.4;cursor:not-allowed}
+.btn-outline{background:transparent;border:1.5px solid var(--primary);color:var(--primary)}.btn-outline:hover{background:var(--primary-pale)}
+.btn-sm{padding:7px 14px;font-size:.78rem}
+.sim-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin:20px 0}
+.sim-card{border:2px solid var(--gray-300);border-radius:var(--radius);padding:22px 16px;cursor:pointer;transition:all .2s;text-align:center;background:var(--white)}
+.sim-card:hover{border-color:var(--accent);box-shadow:var(--shadow);transform:translateY(-2px)}
+.sim-card.selected{border-color:var(--primary);background:var(--primary-pale)}
+.sim-card .sc-icon{font-size:2.2rem;margin-bottom:8px}
+.sim-card .sc-title{font-size:.9rem;font-weight:700;color:var(--primary);margin-bottom:4px}
+.sim-card .sc-desc{font-size:.75rem;color:var(--gray-500)}
+.mode-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px}
+.mode-btn{flex:1;min-width:150px;border:1.5px solid var(--gray-300);border-radius:var(--radius-sm);padding:12px 14px;cursor:pointer;background:white;transition:all .18s;text-align:left}
+.mode-btn:hover{border-color:var(--accent);background:var(--primary-pale)}
+.mode-btn.selected{border-color:var(--primary);background:var(--primary-pale)}
+.mode-btn .mb-title{font-size:.85rem;font-weight:700;color:var(--primary);margin-bottom:2px}
+.mode-btn .mb-desc{font-size:.72rem;color:var(--gray-600)}
+.prog-wrap{margin:12px 0 18px}
+.prog-info{display:flex;justify-content:space-between;font-size:.75rem;font-weight:700;color:var(--gray-600);margin-bottom:4px}
+.prog-track{height:7px;background:var(--gray-200);border-radius:4px;overflow:hidden}
+.prog-fill{height:100%;background:var(--primary);border-radius:4px;transition:width .4s ease}
+.q-block{border:1px solid var(--gray-200);border-radius:var(--radius);margin-bottom:18px;overflow:hidden;animation:fadeIn .3s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+.q-header{display:flex;align-items:center;gap:10px;padding:11px 16px;background:var(--gray-100);border-bottom:1px solid var(--gray-200)}
+.q-badge{background:var(--primary);color:white;font-size:.68rem;font-weight:700;padding:3px 10px;border-radius:20px;white-space:nowrap}
+.q-topic-tag{font-size:.7rem;color:var(--gray-500);font-weight:600;text-transform:uppercase;letter-spacing:.4px}
+.q-body{padding:16px 18px}
+.q-stem{font-size:.95rem;color:var(--gray-800);line-height:1.7;margin-bottom:14px;font-weight:500}
+.q-stem strong{color:var(--primary)}
+.opts-list{display:flex;flex-direction:column;gap:7px}
+.opt-btn{display:flex;align-items:flex-start;gap:10px;background:white;border:1.5px solid var(--gray-300);border-radius:var(--radius-sm);padding:10px 13px;cursor:pointer;transition:all .18s;font-family:'Inter',sans-serif;font-size:.88rem;color:var(--gray-800);text-align:left;line-height:1.5;width:100%}
+.opt-btn:hover:not(.locked){border-color:var(--accent);background:var(--primary-pale)}
+.opt-letter{width:22px;height:22px;border-radius:50%;background:var(--gray-200);border:1.5px solid var(--gray-400);display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:800;color:var(--gray-700);flex-shrink:0;margin-top:1px}
+.opt-btn.selected .opt-letter{background:var(--accent);border-color:var(--accent);color:white}
+.opt-btn.correct{border-color:var(--green)!important;background:var(--green-pale)!important}
+.opt-btn.correct .opt-letter{background:var(--green);border-color:var(--green);color:white}
+.opt-btn.wrong{border-color:var(--red)!important;background:var(--red-pale)!important}
+.opt-btn.wrong .opt-letter{background:var(--red);border-color:var(--red);color:white}
+.opt-btn.locked{cursor:default}
+.q-feedback{display:none;margin-top:10px;padding:9px 13px;border-radius:var(--radius-sm);font-size:.83rem;font-weight:600;line-height:1.6;animation:fadeIn .25s ease}
+.q-feedback.ok{background:var(--green-pale);border:1px solid #a3cfbb;color:#0a3622}
+.q-feedback.nok{background:var(--red-pale);border:1px solid #f1adb5;color:#58151c}
+.status-banner{padding:12px 18px;border-radius:var(--radius-sm);font-weight:700;font-size:.9rem;text-align:center;margin-bottom:16px}
+.status-banner.approved{background:var(--green-pale);border:1px solid #a3cfbb;color:#0a3622}
+.status-banner.recovery{background:var(--yellow-pale);border:1px solid #ffecb5;color:#664d03}
+.status-banner.failed{background:var(--red-pale);border:1px solid #f1adb5;color:#58151c}
+.result-summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin:18px 0}
+.res-box{border:1px solid var(--gray-300);border-radius:var(--radius);padding:16px 12px;text-align:center;background:var(--white)}
+.res-box .rb-val{font-family:'Merriweather',serif;font-size:1.9rem;font-weight:700;line-height:1;margin-bottom:4px}
+.res-box .rb-lbl{font-size:.73rem;color:var(--gray-500);font-weight:600;text-transform:uppercase;letter-spacing:.4px}
+.res-box.hi{border-color:#86d9a8;background:var(--green-pale)}.res-box.hi .rb-val{color:var(--green)}
+.res-box.md{border-color:#f5c842;background:var(--yellow-pale)}.res-box.md .rb-val{color:#856404}
+.res-box.lo{border-color:#f1adb5;background:var(--red-pale)}.res-box.lo .rb-val{color:var(--red)}
+.res-box.neu .rb-val{color:var(--primary)}
+.sim-result-row{display:flex;justify-content:space-between;align-items:center;padding:9px 14px;border:1px solid var(--gray-200);border-radius:var(--radius-sm);margin:6px 0;background:var(--white)}
+.srr-left{display:flex;align-items:flex-start;gap:9px}
+.srr-name{font-size:.82rem;font-weight:600;color:var(--gray-700)}
+.srr-sub{font-size:.72rem;color:var(--gray-500);margin-top:1px}
+.srr-grade{font-size:1rem;font-weight:800;flex-shrink:0}
+.srr-grade.hi{color:var(--green)}.srr-grade.lo{color:var(--red)}
+.alert-warning{background:var(--yellow-pale);border:1px solid #ffecb5;color:#664d03;padding:9px 13px;border-radius:var(--radius-sm);font-size:.83rem;font-weight:600;margin-top:10px;display:none}
+.bottom-bar{position:fixed;bottom:0;left:0;right:0;background:white;border-top:1px solid var(--gray-300);padding:10px 20px;display:none;align-items:center;justify-content:space-between;gap:12px;z-index:100;box-shadow:0 -2px 8px rgba(0,0,0,.06);flex-wrap:wrap}
+.bottom-bar.on{display:flex}
+.bb-label{font-size:.78rem;font-weight:700;color:var(--gray-600)}
+.bb-score{font-size:.78rem;font-weight:700;color:var(--primary)}
+@media(max-width:560px){.card{padding:20px 14px}.inst-header{flex-direction:column;text-align:center}.result-summary{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+
+<!-- ═══ SELEÇÃO ═══ -->
+<div class="screen on" id="s-select">
+  <div class="card" style="max-width:680px">
+    <div class="inst-header">
+      <div class="inst-logo">🎓</div>
+      <div class="inst-info">
+        <div class="inst-name">Escola Técnica Estadual — Marechal Mascarenhas de Moraes</div>
+        <div class="inst-sub">INF7 — Engenharia de Software · Módulo 3 (Aulas 11 a 14)</div>
+      </div>
+      <div class="inst-badge">2025</div>
+    </div>
+    <h1 class="page-title">Listas de Revisão Intensiva</h1>
+    <p style="text-align:center;font-size:.83rem;color:var(--gray-600);margin-bottom:4px">Testes · Qualidade (ISO 9126) · Versionamento (Git) · Planejamento</p>
+    <p style="text-align:center;font-size:.8rem;color:var(--gray-500);margin-bottom:18px">Cada lista contém <strong>30 questões objetivas</strong> com gabarito comentado</p>
+
+    <h2 class="section-title">1. Escolha a lista</h2>
+    <div class="sim-grid" id="sim-grid"></div>
+
+    <h2 class="section-title">2. Escolha o modo</h2>
+    <div class="mode-row" id="mode-row">
+      <div class="mode-btn selected" id="mode-study" onclick="selMode('study')">
+        <div class="mb-title">📖 Modo Estudo</div>
+        <div class="mb-desc">Feedback na hora, a cada questão respondida</div>
+      </div>
+      <div class="mode-btn" id="mode-exam" onclick="selMode('exam')">
+        <div class="mb-title">📝 Modo Prova</div>
+        <div class="mb-desc">Sem feedback; correção só no final</div>
+      </div>
+    </div>
+
+    <div class="alert-warning" id="sel-warn"></div>
+    <div style="margin-top:18px">
+      <button class="btn btn-primary" onclick="startSim()">Iniciar Revisão →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ PROVA ═══ -->
+<div class="screen" id="s-exam">
+  <div class="card" id="exam-card" style="max-width:760px;margin-bottom:70px"></div>
+</div>
+
+<!-- ═══ RESULTADO ═══ -->
+<div class="screen" id="s-result">
+  <div class="card" style="max-width:720px">
+    <div class="inst-header">
+      <div class="inst-logo">📊</div>
+      <div class="inst-info">
+        <div class="inst-name" id="r-simname">Resultado</div>
+        <div class="inst-sub">INF7 — Engenharia de Software</div>
+      </div>
+    </div>
+    <div class="status-banner" id="r-banner"></div>
+    <div class="result-summary" id="r-summary"></div>
+    <div class="divider"></div>
+    <h2 class="section-title">Gabarito Comentado</h2>
+    <div id="r-breakdown"></div>
+    <div class="divider"></div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <button class="btn btn-outline" onclick="go('s-select')">← Voltar ao Início</button>
+      <button class="btn btn-primary" onclick="restartSame()">↻ Refazer esta Lista</button>
+    </div>
+  </div>
+</div>
+
+<!-- BOTTOM BAR -->
+<div class="bottom-bar" id="bbar">
+  <div class="bb-label" id="bb-label"></div>
+  <div class="bb-score" id="bb-score"></div>
+  <button class="btn btn-primary btn-sm" id="btn-finish" onclick="finishExam()" style="display:none">🏁 Finalizar</button>
+</div>
+
+<script>
+// ══════════════════════════════════════════════
+// BANCO — LISTA 1 e LISTA 2 (30 questões cada)
+// answer = índice (0=A,1=B,2=C,3=D)
+// ══════════════════════════════════════════════
+const SIMS = [
+{
+  id:0, title:'Lista 1', subtitle:'Revisão Intensiva 1', icon:'📘', desc:'30 questões',
+  questions:[
+    {topic:'Testes',stem:"Segundo a 'Regra de Ouro' de Dijkstra (Aula 11), os testes de software:",opts:['Provam que o software não tem falhas.','Garantem a ausência de bugs escondidos.','Mostram a presença de erros, mas nunca provam a ausência deles.','São desnecessários se o código for bem escrito.'],answer:2,exp:'Testes revelam a presença de erros, mas nunca garantem que não existam bugs escondidos.'},
+    {topic:'Testes',stem:"Um programador digita o sinal de '+' em vez de '-' no código. Esse erro escrito no código-fonte é classificado como:",opts:['Falha.','Defeito (Bug).','Verificação.','Inadequação.'],answer:1,exp:'O erro escrito no código é o Defeito (bug). A consequência visível ao usuário seria a Falha.'},
+    {topic:'Testes',stem:'Quando o código defeituoso é executado e o usuário vê um resultado errado na tela, chamamos isso de:',opts:['Defeito.','Erro de sintaxe.','Validação.','Falha.'],answer:3,exp:'Falha = a manifestação do defeito durante a execução, percebida pelo usuário.'},
+    {topic:'V&V',stem:"A pergunta 'Estamos construindo o produto CORRETAMENTE?' refere-se a:",opts:['Validação.','Verificação.','Teste de Aceitação.','Manutenibilidade.'],answer:1,exp:'Verificação = construir corretamente (seguir a especificação).'},
+    {topic:'V&V',stem:"A pergunta 'Estamos construindo o produto CERTO? (Atende à necessidade do cliente?)' refere-se a:",opts:['Verificação.','Validação.','Caixa-Branca.','Teste de Unidade.'],answer:1,exp:'Validação = construir o produto certo (atender à necessidade real do cliente).'},
+    {topic:'Testes',stem:'O teste que foca nas FUNCIONALIDADES, testando entradas e saídas sem ver o código-fonte, é o teste de:',opts:['Caixa-Branca.','Sistema.','Caixa-Preta.','Integração.'],answer:2,exp:'Caixa-Preta: testa funcionalidades (entradas/saídas) sem acessar o código-fonte.'},
+    {topic:'Testes',stem:'O teste que analisa a ESTRUTURA interna do código e testa seus caminhos é o teste de:',opts:['Caixa-Preta.','Caixa-Branca.','Validação.','Aceitação.'],answer:1,exp:'Caixa-Branca: analisa a estrutura interna e os caminhos do código.'},
+    {topic:'Testes',stem:'Qual estágio de teste avalia partes isoladas do código, como uma classe ou método sozinho?',opts:['Teste de Unidade.','Teste de Integração.','Teste de Sistema.','Teste de Aceitação.'],answer:0,exp:'Teste de Unidade: avalia partes isoladas (uma classe ou método).'},
+    {topic:'Testes',stem:'O estágio de teste que verifica a comunicação entre várias unidades juntas é o:',opts:['Teste de Unidade.','Teste de Integração/Componentes.','Teste de Sistema.','Teste de Aceitação.'],answer:1,exp:'Teste de Integração: verifica a comunicação entre unidades já testadas.'},
+    {topic:'Testes',stem:'Os Testes Alfa e Beta são exemplos de qual estágio de teste?',opts:['Integração.','Sistema.','Unidade.','Aceitação/Usuário.'],answer:3,exp:'Alfa e Beta são modalidades do Teste de Aceitação/Usuário.'},
+    {topic:'Qualidade',stem:'Segundo a Aula 12, a melhor forma de melhorar a qualidade do PRODUTO final é:',opts:['Contratar mais testadores.','Melhorar a qualidade do PROCESSO de como a equipe trabalha.','Pular a fase de testes para entregar mais rápido.','Focar apenas em V&V Dinâmica.'],answer:1,exp:'Qualidade de processo → qualidade de produto: melhorar como a equipe trabalha eleva o resultado.'},
+    {topic:'ISO 9126',stem:"Na ISO 9126, a característica que responde 'O sistema faz o que foi pedido?' é:",opts:['Funcionalidade.','Usabilidade.','Eficiência.','Portabilidade.'],answer:0,exp:'Funcionalidade: o sistema realiza as funções especificadas.'},
+    {topic:'ISO 9126',stem:'Um aplicativo que suporta falhas e se recupera rapidamente demonstra alta:',opts:['Manutenibilidade.','Usabilidade.','Confiabilidade.','Eficiência.'],answer:2,exp:'Confiabilidade: o sistema suporta falhas e se recupera delas.'},
+    {topic:'ISO 9126',stem:'A facilidade de aprender e usar um software está relacionada à sua:',opts:['Funcionalidade.','Eficiência.','Usabilidade.','Portabilidade.'],answer:2,exp:'Usabilidade: facilidade de aprender e usar o sistema.'},
+    {topic:'ISO 9126',stem:'Se um software tem bom tempo de resposta e gasta poucos recursos da máquina, ele possui boa:',opts:['Eficiência.','Confiabilidade.','Manutenibilidade.','Usabilidade.'],answer:0,exp:'Eficiência: bom desempenho com baixo consumo de recursos.'},
+    {topic:'ISO 9126',stem:'Qual é a única característica da ISO 9126 que costuma ser invisível ao usuário, focando na facilidade de modificar o código?',opts:['Portabilidade.','Manutenibilidade.','Confiabilidade.','Funcionalidade.'],answer:1,exp:'Manutenibilidade: facilidade de modificar o código — percebida pela equipe, não pelo usuário.'},
+    {topic:'ISO 9126',stem:'Um software facilmente transferido de um ambiente (Windows) para outro (Linux) tem alta:',opts:['Manutenibilidade.','Portabilidade.','Usabilidade.','Eficiência.'],answer:1,exp:'Portabilidade: facilidade de transferir o software entre ambientes.'},
+    {topic:'V&V',stem:'Revisar o código ou a documentação em equipe para achar defeitos SEM executar o programa é chamado de:',opts:['Teste Dinâmico.','V&V Estática (Inspeções e Revisões).','Teste de Caixa-Preta.','Teste de Sistema.'],answer:1,exp:'V&V Estática: análise de código/documentos sem executar o programa.'},
+    {topic:'Git',stem:'O banco de dados compartilhado que guarda todas as versões do código da equipe é o:',opts:['Clone.','Repositório.','Branch.','Commit.'],answer:1,exp:'Repositório: armazena todo o histórico de versões do projeto.'},
+    {topic:'Git',stem:'Copiar o código do repositório mestre para a sua máquina local é conhecido como:',opts:['Push.','Commit.','Merge.','Clone / Check-out.'],answer:3,exp:'Clone/Check-out: copia o repositório para a máquina local.'},
+    {topic:'Git',stem:'Qual comando é usado para efetivar e enviar suas modificações de volta para o repositório remoto?',opts:['Clone.','Commit / Push.','Branch.','Checkout.'],answer:1,exp:'Commit (efetiva local) + Push (envia ao remoto).'},
+    {topic:'Git',stem:'Criar uma linha de desenvolvimento independente para trabalhar numa nova funcionalidade sem afetar o código principal é criar um(a):',opts:['Merge.','Branch.','Repositório.','Clone.'],answer:1,exp:'Branch: linha de desenvolvimento independente.'},
+    {topic:'Git',stem:'A união de duas linhas de desenvolvimento (branches) em uma só versão é chamada de:',opts:['Merge.','Clone.','Commit.','Push.'],answer:0,exp:'Merge: une duas branches em uma só versão.'},
+    {topic:'Git',stem:"No versionamento, o modelo em que 'sem servidor, ninguém trabalha' e depende de um único servidor central é o:",opts:['Distribuído.','Descentralizado.','Centralizado (ex: Subversion).','Git.'],answer:2,exp:'Centralizado (ex: Subversion): depende de um servidor central único.'},
+    {topic:'Git',stem:'O Git é o padrão atual da indústria e é um exemplo de sistema de versionamento:',opts:['Centralizado.','Distribuído.','Linear.','Estatístico.'],answer:1,exp:'Git é distribuído: cada dev tem um clone completo do repositório.'},
+    {topic:'Planejamento',stem:"Qual atividade do planejamento de projeto envolve 'prever o que pode dar errado'?",opts:['Divisão do trabalho.','Cronograma.','Gestão de riscos.','Estimativa.'],answer:2,exp:'Gestão de riscos: antecipar o que pode dar errado e planejar a mitigação.'},
+    {topic:'Planejamento',stem:'O modelo COCOMO é um exemplo de ferramenta usada para qual atividade de planejamento?',opts:['Alocação de pessoas.','Cronograma.','Estimativa (calcular custo e tempo).','Gestão de riscos.'],answer:2,exp:'COCOMO: técnica de estimativa de custo e tempo.'},
+    {topic:'Planejamento',stem:'O gráfico de barras que mostra as datas de início e fim das tarefas ao longo do tempo é o:',opts:['Diagrama de Casos de Uso.','Gráfico de Gantt.','Diagrama de Classes.','Kanban.'],answer:1,exp:'Gráfico de Gantt: barras com início e fim de cada tarefa no tempo.'},
+    {topic:'Planejamento',stem:"No planejamento de projetos, o 'fim lógico de uma etapa (documentado)' é considerado um:",opts:['Entregável.','Marco.','Bug.','Teste.'],answer:1,exp:'Marco (milestone): fim lógico de uma etapa, documentado.'},
+    {topic:'Planejamento',stem:"O 'produto que chega ao cliente', como o software instalado em produção, é considerado um:",opts:['Entregável.','Marco.','Clone.','Branch.'],answer:0,exp:'Entregável: produto concreto que chega ao cliente.'}
+  ]
+},
+{
+  id:1, title:'Lista 2', subtitle:'Revisão Intensiva 2', icon:'📗', desc:'30 questões',
+  questions:[
+    {topic:'V&V',stem:'Se um cliente recebe um software que não faz o que ele realmente precisava, houve uma falha em qual processo?',opts:['Teste de Unidade.','Verificação.','Validação.','Gestão de Riscos.'],answer:2,exp:'Validação: garante que o produto atende à necessidade real do cliente.'},
+    {topic:'Testes',stem:'Um testador está avaliando o sistema inteiro e integrado de uma vez. Ele está realizando o Teste de:',opts:['Unidade.','Integração.','Sistema.','Aceitação.'],answer:2,exp:'Teste de Sistema: avalia o sistema completo já integrado.'},
+    {topic:'Testes',stem:'Um analista revisa o código-fonte buscando loops infinitos ou declarações incorretas. Essa técnica é conhecida como:',opts:['Caixa-Preta.','Caixa-Branca.','Teste Beta.','Gantt.'],answer:1,exp:'Caixa-Branca: analisa a estrutura interna do código.'},
+    {topic:'Testes',stem:'Qual é a relação correta entre defeito e falha?',opts:['A falha causa o defeito no código.','O defeito no código causa a falha visível ao usuário.','Defeito e falha são sinônimos no modelo cascata.','Falhas só ocorrem em sistemas sem versionamento.'],answer:1,exp:'O defeito (no código) é a causa; a falha (visível ao usuário) é a consequência.'},
+    {topic:'Testes',stem:'O cliente está testando o software no ambiente real para decidir se aprova. Que teste é esse?',opts:['Teste de Aceitação/Usuário.','Teste de Unidade.','Teste de Caixa-Branca.','Inspeção Estática.'],answer:0,exp:'Teste de Aceitação/Usuário: o cliente aprova no ambiente real.'},
+    {topic:'ISO 9126',stem:'Ao criar um app mobile, a equipe garantiu que ele gasta pouca bateria e responde rápido. Isso reflete qual atributo da ISO 9126?',opts:['Funcionalidade.','Eficiência.','Manutenibilidade.','Portabilidade.'],answer:1,exp:'Eficiência: bom desempenho com baixo consumo de recursos (bateria, tempo).'},
+    {topic:'Qualidade',stem:'Qual a principal diferença entre qualidade de Processo e qualidade de Produto?',opts:['O Processo foca no código final e o Produto na equipe.','O Processo melhora a forma de trabalhar da equipe, refletindo em um Produto final melhor.','A qualidade de Produto ignora os requisitos.','Não há diferença, são o mesmo conceito.'],answer:1,exp:'Processo (como a equipe trabalha) → Produto (resultado final): melhorar um eleva o outro.'},
+    {topic:'ISO 9126',stem:'Se um sistema web é modificado frequentemente para novas regras de negócio sem grande dificuldade, ele tem alta:',opts:['Portabilidade.','Usabilidade.','Manutenibilidade.','Eficiência.'],answer:2,exp:'Manutenibilidade: facilidade de modificar o sistema.'},
+    {topic:'V&V',stem:'A V&V (Verificação e Validação) Estática é caracterizada por:',opts:['Executar o programa repetidas vezes.','Ocorrer após o lançamento (Teste Beta).','Analisar o código e documentos sem executar o software.','Automatizar cliques na tela do usuário.'],answer:2,exp:'V&V Estática: analisa código e documentos sem executar o software.'},
+    {topic:'Git',stem:'Um desenvolvedor quer começar a trabalhar em um projeto já existente no repositório remoto. Qual a primeira ação com o Git?',opts:['Push.','Commit.','Merge.','Clone.'],answer:3,exp:'Clone: baixa o repositório existente para começar a trabalhar.'},
+    {topic:'Git',stem:'A principal vantagem de um sistema de versionamento distribuído (como Git) em relação ao centralizado é:',opts:['Impedir que mais de um desenvolvedor trabalhe ao mesmo tempo.','Permitir o trabalho offline, pois cada dev tem um clone completo.','Não permitir a criação de branches.','Eliminar a necessidade de testes de software.'],answer:1,exp:'No distribuído cada dev tem o repositório completo, permitindo trabalho offline.'},
+    {topic:'Git',stem:'Maria terminou sua funcionalidade na branch isolada e precisa juntá-la ao código principal. Qual operação usar?',opts:['Clone.','Checkout.','Merge.','Rollback.'],answer:2,exp:'Merge: une a branch da Maria ao código principal.'},
+    {topic:'Git',stem:"O que acontece ao fazer um 'Commit'?",opts:['O código é enviado ao servidor remoto e apagado da máquina local.','As modificações são efetivadas e registradas no repositório local.','A branch principal é deletada.','O sistema faz um teste de unidade automaticamente.'],answer:1,exp:'Commit: efetiva e registra as alterações no repositório local.'},
+    {topic:'Planejamento',stem:'No planejamento, o ato de quebrar o sistema em tarefas menores é chamado de:',opts:['Cronograma.','Alocação.','Divisão do trabalho.','Estimativa.'],answer:2,exp:'Divisão do trabalho: decompor o sistema em tarefas menores.'},
+    {topic:'Planejamento',stem:'No Gráfico de Gantt, como as tarefas independentes são geralmente representadas visualmente?',opts:['Em uma única linha sequencial.','Em paralelo (barras sobrepostas no tempo).','Como nós de um diagrama de classes.','Como atores de um caso de uso.'],answer:1,exp:'Tarefas independentes aparecem em paralelo (barras sobrepostas no tempo).'},
+    {topic:'Planejamento',stem:"A entrega do 'Documento de Requisitos aprovado pelo cliente' é classificada como:",opts:['Entregável.','Marco.','Bug.','Funcionalidade.'],answer:1,exp:'Marco: fim lógico de uma etapa (requisitos aprovados).'},
+    {topic:'Planejamento',stem:'O objetivo da gerência de projetos de software inclui:',opts:['Entregar no prazo, no orçamento e com a equipe bem gerenciada.','Apenas escrever o código o mais rápido possível.','Focar apenas em V&V sem planejamento.','Garantir 100% de ausência de falhas.'],answer:0,exp:'Gerência de projeto: equilibrar prazo, orçamento e gestão da equipe.'},
+    {topic:'Planejamento',stem:'Atribuir tarefas específicas para os programadores João e Maria faz parte de qual atividade de planejamento?',opts:['Gestão de riscos.','Estimativa.','Alocação de pessoas.','Controle de versão.'],answer:2,exp:'Alocação de pessoas: distribuir tarefas entre os membros da equipe.'},
+    {topic:'ISO 9126',stem:'Se um sistema requer um manual enorme para o usuário conseguir realizar uma ação simples, ele tem baixa:',opts:['Confiabilidade.','Manutenibilidade.','Usabilidade.','Portabilidade.'],answer:2,exp:'Usabilidade baixa: difícil de aprender e usar.'},
+    {topic:'ISO 9126',stem:'Qual característica da ISO 9126 garante que o sistema atende a todas as especificações escritas no levantamento de requisitos?',opts:['Funcionalidade.','Eficiência.','Usabilidade.','Portabilidade.'],answer:0,exp:'Funcionalidade: cumpre as especificações dos requisitos.'},
+    {topic:'Testes',stem:"Verificar se as classes 'Cliente' e 'Pedido' comunicam-se corretamente passando os dados adequados é alvo do Teste de:",opts:['Unidade.','Integração.','Aceitação.','Usabilidade.'],answer:1,exp:'Teste de Integração: verifica a comunicação entre componentes.'},
+    {topic:'Testes',stem:"O 'Teste Alfa' é conduzido:",opts:['Pelo desenvolvedor isolando uma função.','Por usuários selecionados no ambiente de desenvolvimento.','Sempre sem olhar a interface gráfica.','Apenas após o sistema estar obsoleto.'],answer:1,exp:'Teste Alfa: usuários selecionados testam no ambiente de desenvolvimento.'},
+    {topic:'Git',stem:'Ao utilizar o Git, qual a ordem cronológica mais comum para enviar uma nova alteração ao servidor remoto?',opts:['Push → Commit → Clone','Clone → Commit → Push','Clone → Push → Commit','Commit → Push → Clone'],answer:1,exp:'Clone (obter) → Commit (registrar local) → Push (enviar ao remoto).'},
+    {topic:'Git',stem:'Qual cenário justifica a criação de uma Branch no Git?',opts:['Apagar o repositório inteiro.','Desenvolver um novo recurso experimental sem quebrar o sistema em produção.','Apenas para fazer download do código.','Para executar um teste de Caixa-Preta.'],answer:1,exp:'Branch: isola o desenvolvimento de um recurso sem afetar a produção.'},
+    {topic:'Planejamento',stem:'Uma equipe avalia que a falta de experiência com uma nova linguagem pode atrasar o projeto. Isso é abordado na:',opts:['Alocação de Pessoas.','Gestão de Riscos.','Divisão do Trabalho.','Teste de Aceitação.'],answer:1,exp:'Gestão de Riscos: antecipar fatores que podem atrasar o projeto.'},
+    {topic:'Planejamento',stem:'A principal diferença entre Marco e Entregável é:',opts:['Marco é físico, entregável é virtual.','Marco é o fim de uma etapa lógica, Entregável é o produto real para o cliente.','Marco é um defeito, Entregável é um teste.','Não há diferença.'],answer:1,exp:'Marco = fim lógico de etapa; Entregável = produto real para o cliente.'},
+    {topic:'Revisão',stem:'Uma razão pela qual o Modelo Cascata (Aula 4/INF7) pode ter problemas sem bom planejamento inicial é que ele:',opts:['É muito iterativo.','Não possui etapas definidas.','É rígido e dificulta mudanças em estágios avançados.','Só funciona com metodologias ágeis.'],answer:2,exp:'O Cascata é rígido: mudanças em fases avançadas são custosas e difíceis.'},
+    {topic:'Testes',stem:'Na comparação Caixa-Preta x Caixa-Branca, qual afirmativa é verdadeira?',opts:['Caixa-Branca foca apenas nas entradas do usuário.','Caixa-Preta testa os caminhos internos do código.','Caixa-Preta ignora o código-fonte; Caixa-Branca vê o código-fonte.','Ambas avaliam o banco de dados exclusivamente.'],answer:2,exp:'Caixa-Preta ignora o código; Caixa-Branca analisa o código-fonte.'},
+    {topic:'ISO 9126',stem:'Um sistema corporativo distribuído que não cai mesmo quando um servidor falha possui alta:',opts:['Confiabilidade.','Usabilidade.','Portabilidade.','Inspeção.'],answer:0,exp:'Confiabilidade: continua operando mesmo diante de falhas.'},
+    {topic:'Testes',stem:"A frase 'testar só a função calcularIdade isolada' refere-se ao Teste de:",opts:['Sistema.','Integração.','Aceitação.','Unidade.'],answer:3,exp:'Teste de Unidade: testa uma função isolada.'}
+  ]
+}
+];
+
+// ══════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════
+let STATE = { simIdx:null, mode:'study', qIdx:0, answers:[], score:0, answered:false, done:false };
+let _sel = 0, _mode = 'study';
+
+function buildSelector(){
+  const g = document.getElementById('sim-grid');
+  g.innerHTML = '';
+  SIMS.forEach((s,i)=>{
+    const d = document.createElement('div');
+    d.className = 'sim-card'+(i===_sel?' selected':'');
+    d.id = 'sc-'+i;
+    d.innerHTML = `<div class="sc-icon">${s.icon}</div><div class="sc-title">${s.title}</div><div class="sc-desc">${s.subtitle} · ${s.desc}</div>`;
+    d.onclick = ()=>selSim(i);
+    g.appendChild(d);
+  });
+}
+function selSim(i){ _sel=i; document.querySelectorAll('.sim-card').forEach((c,j)=>c.classList.toggle('selected',j===i)); }
+function selMode(m){ _mode=m; document.getElementById('mode-study').classList.toggle('selected',m==='study'); document.getElementById('mode-exam').classList.toggle('selected',m==='exam'); }
+
+function startSim(){
+  STATE = { simIdx:_sel, mode:_mode, qIdx:0, answers:[], score:0, answered:false, done:false };
+  go('s-exam');
+  document.getElementById('bbar').classList.add('on');
+  renderQ();
+}
+function restartSame(){ STATE={simIdx:STATE.simIdx,mode:STATE.mode,qIdx:0,answers:[],score:0,answered:false,done:false}; go('s-exam'); document.getElementById('bbar').classList.add('on'); renderQ(); }
+
+function renderQ(){
+  const sim = SIMS[STATE.simIdx];
+  const q = sim.questions[STATE.qIdx];
+  const total = sim.questions.length;
+  const pct = Math.round((STATE.qIdx/total)*100);
+  const isLast = STATE.qIdx===total-1;
+  STATE.answered=false;
+  const L=['A','B','C','D'];
+  const optsHtml=q.opts.map((o,i)=>`<button class="opt-btn" id="ob${i}" onclick="pick(${i})"><span class="opt-letter">${L[i]}</span><span>${o}</span></button>`).join('');
+
+  document.getElementById('exam-card').innerHTML=`
+    <div class="inst-header" style="padding-bottom:12px;margin-bottom:12px">
+      <div class="inst-logo" style="width:38px;height:38px;font-size:15px">${sim.icon}</div>
+      <div class="inst-info">
+        <div class="inst-name" style="font-size:.87rem">${sim.title} — ${sim.subtitle}</div>
+        <div class="inst-sub">${STATE.mode==='study'?'📖 Modo Estudo':'📝 Modo Prova'} · INF7 Módulo 3</div>
+      </div>
+    </div>
+    <div class="prog-wrap">
+      <div class="prog-info"><span>Progresso</span><span>${STATE.qIdx}/${total}</span></div>
+      <div class="prog-track"><div class="prog-fill" style="width:${pct}%"></div></div>
+    </div>
+    <div class="q-block">
+      <div class="q-header">
+        <span class="q-badge">Q${STATE.qIdx+1}</span>
+        <span class="q-topic-tag">${q.topic}</span>
+      </div>
+      <div class="q-body">
+        <p class="q-stem">${q.stem}</p>
+        <div class="opts-list">${optsHtml}</div>
+        <div class="q-feedback" id="qfb"></div>
+        <div style="display:flex;justify-content:flex-end;margin-top:14px">
+          <button class="btn btn-primary" id="btn-next" onclick="nextQ()" disabled>${isLast?'🏁 Finalizar':'Próxima →'}</button>
+        </div>
+      </div>
+    </div>`;
+
+  document.getElementById('bb-label').textContent=`Questão ${STATE.qIdx+1} de ${total}`;
+  document.getElementById('bb-score').textContent=STATE.mode==='study'?`Acertos: ${STATE.score}`:'';
+  document.getElementById('btn-finish').style.display='none';
+}
+
+function pick(idx){
+  if(STATE.answered) return;
+  STATE.answered=true;
+  const q=SIMS[STATE.simIdx].questions[STATE.qIdx];
+  const correct=idx===q.answer;
+  if(correct) STATE.score++;
+  STATE.answers.push({qIdx:STATE.qIdx,chosen:idx,correct});
+  const L=['A','B','C','D'];
+
+  if(STATE.mode==='study'){
+    for(let i=0;i<4;i++){
+      const b=document.getElementById('ob'+i);
+      if(!b) continue;
+      b.classList.add('locked');
+      if(i===q.answer) b.classList.add('correct');
+      else if(i===idx&&!correct) b.classList.add('wrong');
+    }
+    const fb=document.getElementById('qfb');
+    fb.style.display='block';
+    fb.className='q-feedback '+(correct?'ok':'nok');
+    fb.innerHTML=(correct?'✔ Resposta correta! ':`✘ Incorreta. A correta é <strong>${L[q.answer]}</strong>. `)+q.exp;
+  } else {
+    // modo prova: marca selecionada sem revelar
+    for(let i=0;i<4;i++){ const b=document.getElementById('ob'+i); if(b) b.classList.add('locked'); }
+    document.getElementById('ob'+idx).classList.add('selected');
+  }
+  document.getElementById('bb-score').textContent=STATE.mode==='study'?`Acertos: ${STATE.score}`:'';
+  document.getElementById('btn-next').disabled=false;
+}
+
+function nextQ(){
+  STATE.qIdx++;
+  if(STATE.qIdx>=SIMS[STATE.simIdx].questions.length){ finishExam(); }
+  else{ renderQ(); window.scrollTo(0,0); }
+}
+
+function finishExam(){
+  if(STATE.done) return;
+  STATE.done=true;
+  document.getElementById('bbar').classList.remove('on');
+  buildResult();
+  go('s-result');
+  window.scrollTo(0,0);
+}
+
+function buildResult(){
+  const sim=SIMS[STATE.simIdx];
+  const total=sim.questions.length;
+  const acertos=STATE.score;
+  const pct=acertos/total;
+  document.getElementById('r-simname').textContent=`${sim.title} — ${sim.subtitle}`;
+  let bCls,bTxt;
+  if(pct>=.7){bCls='approved';bTxt='✔ Ótimo desempenho! Você domina o conteúdo.';}
+  else if(pct>=.5){bCls='recovery';bTxt='⚠ Desempenho intermediário — revise os tópicos com erro.';}
+  else{bCls='failed';bTxt='✘ Atenção: revise o conteúdo com cuidado.';}
+  const b=document.getElementById('r-banner');
+  b.className='status-banner '+bCls; b.textContent=bTxt;
+
+  const nota=(acertos/total*10).toFixed(1);
+  document.getElementById('r-summary').innerHTML=`
+    <div class="res-box ${pct>=.7?'hi':pct>=.5?'md':'lo'}"><div class="rb-val">${acertos}/${total}</div><div class="rb-lbl">Acertos</div></div>
+    <div class="res-box ${pct>=.7?'hi':pct>=.5?'md':'lo'}"><div class="rb-val">${(pct*100).toFixed(0)}%</div><div class="rb-lbl">Aproveitamento</div></div>
+    <div class="res-box neu"><div class="rb-val">${nota}</div><div class="rb-lbl">Nota (0-10)</div></div>`;
+
+  const L=['A','B','C','D'];
+  let bd='';
+  STATE.answers.forEach((a,i)=>{
+    const q=sim.questions[a.qIdx];
+    bd+=`<div class="sim-result-row"><div class="srr-left"><span style="font-size:1.1rem">${a.correct?'✅':'❌'}</span><div><div class="srr-name">Q${i+1} (${q.topic}) — ${q.stem.substring(0,62)}${q.stem.length>62?'...':''}</div><div class="srr-sub">Sua resposta: <strong>${L[a.chosen]}</strong> · Correta: <strong>${L[q.answer]}</strong> — ${q.exp}</div></div></div><span class="srr-grade ${a.correct?'hi':'lo'}">${a.correct?'✓':'✗'}</span></div>`;
+  });
+  document.getElementById('r-breakdown').innerHTML=bd;
+}
+
+function go(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));
+  document.getElementById(id).classList.add('on');
+  window.scrollTo(0,0);
+}
+
+buildSelector();
+selMode('study');
+</script>
+</body>
+</html>
