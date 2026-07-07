@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Avaliação Final Integrada — Backend, Frontend e Git</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Fira+Code:wght@500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --primary:#1e3a5f;--primary2:#2d5f9e;--white:#ffffff;
+  --gray-50:#f8fafc;--gray-100:#f1f5f9;--gray-200:#e2e8f0;--gray-300:#cbd5e1;
+  --gray-400:#94a3b8;--gray-500:#64748b;--gray-600:#475569;--gray-700:#334155;--gray-800:#1e293b;
+  --green:#16a34a;--green-pale:#dcfce7;--red:#dc2626;--red-pale:#fee2e2;
+  --blue:#2563eb;--blue-pale:#dbeafe;--yellow:#d97706;--yellow-pale:#fef3c7;--teal:#0d9488;
+  --radius:14px;--radius-sm:9px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{font-family:'Inter',sans-serif;background:var(--gray-100);color:var(--gray-800);min-height:100vh;line-height:1.6;padding-bottom:70px;}
+.screen{display:none;min-height:100vh;flex-direction:column;align-items:center;padding:26px 16px 40px;}
+.screen.on{display:flex;}
+.card{background:var(--white);border-radius:var(--radius);box-shadow:0 1px 3px rgba(0,0,0,.06),0 8px 24px rgba(0,0,0,.06);padding:30px 34px;max-width:800px;width:100%;}
+
+.inst-header{display:flex;align-items:center;gap:15px;padding-bottom:16px;margin-bottom:18px;border-bottom:3px solid var(--primary);}
+.inst-logo{width:54px;height:54px;background:var(--primary);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;}
+.inst-info{flex:1;}
+.inst-name{font-size:.96rem;font-weight:900;color:var(--primary);line-height:1.3;}
+.inst-sub{font-size:.74rem;color:var(--gray-500);margin-top:3px;}
+.inst-badge{background:var(--primary);color:white;font-size:.66rem;font-weight:800;padding:5px 12px;border-radius:20px;white-space:nowrap;letter-spacing:.5px;}
+
+.page-title{font-size:clamp(1.3rem,3.5vw,1.7rem);font-weight:900;color:var(--primary);text-align:center;margin-bottom:6px;}
+.section-title{font-size:.95rem;font-weight:800;color:var(--gray-700);margin:18px 0 10px;display:flex;align-items:center;gap:8px;}
+
+.login-box{max-width:440px;}
+.login-icon{width:70px;height:70px;background:var(--blue-pale);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:32px;margin:0 auto 16px;}
+.login-field{margin-bottom:14px;}
+.login-label{display:block;font-size:.82rem;font-weight:700;color:var(--gray-700);margin-bottom:6px;}
+.login-input{width:100%;padding:13px 15px;font-size:1rem;font-family:'Inter',sans-serif;border:2px solid var(--gray-200);border-radius:var(--radius-sm);outline:none;transition:border-color .2s;background:var(--gray-50);}
+.login-input:focus{border-color:var(--blue);background:white;}
+.login-input.error{border-color:var(--red);background:var(--red-pale);}
+.login-hint{font-size:.74rem;color:var(--gray-500);margin-top:5px;}
+.login-error{background:var(--red-pale);border:1.5px solid var(--red);color:var(--red);border-radius:var(--radius-sm);padding:11px 14px;font-size:.84rem;font-weight:700;margin-top:12px;display:none;text-align:center;}
+.login-users{background:var(--gray-50);border:1px dashed var(--gray-300);border-radius:var(--radius-sm);padding:12px 14px;margin-top:16px;font-size:.78rem;color:var(--gray-600);line-height:1.7;}
+.login-users strong{color:var(--primary);}
+
+.mode-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:8px;}
+@media(max-width:520px){.mode-grid{grid-template-columns:1fr;}}
+.mode-btn{border:2px solid var(--gray-200);border-radius:var(--radius-sm);padding:16px;cursor:pointer;transition:all .2s;text-align:left;background:white;}
+.mode-btn:hover{border-color:var(--primary);}
+.mode-btn.active{border-color:var(--blue);background:var(--blue-pale);}
+.mode-btn .mb-icon{font-size:1.6rem;margin-bottom:6px;}
+.mode-btn .mb-title{font-size:.95rem;font-weight:800;color:var(--primary);}
+.mode-btn .mb-desc{font-size:.78rem;color:var(--gray-500);margin-top:3px;line-height:1.5;}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;font-weight:800;font-size:.9rem;font-family:'Inter',sans-serif;border:none;border-radius:var(--radius-sm);padding:13px 26px;cursor:pointer;transition:all .18s;}
+.btn-primary{background:var(--primary);color:white;}
+.btn-primary:hover{background:var(--primary2);transform:translateY(-1px);box-shadow:0 4px 14px rgba(30,58,95,.28);}
+.btn-green{background:var(--green);color:white;}
+.btn-green:hover{background:#15803d;transform:translateY(-1px);}
+.btn-outline{background:transparent;border:2px solid var(--primary);color:var(--primary);}
+.btn-outline:hover{background:var(--primary);color:white;}
+.btn-ghost{background:var(--gray-100);color:var(--gray-700);font-size:.82rem;}
+.btn-ghost:hover{background:var(--gray-200);}
+.btn-block{width:100%;}
+.btn:disabled{opacity:.4;cursor:not-allowed;transform:none;}
+
+.welcome{background:var(--green-pale);border:1.5px solid rgba(22,163,74,.3);border-radius:var(--radius-sm);padding:12px 16px;font-size:.86rem;font-weight:700;color:#14532d;margin-bottom:16px;display:flex;align-items:center;gap:10px;}
+
+.q-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px;}
+.q-counter{font-size:.82rem;font-weight:800;color:var(--gray-600);}
+.q-topic{font-size:.66rem;font-weight:800;text-transform:uppercase;letter-spacing:.5px;padding:4px 11px;border-radius:20px;background:var(--blue-pale);color:var(--blue);}
+.q-block{font-size:.72rem;font-weight:700;color:var(--gray-500);margin-bottom:12px;background:var(--gray-50);border-left:3px solid var(--primary);padding:6px 12px;border-radius:4px;}
+
+.q-progress-top{height:7px;background:var(--gray-200);border-radius:4px;overflow:hidden;margin-bottom:18px;}
+.q-progress-fill{height:100%;background:linear-gradient(90deg,var(--primary),var(--primary2));border-radius:4px;transition:width .4s ease;}
+
+.q-stem{font-size:1.02rem;font-weight:700;color:var(--gray-800);line-height:1.7;margin-bottom:14px;}
+.q-stem code{font-family:'Fira Code',monospace;font-size:.9rem;background:var(--gray-100);border:1px solid var(--gray-200);border-radius:5px;padding:2px 7px;color:var(--teal);font-weight:600;}
+
+.code-box{background:#1e293b;border-radius:var(--radius-sm);padding:14px 16px;margin-bottom:16px;overflow-x:auto;}
+.code-box pre{font-family:'Fira Code',monospace;font-size:.82rem;line-height:1.7;color:#e2e8f0;white-space:pre;}
+.code-box .kw{color:#93c5fd;}.code-box .st{color:#86efac;}.code-box .cm{color:#94a3b8;}
+.code-box .fn{color:#fcd34d;}.code-box .nu{color:#f9a8d4;}.code-box .pu{color:#e2e8f0;}
+
+.opts{display:flex;flex-direction:column;gap:10px;}
+.opt{display:flex;align-items:flex-start;gap:13px;background:white;border:2px solid var(--gray-200);border-radius:var(--radius-sm);padding:14px 16px;cursor:pointer;font-size:.93rem;font-weight:600;color:var(--gray-700);transition:all .18s;text-align:left;width:100%;}
+.opt:hover:not(.locked){border-color:var(--primary);background:var(--gray-50);}
+.opt-letter{width:30px;height:30px;border-radius:50%;background:var(--gray-100);color:var(--gray-600);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.86rem;flex-shrink:0;transition:all .18s;}
+.opt.selected{border-color:var(--blue);background:var(--blue-pale);}
+.opt.selected .opt-letter{background:var(--blue);color:white;}
+.opt.correct{border-color:var(--green)!important;background:var(--green-pale)!important;}
+.opt.correct .opt-letter{background:var(--green);color:white;}
+.opt.incorrect{border-color:var(--red)!important;background:var(--red-pale)!important;}
+.opt.incorrect .opt-letter{background:var(--red);color:white;}
+.opt code{font-family:'Fira Code',monospace;font-size:.84rem;background:rgba(0,0,0,.05);border-radius:4px;padding:1px 6px;color:var(--teal);}
+.opt.locked{cursor:default;}
+
+.q-feedback{border-radius:var(--radius-sm);padding:14px 16px;margin-top:16px;font-size:.88rem;font-weight:600;line-height:1.65;display:none;animation:fadeUp .3s ease;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+.q-feedback.ok{background:var(--green-pale);border:1.5px solid var(--green);color:#14532d;}
+.q-feedback.nok{background:var(--red-pale);border:1.5px solid var(--red);color:#7f1d1d;}
+.qf-title{font-weight:900;margin-bottom:4px;display:flex;align-items:center;gap:6px;}
+
+.q-nav{display:flex;justify-content:space-between;align-items:center;margin-top:22px;gap:10px;flex-wrap:wrap;}
+
+.bottom-bar{position:fixed;bottom:0;left:0;right:0;background:white;border-top:1px solid var(--gray-300);padding:11px 20px;display:none;align-items:center;justify-content:space-between;gap:12px;z-index:100;box-shadow:0 -2px 10px rgba(0,0,0,.07);flex-wrap:wrap;}
+.bottom-bar.on{display:flex;}
+.bb-label{font-size:.78rem;font-weight:700;color:var(--gray-600);}
+.bb-score{font-size:.82rem;font-weight:800;color:var(--primary);}
+
+.result-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:18px 0;}
+@media(max-width:520px){.result-summary{grid-template-columns:1fr 1fr;}}
+.res-box{border-radius:var(--radius-sm);padding:16px 12px;text-align:center;border:2px solid;}
+.rb-val{font-size:1.5rem;font-weight:900;line-height:1;margin-bottom:5px;}
+.rb-lbl{font-size:.72rem;font-weight:700;color:var(--gray-500);}
+.res-box.hi{border-color:var(--green);background:var(--green-pale);}.res-box.hi .rb-val{color:var(--green);}
+.res-box.md{border-color:var(--yellow);background:var(--yellow-pale);}.res-box.md .rb-val{color:var(--yellow);}
+.res-box.lo{border-color:var(--red);background:var(--red-pale);}.res-box.lo .rb-val{color:var(--red);}
+.res-box.neu{border-color:var(--primary);background:var(--blue-pale);}.res-box.neu .rb-val{color:var(--primary);}
+
+.status-banner{border-radius:var(--radius-sm);padding:14px 18px;text-align:center;font-size:.95rem;font-weight:800;margin-bottom:16px;border:2px solid;}
+.status-banner.excellent{background:var(--green-pale);border-color:var(--green);color:#14532d;}
+.status-banner.recovery{background:var(--yellow-pale);border-color:var(--yellow);color:#92400e;}
+.status-banner.failed{background:var(--red-pale);border-color:var(--red);color:#7f1d1d;}
+
+.sim-result-row{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;padding:11px 14px;border:1px solid var(--gray-200);border-radius:var(--radius-sm);margin:7px 0;background:white;}
+.srr-left{display:flex;align-items:flex-start;gap:10px;flex:1;}
+.srr-name{font-size:.84rem;font-weight:700;color:var(--gray-700);}
+.srr-sub{font-size:.76rem;color:var(--gray-500);margin-top:3px;line-height:1.5;}
+.srr-grade{font-size:1.05rem;font-weight:900;flex-shrink:0;}
+.srr-grade.hi{color:var(--green);}.srr-grade.lo{color:var(--red);}
+@media(max-width:560px){.card{padding:20px 15px;}.inst-header{flex-wrap:wrap;}}
+</style>
+</head>
+<body>
+
+<!-- ═══ LOGIN ═══ -->
+<div class="screen on" id="s-login">
+  <div class="card login-box" style="margin-top:24px;">
+    <div class="inst-header">
+      <div class="inst-logo">🎓</div>
+      <div class="inst-info">
+        <div class="inst-name">Escola Técnica Estadual<br>Marechal Mascarenhas de Moraes</div>
+        <div class="inst-sub">Avaliação Final Integrada · Backend, Frontend e Git</div>
+      </div>
+      <div class="inst-badge">2025</div>
+    </div>
+    <div class="login-icon">🔐</div>
+    <h1 class="page-title" style="font-size:1.35rem;">Acesso à Avaliação</h1>
+    <p style="text-align:center;font-size:.84rem;color:var(--gray-500);margin-bottom:22px;">Digite seu usuário e senha para começar</p>
+    <div class="login-field">
+      <label class="login-label" for="inp-user">👤 Usuário</label>
+      <input class="login-input" id="inp-user" type="text" placeholder="Ex: igor" autocomplete="off" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <div class="login-field">
+      <label class="login-label" for="inp-pass">🔑 Senha</label>
+      <input class="login-input" id="inp-pass" type="password" placeholder="Digite sua senha" autocomplete="off" onkeydown="if(event.key==='Enter')doLogin()">
+      <p class="login-hint">A senha tem 6 números.</p>
+    </div>
+    <button class="btn btn-primary btn-block" onclick="doLogin()" style="margin-top:8px;">Entrar →</button>
+    <div class="login-error" id="login-error">⚠️ Usuário ou senha incorretos. Tente de novo!</div>
+    <div class="login-users">
+      👥 <strong>Usuários cadastrados:</strong><br>
+      • Usuário: <strong>igor</strong> &nbsp;|&nbsp; Senha: <strong>123456</strong><br>
+      • Usuário: <strong>guilherme</strong> &nbsp;|&nbsp; Senha: <strong>123456</strong>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ MODO ═══ -->
+<div class="screen" id="s-mode">
+  <div class="card" style="margin-top:24px;max-width:680px;">
+    <div class="inst-header">
+      <div class="inst-logo">🎓</div>
+      <div class="inst-info">
+        <div class="inst-name">Escola Técnica Estadual — Marechal Mascarenhas de Moraes</div>
+        <div class="inst-sub">Avaliação Final · HTTP · SQL · FastAPI · Fetch · Git</div>
+      </div>
+      <div class="inst-badge">2025</div>
+    </div>
+    <div class="welcome" id="welcome-banner">👋 Olá! Boa prova!</div>
+    <h1 class="page-title">Avaliação Final Integrada</h1>
+    <p style="text-align:center;font-size:.84rem;color:var(--gray-500);margin-bottom:6px;">15 questões sobre Backend, Frontend e Git</p>
+    <p style="text-align:center;font-size:.8rem;color:var(--gray-400);margin-bottom:20px;">Você responde todas as questões e vê o resultado no final</p>
+
+    <div style="background:var(--blue-pale);border:1.5px solid rgba(37,99,235,.3);border-radius:var(--radius-sm);padding:14px 18px;margin:16px 0;">
+      <p style="font-weight:800;color:var(--primary);margin-bottom:8px;">📝 Como funciona a prova</p>
+      <div style="display:flex;flex-direction:column;gap:7px;font-size:.85rem;font-weight:600;color:var(--gray-700);line-height:1.6;">
+        <div style="display:flex;gap:8px;"><span>✅</span><span>Responda cada questão marcando uma alternativa.</span></div>
+        <div style="display:flex;gap:8px;"><span>↔️</span><span>Você pode voltar e trocar sua resposta antes de finalizar.</span></div>
+        <div style="display:flex;gap:8px;"><span>🏁</span><span>O resultado e a correção aparecem só no final.</span></div>
+      </div>
+    </div>
+
+    <div style="background:var(--yellow-pale);border:1.5px solid rgba(217,119,6,.3);border-radius:var(--radius-sm);padding:12px 16px;font-size:.84rem;font-weight:600;color:#92400e;margin:16px 0;line-height:1.6;">
+      💡 <strong>Dica:</strong> não há tempo limite. Leia com calma. Algumas questões têm um trecho de código — leia ele com atenção antes de responder.
+    </div>
+
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:18px;">
+      <button class="btn btn-green btn-block" onclick="startSim()" style="flex:1;">🚀 Começar Prova</button>
+    </div>
+    <div style="text-align:center;margin-top:12px;">
+      <button class="btn btn-ghost" onclick="logout()">← Sair (trocar usuário)</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ QUESTÕES ═══ -->
+<div class="screen" id="s-quiz">
+  <div class="card" style="margin-top:18px;">
+    <div class="inst-header" style="padding-bottom:12px;margin-bottom:14px;">
+      <div class="inst-logo" style="width:42px;height:42px;font-size:18px;">🎓</div>
+      <div class="inst-info">
+        <div class="inst-name" style="font-size:.86rem;">Avaliação Final Integrada</div>
+        <div class="inst-sub" id="quiz-user">Aluno: —</div>
+      </div>
+      <div class="inst-badge" id="quiz-mode-badge">PROVA</div>
+    </div>
+    <div class="q-top">
+      <span class="q-counter" id="q-counter">Questão 1 de 15</span>
+      <span class="q-topic" id="q-topic">TÓPICO</span>
+    </div>
+    <div class="q-progress-top"><div class="q-progress-fill" id="q-progress-fill" style="width:0%;"></div></div>
+    <div class="q-block" id="q-block">BLOCO</div>
+    <p class="q-stem" id="q-stem">—</p>
+    <div id="q-code-area"></div>
+    <div class="opts" id="q-opts"></div>
+    <div class="q-feedback" id="q-feedback"></div>
+    <div class="q-nav">
+      <button class="btn btn-ghost" id="btn-prev" onclick="prevQ()" disabled>← Anterior</button>
+      <button class="btn btn-primary" id="btn-next" onclick="nextQ()">Próxima →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ RESULTADO ═══ -->
+<div class="screen" id="s-result">
+  <div class="card" style="margin-top:18px;">
+    <div class="inst-header">
+      <div class="inst-logo">🎓</div>
+      <div class="inst-info">
+        <div class="inst-name">Resultado — Avaliação Final Integrada</div>
+        <div class="inst-sub" id="result-user">Aluno: —</div>
+      </div>
+      <div class="inst-badge">2025</div>
+    </div>
+    <div class="status-banner" id="r-banner">—</div>
+    <div class="result-summary" id="r-summary"></div>
+    <h2 class="section-title">📋 Revisão das Questões</h2>
+    <div id="r-breakdown"></div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:20px;">
+      <button class="btn btn-primary" onclick="downloadCSV()">⬇ Baixar Resultado (CSV)</button>
+      <button class="btn btn-outline" onclick="restartSim()">↺ Refazer</button>
+      <button class="btn btn-ghost" onclick="logout()">Sair</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ BOTTOM BAR ═══ -->
+<div class="bottom-bar" id="bottom-bar">
+  <span class="bb-label" id="bb-progress">Respondidas: 0 / 15</span>
+  <span class="bb-score" id="bb-score"></span>
+  <button class="btn btn-green" id="btn-finish" onclick="finishSim()" style="padding:9px 18px;font-size:.82rem;">Finalizar ✓</button>
+</div>
+
+<script>
+const USERS = {
+  'igor':      { senha: '123456', nome: 'Igor' },
+  'guilherme': { senha: '123456', nome: 'Guilherme' }
+};
+let currentUser = null;
+
+// ══════════ BANCO DE QUESTÕES (baseado no PDF) ══════════
+const QUESTIONS = [
+  { // 1
+    block:'BLOCO 1 — Arquitetura Web e Protocolo HTTP', topic:'Arquitetura',
+    stem:'Numa aplicação web completa (como uma loja online), qual afirmação descreve <strong>corretamente</strong> o caminho que a informação percorre?',
+    opts:[
+      'O Frontend acessa direto o banco de dados, sem passar pelo Backend.',
+      'O Frontend envia o pedido ao Backend; o Backend processa as regras, conversa com o banco de dados e devolve uma resposta pronta ao cliente.',
+      'O Backend só cuida do visual e do estilo da tela do navegador.',
+      'O banco de dados envia arquivos HTML e CSS direto para o usuário.'
+    ],
+    answer:1,
+    exp:'O caminho certo é: Frontend → Backend → Banco de Dados → volta pro Frontend. O Frontend nunca fala direto com o banco — quem faz isso é o Backend, que guarda as regras de negócio.'
+  },
+  { // 2
+    block:'BLOCO 2 — Banco de Dados Relacional e SQL', topic:'CRUD',
+    stem:'Qual alternativa mostra a combinação <strong>correta</strong> entre as operações CRUD, os métodos HTTP e os comandos SQL?',
+    opts:[
+      'Create → POST → INSERT &nbsp;|&nbsp; Read → GET → SELECT &nbsp;|&nbsp; Update → PUT → UPDATE &nbsp;|&nbsp; Delete → DELETE → DELETE',
+      'Create → SELECT → GET &nbsp;|&nbsp; Read → INSERT → POST &nbsp;|&nbsp; Update → DELETE → PUT &nbsp;|&nbsp; Delete → UPDATE → DELETE',
+      'Create → GET → INSERT &nbsp;|&nbsp; Read → POST → SELECT &nbsp;|&nbsp; Update → PUT → DELETE &nbsp;|&nbsp; Delete → DELETE → UPDATE',
+      'Create → CREATE → GET &nbsp;|&nbsp; Read → SELECT → POST &nbsp;|&nbsp; Update → PUT → PATCH &nbsp;|&nbsp; Delete → REMOVE → DROP'
+    ],
+    answer:0,
+    exp:'A correspondência certa: Criar = POST = INSERT · Ler = GET = SELECT · Atualizar = PUT = UPDATE · Apagar = DELETE = DELETE. Cada ação combina na mesma "família".'
+  },
+  { // 3
+    block:'BLOCO 2 — Banco de Dados Relacional e SQL', topic:'HTTP',
+    stem:'Depois que o servidor <strong>cria com sucesso</strong> um novo registro (um POST), qual código de status HTTP ele deve devolver?',
+    opts:[
+      '404 Not Found — porque o recurso foi criado mas a página mudou.',
+      '201 Created — indicando que deu certo e um novo recurso foi criado.',
+      '200 OK — usado só para remoções com DELETE.',
+      '500 Internal Server Error — sinalizando mudança na estrutura.'
+    ],
+    answer:1,
+    exp:'Quando algo NOVO é criado, o código certo é o 201 (Created). O 200 é "ok genérico", o 404 é "não encontrado" e o 500 é erro do servidor.'
+  },
+  { // 4
+    block:'BLOCO 2 — Banco de Dados Relacional e SQL', topic:'SQL',
+    stem:'O que acontece se você rodar <code>DELETE FROM Pedidos;</code> ou <code>UPDATE Produtos SET preco = 0;</code> <strong>sem</strong> a cláusula <code>WHERE</code>?',
+    opts:[
+      'Só o último registro inserido é alterado.',
+      'O banco retorna um erro de segurança e bloqueia a ação.',
+      'TODOS os registros da tabela são afetados — apagando ou mudando tudo de uma vez.',
+      'A tabela inteira é removida do banco.'
+    ],
+    answer:2,
+    exp:'Sem o WHERE, o comando afeta TODAS as linhas! Um DELETE sem WHERE apaga a tabela inteira de dados. Por isso o WHERE é tão importante — ele é o filtro de segurança.'
+  },
+  { // 5
+    block:'BLOCO 2 — Banco de Dados Relacional e SQL', topic:'Chave Primária',
+    stem:'A tabela <strong>Alunos</strong> tem a coluna <code>id</code> como Chave Primária (PRIMARY KEY). Já existe um aluno com <code>id = 1</code>. O que acontece ao rodar o comando abaixo?',
+    code:`<span class="kw">INSERT INTO</span> Alunos (id, nome)\n<span class="kw">VALUES</span> (<span class="nu">1</span>, <span class="st">"Luis"</span>);`,
+    opts:[
+      'O banco troca o registro antigo pelo novo automaticamente.',
+      'O comando falha e retorna um erro de integridade — não pode ter dois registros com a mesma chave primária.',
+      'O registro é inserido gerando um id automático valor 2.',
+      'O comando funciona e a tabela fica com dois registros de id = 1.'
+    ],
+    answer:1,
+    exp:'A Chave Primária (PRIMARY KEY) precisa ser ÚNICA. Como o id = 1 já existe, o banco recusa e retorna um erro de violação de integridade (Constraint Violation). É uma trava de segurança dos dados.'
+  },
+  { // 6
+    block:'BLOCO 3 — Backend e Análise de Código FastAPI', topic:'FastAPI',
+    stem:'Analise este endpoint em FastAPI. No contexto REST, o que ele <strong>faz</strong>?',
+    code:`banco_de_dados = []\n\n<span class="fn">@app.post</span>(<span class="st">"/produtos/"</span>, status_code=<span class="nu">201</span>)\n<span class="kw">def</span> <span class="fn">criar_produto</span>(produto: Produto):\n    banco_de_dados.<span class="fn">append</span>(produto)\n    <span class="kw">return</span> {<span class="st">"msg"</span>: <span class="st">"Sucesso"</span>, <span class="st">"data"</span>: produto}`,
+    opts:[
+      'Apenas lê os dados enviados, sem guardar.',
+      'Recebe os dados do cliente, guarda na lista (persiste) e devolve o status de criação (201).',
+      'Atualiza um produto que já existia na lista.',
+      'Remove um produto pelo identificador.'
+    ],
+    answer:1,
+    exp:'O @app.post cria algo novo. Aqui a função recebe o produto, faz append() na lista (guarda o dado) e devolve status 201 (Created). Ou seja: é a operação de CRIAR (Create).'
+  },
+  { // 7
+    block:'BLOCO 3 — Backend e Análise de Código FastAPI', topic:'Parâmetros',
+    stem:'Observe o endpoint abaixo. Como se chama o parâmetro <code>{usuario_id}</code> que está dentro da rota?',
+    code:`<span class="fn">@app.get</span>(<span class="st">"/usuarios/{usuario_id}"</span>)\n<span class="kw">def</span> <span class="fn">buscar_usuario</span>(usuario_id: <span class="kw">int</span>):\n    <span class="kw">return</span> {<span class="st">"busca"</span>: usuario_id}`,
+    opts:[
+      'Query Parameter (parâmetro de consulta, depois do ?).',
+      'Path Parameter (parâmetro de caminho) — ele faz parte da própria rota/URL.',
+      'Request Body (corpo da requisição em JSON).',
+      'Header Parameter (parâmetro de cabeçalho de segurança).'
+    ],
+    answer:1,
+    exp:'Quando o parâmetro está DENTRO da rota, entre chaves {}, ele é um Path Parameter (parâmetro de caminho). O Query Parameter viria depois do ? (ex: /usuarios?id=5).'
+  },
+  { // 8
+    block:'BLOCO 3 — Backend e Análise de Código FastAPI', topic:'FastAPI',
+    stem:'Analise a estrutura que gerencia conexões com o banco. Qual a finalidade do bloco <code>finally: db.close()</code>?',
+    code:`<span class="kw">def</span> <span class="fn">get_db</span>():\n    db = <span class="fn">SessionLocal</span>()\n    <span class="kw">try</span>:\n        <span class="kw">yield</span> db\n    <span class="kw">finally</span>:\n        db.<span class="fn">close</span>()`,
+    opts:[
+      'Garantir que a conexão com o banco seja fechada no fim, liberando recursos — mesmo se der algum erro.',
+      'Reiniciar o banco apagando as tabelas temporárias.',
+      'Parar a API se houver um erro de autenticação.',
+      'Impedir que usuários façam requisições GET.'
+    ],
+    answer:0,
+    exp:'O finally SEMPRE roda, dando erro ou não. Aqui ele garante fechar a conexão (db.close()) para não deixar conexões abertas ocupando memória do servidor. É boa prática de limpeza.'
+  },
+  { // 9
+    block:'BLOCO 3 — Backend e Análise de Código FastAPI', topic:'Segurança',
+    stem:'Considere este endpoint seguro. O que acontece <strong>automaticamente</strong> se o cliente chamar essa rota <strong>sem</strong> as credenciais corretas?',
+    code:`<span class="fn">@app.get</span>(<span class="st">"/dashboard"</span>)\n<span class="kw">def</span> <span class="fn">ver_dashboard</span>(token: <span class="kw">str</span> = <span class="fn">Depends</span>(oauth2_scheme)):\n    <span class="kw">return</span> {<span class="st">"status"</span>: <span class="st">"ok"</span>}`,
+    opts:[
+      'A API processa normalmente, só omitindo o campo status.',
+      'O FastAPI intercepta antes de executar a função e retorna o status 401 Unauthorized.',
+      'O código gera um erro 500 e derruba o servidor.',
+      'O cliente é redirecionado para criar uma nova branch no Git.'
+    ],
+    answer:1,
+    exp:'Sem credenciais válidas, o FastAPI bloqueia ANTES de rodar a função e devolve 401 Unauthorized (não autorizado). É a proteção da rota funcionando.'
+  },
+  { // 10
+    block:'BLOCO 4 — Integração Frontend e Chamadas de API', topic:'Fetch/JSON',
+    stem:'Analise a requisição no JavaScript do Frontend. Por que a conversão com <code>JSON.stringify()</code> é obrigatória aqui?',
+    code:`<span class="fn">fetch</span>(<span class="st">"http://localhost:8000/produtos"</span>, {\n    method: <span class="st">"POST"</span>,\n    headers: { <span class="st">"Content-Type"</span>: <span class="st">"application/json"</span> },\n    body: <span class="fn">JSON.stringify</span>(novoProduto)\n})`,
+    opts:[
+      'Para transformar o texto JSON recebido em algo visual na tela.',
+      'Para converter o objeto JavaScript em texto (string) no formato JSON, para poder viajar dentro da mensagem HTTP.',
+      'Para criptografar os dados e evitar bloqueio por CORS.',
+      'Para limpar os parâmetros de busca no fim da URL.'
+    ],
+    answer:1,
+    exp:'O body da requisição HTTP viaja como TEXTO. O JSON.stringify() transforma o objeto JavaScript ({nome:"..."}) numa string JSON. Sem isso, os dados não trafegam corretamente.'
+  },
+  { // 11
+    block:'BLOCO 4 — Integração Frontend e Chamadas de API', topic:'Fetch/JSON',
+    stem:'Considere o código que consome dados de uma API. Qual o objetivo da instrução <code>.then(response => response.json())</code>?',
+    code:`<span class="fn">fetch</span>(<span class="st">"http://localhost:8000/produtos"</span>)\n    .<span class="fn">then</span>(response => response.<span class="fn">json</span>())\n    .<span class="fn">then</span>(data => console.<span class="fn">log</span>(data));`,
+    opts:[
+      'Mudar o método HTTP da requisição para POST.',
+      'Ler a resposta e transformar (parsing) o texto JSON num objeto/array JavaScript que dá para usar.',
+      'Validar os tokens de segurança nos cabeçalhos.',
+      'Salvar os dados direto numa tabela SQL local.'
+    ],
+    answer:1,
+    exp:'A resposta chega como texto JSON. O .json() faz o parsing — transforma esse texto num objeto/array JavaScript de verdade, que aí sim você pode manipular e mostrar na tela.'
+  },
+  { // 12
+    block:'BLOCO 4 — Integração Frontend e Chamadas de API', topic:'CORS',
+    stem:'No desenvolvimento, o Frontend roda em <code>localhost:3000</code> e o Backend em <code>localhost:8000</code>. O que acontece se o <strong>CORS</strong> não estiver configurado no Backend?',
+    opts:[
+      'O servidor FastAPI para de responder após o primeiro clique.',
+      'O navegador bloqueia o acesso aos dados por segurança, gerando um erro de política de mesma origem (same-origin).',
+      'A requisição vira automaticamente formato XML.',
+      'Os comandos Git locais perdem a sincronia com o GitHub.'
+    ],
+    answer:1,
+    exp:'Origens diferentes (portas 3000 e 8000) são bloqueadas pelo navegador por padrão. Sem configurar o CORS no Backend para permitir, aparece o erro de "same-origin policy" e o Frontend não consegue os dados.'
+  },
+  { // 13
+    block:'BLOCO 5 — Controle de Versões e Fluxo Git', topic:'Git',
+    stem:'No versionamento de código, qual a diferença prática entre os comandos <code>git clone</code> e <code>git pull</code>?',
+    opts:[
+      'O clone cria uma ramificação local; o pull envia arquivos para produção.',
+      'O clone traz a cópia completa de um repositório pela PRIMEIRA vez para a máquina; o pull apenas ATUALIZA uma pasta local que já existe com as mudanças recentes.',
+      'O clone apaga o histórico local e o pull cria um ponto de restauro.',
+      'Não têm diferença técnica, funcionam igual.'
+    ],
+    answer:1,
+    exp:'git clone = "baixar pela primeira vez" (copia o repositório inteiro). git pull = "atualizar o que eu já tenho" (traz só as novidades). Clone é uma vez; pull é sempre que quiser sincronizar.'
+  },
+  { // 14
+    block:'BLOCO 5 — Controle de Versões e Fluxo Git', topic:'Git',
+    stem:'Um programador terminou uma correção e rodou no terminal:<br><code>1) git add .</code><br><code>2) git commit -m "ajusta validacao de rotas"</code><br>Neste ponto exato, <strong>onde</strong> estão as alterações?',
+    opts:[
+      'Já no servidor remoto do GitHub, disponíveis para toda a equipe.',
+      'Salvas e guardadas com segurança apenas no histórico do repositório LOCAL (na máquina do desenvolvedor).',
+      'Descartadas da memória, voltando o código ao estado original.',
+      'Enviadas direto para o ambiente de produção na nuvem.'
+    ],
+    answer:1,
+    exp:'O git commit salva no histórico LOCAL (na máquina). Para as mudanças chegarem ao GitHub (remoto) e à equipe, faltaria ainda o git push. Commit ≠ push!'
+  },
+  { // 15
+    block:'BLOCO 5 — Controle de Versões e Fluxo Git', topic:'Git',
+    stem:'Para criar uma funcionalidade experimental sem estragar o código estável da branch principal (<code>main</code>), qual comando cria uma nova ramificação <strong>e</strong> já muda para ela ao mesmo tempo?',
+    opts:[
+      '<code>git checkout main</code>',
+      '<code>git push origin branch-experimental</code>',
+      '<code>git checkout -b feature-experimental</code>',
+      '<code>git commit -m "feature-experimental"</code>'
+    ],
+    answer:2,
+    exp:'O git checkout -b cria a branch nova E já troca para ela numa tacada só (o -b significa "branch nova"). Assim você trabalha na experiência sem mexer na main que está em produção.'
+  }
+];
+
+// ══════════ STATE ══════════
+let mode='test', currentQ=0, answers=[];
+
+// ══════════ LOGIN ══════════
+function doLogin(){
+  const user=document.getElementById('inp-user').value.trim().toLowerCase();
+  const pass=document.getElementById('inp-pass').value.trim();
+  const errEl=document.getElementById('login-error');
+  if(USERS[user]&&USERS[user].senha===pass){
+    currentUser={login:user,nome:USERS[user].nome};
+    errEl.style.display='none';
+    document.getElementById('inp-user').classList.remove('error');
+    document.getElementById('inp-pass').classList.remove('error');
+    document.getElementById('welcome-banner').innerHTML=`👋 Olá, <strong>${currentUser.nome}</strong>! Vamos começar?`;
+    go('s-mode');
+  } else {
+    errEl.style.display='block';
+    document.getElementById('inp-user').classList.add('error');
+    document.getElementById('inp-pass').classList.add('error');
+  }
+}
+function logout(){
+  currentUser=null; mode='test'; currentQ=0; answers=[];
+  document.getElementById('inp-user').value='';
+  document.getElementById('inp-pass').value='';
+  document.getElementById('inp-user').classList.remove('error');
+  document.getElementById('inp-pass').classList.remove('error');
+  document.getElementById('login-error').style.display='none';
+  document.getElementById('bottom-bar').classList.remove('on');
+  go('s-login');
+}
+
+// ══════════ START ══════════
+function startSim(){
+  currentQ=0; answers=[];
+  document.getElementById('quiz-user').textContent='Aluno: '+currentUser.nome;
+  document.getElementById('quiz-mode-badge').textContent='PROVA';
+  document.getElementById('bottom-bar').classList.add('on');
+  go('s-quiz'); renderQ(0);
+}
+
+// ══════════ RENDER ══════════
+function renderQ(idx){
+  currentQ=idx;
+  const q=QUESTIONS[idx];
+  document.getElementById('q-counter').textContent=`Questão ${idx+1} de ${QUESTIONS.length}`;
+  document.getElementById('q-topic').textContent=q.topic;
+  document.getElementById('q-block').textContent=q.block;
+  document.getElementById('q-stem').innerHTML=q.stem;
+  document.getElementById('q-progress-fill').style.width=((idx+1)/QUESTIONS.length*100)+'%';
+
+  // code box
+  const codeArea=document.getElementById('q-code-area');
+  codeArea.innerHTML = q.code ? `<div class="code-box"><pre>${q.code}</pre></div>` : '';
+
+  const letters=['A','B','C','D'];
+  const optsEl=document.getElementById('q-opts');
+  optsEl.innerHTML='';
+  const existing=answers.find(a=>a.qIdx===idx);
+  q.opts.forEach((opt,i)=>{
+    const btn=document.createElement('button');
+    btn.className='opt';
+    btn.innerHTML=`<span class="opt-letter">${letters[i]}</span><span>${opt}</span>`;
+    btn.onclick=()=>pickOpt(idx,i);
+    if(existing){
+      if(i===existing.chosen)btn.classList.add('selected');
+    }
+    optsEl.appendChild(btn);
+  });
+  document.getElementById('q-feedback').style.display='none';
+
+  document.getElementById('btn-prev').disabled=idx===0;
+  document.getElementById('btn-next').textContent=idx===QUESTIONS.length-1?'Ver Resultado ✓':'Próxima →';
+  updateBottomBar();
+}
+
+function pickOpt(qIdx,optIdx){
+  const q=QUESTIONS[qIdx];
+  const isCorrect=optIdx===q.answer;
+  // allow changing the answer before finishing
+  const existing=answers.find(a=>a.qIdx===qIdx);
+  if(existing){ existing.chosen=optIdx; existing.correct=isCorrect; }
+  else { answers.push({qIdx,chosen:optIdx,correct:isCorrect}); }
+  const optBtns=document.querySelectorAll('#q-opts .opt');
+  optBtns.forEach((btn,i)=>{
+    btn.classList.remove('selected');
+    if(i===optIdx)btn.classList.add('selected');
+  });
+  updateBottomBar();
+}
+
+function nextQ(){ if(currentQ===QUESTIONS.length-1){finishSim();return;} renderQ(currentQ+1); }
+function prevQ(){ if(currentQ>0)renderQ(currentQ-1); }
+
+function updateBottomBar(){
+  document.getElementById('bb-progress').textContent=`Respondidas: ${answers.length} / ${QUESTIONS.length}`;
+  document.getElementById('bb-score').textContent='';
+}
+
+function finishSim(){
+  if(answers.length<QUESTIONS.length){
+    const faltam=QUESTIONS.length-answers.length;
+    if(!confirm(`Você ainda não respondeu ${faltam} questão(ões). Deseja finalizar mesmo assim?`))return;
+  }
+  buildResult();
+  document.getElementById('bottom-bar').classList.remove('on');
+  go('s-result');
+}
+
+function buildResult(){
+  const total=QUESTIONS.length;
+  const correct=answers.filter(a=>a.correct).length;
+  const pct=correct/total;
+  document.getElementById('result-user').textContent='Aluno: '+currentUser.nome;
+  let bCls,bTxt;
+  if(pct>=0.7){bCls='excellent';bTxt='🏆 Muito bem! Você domina o conteúdo!';}
+  else if(pct>=0.5){bCls='recovery';bTxt='⚠️ Bom esforço! Revise os tópicos que errou.';}
+  else{bCls='failed';bTxt='💪 Continue praticando! Revise o conteúdo com calma.';}
+  const banner=document.getElementById('r-banner');
+  banner.className='status-banner '+bCls; banner.textContent=bTxt;
+  const nota=(correct/total*10).toFixed(1);
+  const cls=pct>=0.7?'hi':pct>=0.5?'md':'lo';
+  document.getElementById('r-summary').innerHTML=`
+    <div class="res-box ${cls}"><div class="rb-val">${correct}/${total}</div><div class="rb-lbl">Acertos</div></div>
+    <div class="res-box ${cls}"><div class="rb-val">${(pct*100).toFixed(0)}%</div><div class="rb-lbl">Aproveitamento</div></div>
+    <div class="res-box neu"><div class="rb-val">${nota}</div><div class="rb-lbl">Nota (0–10)</div></div>`;
+  const L=['A','B','C','D'];
+  let bd='';
+  const sorted=[...answers].sort((a,b)=>a.qIdx-b.qIdx);
+  sorted.forEach(a=>{
+    const q=QUESTIONS[a.qIdx];
+    const stemTxt=q.stem.replace(/<[^>]+>/g,'');
+    bd+=`<div class="sim-result-row"><div class="srr-left"><span style="font-size:1.2rem;">${a.correct?'✅':'❌'}</span><div><div class="srr-name">Q${a.qIdx+1} (${q.topic}) — ${stemTxt.substring(0,52)}${stemTxt.length>52?'...':''}</div><div class="srr-sub">Sua resposta: <strong>${L[a.chosen]}</strong> · Correta: <strong>${L[q.answer]}</strong><br>${q.exp}</div></div></div><span class="srr-grade ${a.correct?'hi':'lo'}">${a.correct?'✓':'✗'}</span></div>`;
+  });
+  QUESTIONS.forEach((q,i)=>{
+    if(!answers.find(a=>a.qIdx===i)){
+      bd+=`<div class="sim-result-row"><div class="srr-left"><span style="font-size:1.2rem;">⬜</span><div><div class="srr-name">Q${i+1} (${q.topic}) — não respondida</div><div class="srr-sub">Correta: <strong>${L[q.answer]}</strong><br>${q.exp}</div></div></div><span class="srr-grade lo">—</span></div>`;
+    }
+  });
+  document.getElementById('r-breakdown').innerHTML=bd;
+}
+
+function downloadCSV(){
+  const total=QUESTIONS.length;
+  const correct=answers.filter(a=>a.correct).length;
+  const nota=(correct/total*10).toFixed(1);
+  const now=new Date();
+  const L=['A','B','C','D'];
+  let csv='sep=;\n';
+  csv+='AVALIAÇÃO FINAL INTEGRADA — BACKEND, FRONTEND E GIT\n';
+  csv+='ETE Marechal Mascarenhas de Moraes\n\n';
+  csv+=`Aluno;${currentUser.nome}\nUsuário;${currentUser.login}\n`;
+  csv+=`Data;${now.toLocaleDateString('pt-BR')}\nHora;${now.toLocaleTimeString('pt-BR')}\n`;
+  csv+=`Modo;Prova\n`;
+  csv+=`Acertos;${correct}/${total}\nAproveitamento;${(correct/total*100).toFixed(0)}%\nNota;${nota}\n\n`;
+  csv+='Questão;Tópico;Resposta do Aluno;Correta;Resultado\n';
+  QUESTIONS.forEach((q,i)=>{
+    const a=answers.find(x=>x.qIdx===i);
+    const given=a?L[a.chosen]:'(vazio)';
+    const res=a?(a.correct?'CORRETO':'INCORRETO'):'NÃO RESPONDIDA';
+    csv+=`Q${i+1};${q.topic};${given};${L[q.answer]};${res}\n`;
+  });
+  const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  a.download=`avaliacao_final_${currentUser.login}_${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}.csv`;
+  document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);
+}
+
+function restartSim(){ currentQ=0; answers=[]; go('s-mode'); }
+function go(id){ document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on')); document.getElementById(id).classList.add('on'); window.scrollTo(0,0); }
+</script>
+</body>
+</html>
